@@ -1,14 +1,15 @@
-# Cảnh Báo Rủi Ro Học Thuật Sớm
+# Early Academic Risk Warning
 
-## Bối Cảnh
+## Background
 
-Sự phát triển của học trực tuyến và học kết hợp (blended learning) đã tạo ra khối lượng lớn dữ liệu hành vi học tập, mở ra cơ hội ứng dụng các phương pháp học máy để hỗ trợ ra quyết định trong giáo dục. Việc phát hiện sớm sinh viên có nguy cơ trượt môn hoặc bỏ học giúp giáo viên và cố vấn học thuật can thiệp kịp thời, trước khi kết quả trở nên không thể cứu vãn.
+Sự phát triển mạnh mẽ của hình thức học trực tuyến và học kết hợp (blended learning) đã tạo ra lượng lớn dữ liệu về hành vi học tập của sinh viên. Điều này mở ra cơ hội ứng dụng các phương pháp học máy và phân tích dữ liệu nhằm hỗ trợ quá trình ra quyết định trong giáo dục. Trong đó, việc phát hiện sớm sinh viên có nguy cơ trượt môn hoặc bỏ học là một bài toán quan trọng, giúp giảng viên và cố vấn học tập có thể đưa ra các biện pháp can thiệp kịp thời trước khi kết quả học tập trở nên khó cải thiện.
 
-Dự án sử dụng bộ dữ liệu **OULAD (Open University Learning Analytics Dataset)** — một bộ dữ liệu công khai phong phú gồm thông tin nhân khẩu học, nhật ký tương tác với môi trường học tập ảo (VLE), và kết quả bài kiểm tra của **32.593 sinh viên** trên **22 khoá học**.
+Project này sử dụng bộ dữ liệu **OULAD (Open University Learning Analytics Dataset)** — một bộ dữ liệu công khai nổi tiếng trong lĩnh vực learning analytics. Bộ dữ liệu bao gồm thông tin nhân khẩu học, lịch sử tương tác của sinh viên với môi trường học tập ảo (Virtual Learning Environment - VLE), cùng kết quả đánh giá học tập của 32.593 sinh viên thuộc 22 khóa học khác nhau. OULAD là nền tảng phù hợp để xây dựng các mô hình cảnh báo sớm rủi ro học tập và phân tích các yếu tố ảnh hưởng đến kết quả học tập của sinh viên.
+
 
 ---
 
-## Định Nghĩa Bài Toán
+## Problem Definition
 
 Bài toán được xây dựng dưới dạng **phân loại 4 nhãn**, trong đó biến mục tiêu là `final_result` ∈ {Distinction, Pass, Fail, Withdrawn}.
 
@@ -27,25 +28,25 @@ Dự đoán được thực hiện tại **4 mốc thời gian**: ngày **60, 12
 
 ## Research Gap
 
-Các nghiên cứu hiện có trên OULAD chủ yếu giải quyết bài toán **phân loại nhị phân** (bỏ học / không bỏ học, đậu / trượt), ít nghiên cứu giữ nguyên cấu trúc 4 nhãn đầy đủ. Dự đoán theo thời gian tại nhiều mốc kiểm tra vẫn chưa được khai thác triệt để. Ngoài ra, việc áp dụng **XAI (Explainable AI)** để làm cho kết quả dự đoán có thể giải thích được cho các bên liên quan phi kỹ thuật như cố vấn học thuật vẫn còn rất hạn chế. Nhiều nghiên cứu cũng chỉ sử dụng một hoặc hai trong ba nhóm feature (nhân khẩu học, tương tác VLE, kết quả kiểm tra), chưa khai thác giá trị kết hợp của cả ba.
+Các nghiên cứu hiện có trên OULAD chủ yếu giải quyết bài toán **phân loại nhị phân** (bỏ học / không bỏ học, đậu / trượt), ít nghiên cứu giữ nguyên cấu trúc 4 nhãn đầy đủ. Dự đoán theo thời gian tại nhiều mốc kiểm tra vẫn chưa được khai thác triệt để. Ngoài ra, việc áp dụng **XAI (Explainable AI)** để làm cho kết quả dự đoán có thể giải thích được vẫn còn rất hạn chế. Nhiều nghiên cứu cũng chỉ sử dụng một hoặc hai trong ba nhóm feature (nhân khẩu học, tương tác VLE, kết quả kiểm tra), chưa khai thác giá trị kết hợp của cả ba.
 
 ---
 
-## Hướng Tiếp Cận
+## Proposed Approach
 
 Dự án xây dựng một pipeline dự đoán theo thời gian, có khả năng giải thích, bao gồm:
 
-1. **Feature Engineering theo thời gian**: xây dựng feature tại mỗi mốc từ cả ba nhóm — nhân khẩu học (tĩnh), hành vi tương tác VLE tích luỹ, và hành vi nộp bài kiểm tra
+1. **Feature Engineering theo thời gian**: xây dựng feature tại mỗi mốc từ cả ba nhóm — nhân khẩu học, hành vi tương tác VLE tích luỹ, và hành vi nộp bài kiểm tra
 2. **Mô hình phân loại 4 nhãn**: tối ưu hoá recall cho nhãn Fail và Withdrawn, kết hợp xử lý mất cân bằng nhãn (class imbalance)
-3. **Giải thích kết quả (XAI)**: cung cấp lý do dự đoán theo từng sinh viên, phù hợp để cố vấn học thuật hành động
+3. **Giải thích kết quả (XAI)**: cung cấp lý do dự đoán theo từng sinh viên, phù hợp để cố vấn học tập hành động
 
 ---
 
-## Mục Tiêu
+## Objectives
 
 - Dự đoán kết quả học tập theo 4 nhãn tại các mốc ngày 60, 120, 180, 240
 - Đạt recall cao cho nhãn Fail và Withdrawn tại mỗi mốc thời gian
-- Cung cấp kết quả dự đoán có thể giải thích được, phù hợp với nhu cầu của cố vấn học thuật
+- Cung cấp kết quả dự đoán có thể giải thích được, phù hợp với nhu cầu của cố vấn học tập
 
 ---
 

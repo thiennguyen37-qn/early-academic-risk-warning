@@ -1,154 +1,154 @@
 # Open University Learning Analytics Dataset (OULAD)
 
-## Sources
+## Nguồn dữ liệu
 
-**Original Owner**
+**Tổ chức sở hữu**
 
-The Open University  
-Walton Hall, Milton Keynes, MK7 6AA, United Kingdom  
-Contact: Zdenek Zdrahal — zdenek.zdrahal@open.ac.uk
+The Open University
+Walton Hall, Milton Keynes, MK7 6AA, United Kingdom
+Liên hệ: Zdenek Zdrahal — [zdenek.zdrahal@open.ac.uk](mailto:zdenek.zdrahal@open.ac.uk)
 
-**Donors**
+**Nhà cung cấp dữ liệu**
 
-| Name | Affiliation | Email |
-|------|-------------|-------|
-| Jakub Kuzilek | Knowledge Media Institute, The Open University & CIIRC, CTU in Prague | jakub.kuzilek@gmail.com |
-| Martin Hlosta | Knowledge Media Institute, The Open University | martin.hlosta@open.ac.uk |
-| Zdenek Zdrahal | Knowledge Media Institute, The Open University & CIIRC, CTU in Prague | zdenek.zdrahal@open.ac.uk |
+| Tên            | Đơn vị                                                                | Email                                                         |
+| -------------- | --------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Jakub Kuzilek  | Knowledge Media Institute, The Open University & CIIRC, CTU in Prague | [jakub.kuzilek@gmail.com](mailto:jakub.kuzilek@gmail.com)     |
+| Martin Hlosta  | Knowledge Media Institute, The Open University                        | [martin.hlosta@open.ac.uk](mailto:martin.hlosta@open.ac.uk)   |
+| Zdenek Zdrahal | Knowledge Media Institute, The Open University & CIIRC, CTU in Prague | [zdenek.zdrahal@open.ac.uk](mailto:zdenek.zdrahal@open.ac.uk) |
 
-**Date received:** December 2015
-
----
-
-## Overview
-
-OULAD contains data about courses, students, and their interactions with the Virtual Learning Environment (VLE) across seven selected courses (modules). Course presentations start in **February** (`B`) and **October** (`J`). All tables are linked via unique identifiers and stored as CSV files.
-
-More info: https://analyse.kmi.open.ac.uk/open_dataset
+**Ngày công bố:** Tháng 12 năm 2015
 
 ---
 
-## Dataset Statistics
+## Tổng quan
 
-| Entity | Count |
-|--------|------:|
-| Students in courses | 32,953 |
-| Course presentations | 22 |
-| VLE pages | 6,364 |
-| VLE log entries | 10,655,280 |
-| Registration entries | 32,953 |
-| Assessments | 206 |
-| Assessment entries | 173,912 |
-| **Total attributes** | **43** |
+OULAD chứa dữ liệu về các khóa học, sinh viên và các tương tác của họ với Môi trường học tập trực tuyến (Virtual Learning Environment - VLE) trên bảy học phần (module) được lựa chọn. Các đợt mở khóa học bắt đầu vào **tháng 2** (`B`) và **tháng 10** (`J`). Tất cả các bảng dữ liệu được liên kết thông qua các định danh duy nhất và được lưu dưới dạng tệp CSV.
+
+Thông tin thêm: https://analyse.kmi.open.ac.uk/open_dataset
 
 ---
 
-## Attribute Information
+## Thống kê bộ dữ liệu
+
+| Thực thể                    |   Số lượng |
+| --------------------------- | ---------: |
+| Sinh viên tham gia khóa học |     32,953 |
+| Đợt mở học phần             |         22 |
+| Trang/tài nguyên VLE        |      6,364 |
+| Nhật ký tương tác VLE       | 10,655,280 |
+| Bản ghi đăng ký học         |     32,953 |
+| Bài đánh giá                |        206 |
+| Bản ghi kết quả đánh giá    |    173,912 |
+| **Tổng số thuộc tính**      |     **43** |
+
+---
+
+## Thông tin thuộc tính
 
 ### `courses.csv`
 
-| Column | Type | Unit | Description |
-|--------|------|------|-------------|
-| `code_module` | nominal | — | Identifier code of the module |
-| `code_presentation` | nominal | — | Year + semester code (`B` = Feb, `J` = Oct) |
-| `length` | integer | days | Duration of the module presentation |
+| Cột                 | Kiểu dữ liệu | Đơn vị | Mô tả                                           |
+| ------------------- | ------------ | ------ | ----------------------------------------------- |
+| `code_module`       | nominal      | —      | Mã định danh của học phần                       |
+| `code_presentation` | nominal      | —      | Mã năm + học kỳ (`B` = tháng 2, `J` = tháng 10) |
+| `length`            | integer      | ngày   | Thời lượng của đợt mở học phần                  |
 
 ---
 
 ### `assessments.csv`
 
-| Column | Type | Unit | Description |
-|--------|------|------|-------------|
-| `code_module` | nominal | — | Module the assessment belongs to |
-| `code_presentation` | nominal | — | Presentation the assessment belongs to |
-| `id_assessment` | integer | — | Unique assessment identifier |
-| `assessment_type` | nominal | — | Type of assessment |
-| `date` | integer | days | Final submission date, relative to presentation start (day 0) |
-| `weight` | integer | % | Weight of the assessment; Exams = 100%, all others sum to 100% |
+| Cột                 | Kiểu dữ liệu | Đơn vị | Mô tả                                                                           |
+| ------------------- | ------------ | ------ | ------------------------------------------------------------------------------- |
+| `code_module`       | nominal      | —      | Học phần chứa bài đánh giá                                                      |
+| `code_presentation` | nominal      | —      | Đợt mở học phần chứa bài đánh giá                                               |
+| `id_assessment`     | integer      | —      | Mã định danh duy nhất của bài đánh giá                                          |
+| `assessment_type`   | nominal      | —      | Loại bài đánh giá                                                               |
+| `date`              | integer      | ngày   | Hạn nộp cuối cùng, tính từ ngày bắt đầu khóa học (ngày 0)                       |
+| `weight`            | integer      | %      | Trọng số của bài đánh giá; bài thi cuối kỳ = 100%, các bài khác cộng lại = 100% |
 
 ---
 
 ### `vle.csv`
 
-| Column | Type | Unit | Description |
-|--------|------|------|-------------|
-| `id_site` | integer | — | Unique identifier of the VLE material |
-| `code_module` | nominal | — | Module the material belongs to |
-| `code_presentation` | nominal | — | Presentation the material belongs to |
-| `activity_type` | nominal | — | Role/type associated with the material |
-| `week_from` | integer | week | Week the material is planned to be first used |
-| `week_to` | integer | week | Week until which the material is planned to be used |
+| Cột                 | Kiểu dữ liệu | Đơn vị | Mô tả                                    |
+| ------------------- | ------------ | ------ | ---------------------------------------- |
+| `id_site`           | integer      | —      | Mã định danh duy nhất của tài nguyên VLE |
+| `code_module`       | nominal      | —      | Học phần chứa tài nguyên                 |
+| `code_presentation` | nominal      | —      | Đợt mở học phần chứa tài nguyên          |
+| `activity_type`     | nominal      | —      | Vai trò/loại của tài nguyên              |
+| `week_from`         | integer      | tuần   | Tuần dự kiến bắt đầu sử dụng tài nguyên  |
+| `week_to`           | integer      | tuần   | Tuần dự kiến kết thúc sử dụng tài nguyên |
 
 ---
 
 ### `studentInfo.csv`
 
-| Column | Type | Unit | Description |
-|--------|------|------|-------------|
-| `code_module` | nominal | — | Module the student is registered on |
-| `code_presentation` | nominal | — | Presentation the student is registered for |
-| `id_student` | integer | — | Unique student identifier |
-| `gender` | nominal | — | Student's gender |
-| `region` | nominal | — | Geographic region where the student lived during the module |
-| `highest_education` | nominal | — | Highest education level on entry |
-| `imd_band` | nominal | — | Index of Multiple Deprivation band of the student's location |
-| `age_band` | nominal | — | Student's age band |
-| `num_of_prev_attempts` | integer | — | Number of times the student has previously attempted this module |
-| `studied_credits` | integer | — | Total credits for all modules the student is currently studying |
-| `disability` | nominal | — | Whether the student has declared a disability |
-| `final_result` | nominal | — | Student's final result in the module presentation |
+| Cột                    | Kiểu dữ liệu | Đơn vị | Mô tả                                                                          |
+| ---------------------- | ------------ | ------ | ------------------------------------------------------------------------------ |
+| `code_module`          | nominal      | —      | Học phần mà sinh viên đăng ký                                                  |
+| `code_presentation`    | nominal      | —      | Đợt mở học phần mà sinh viên đăng ký                                           |
+| `id_student`           | integer      | —      | Mã định danh duy nhất của sinh viên                                            |
+| `gender`               | nominal      | —      | Giới tính của sinh viên                                                        |
+| `region`               | nominal      | —      | Khu vực địa lý nơi sinh viên sinh sống trong thời gian học                     |
+| `highest_education`    | nominal      | —      | Trình độ học vấn cao nhất khi nhập học                                         |
+| `imd_band`             | nominal      | —      | Mức chỉ số thiếu thốn xã hội (Index of Multiple Deprivation) tại nơi sinh sống |
+| `age_band`             | nominal      | —      | Nhóm tuổi của sinh viên                                                        |
+| `num_of_prev_attempts` | integer      | —      | Số lần sinh viên đã từng học lại học phần này                                  |
+| `studied_credits`      | integer      | —      | Tổng số tín chỉ của các học phần sinh viên đang học                            |
+| `disability`           | nominal      | —      | Sinh viên có khai báo khuyết tật hay không                                     |
+| `final_result`         | nominal      | —      | Kết quả cuối cùng của sinh viên trong học phần                                 |
 
 ---
 
 ### `studentRegistration.csv`
 
-| Column | Type | Unit | Description |
-|--------|------|------|-------------|
-| `code_module` | nominal | — | Module identifier |
-| `code_presentation` | nominal | — | Presentation identifier |
-| `id_student` | integer | — | Unique student identifier |
-| `date_registration` | integer | days | Registration date relative to presentation start (negative = before start) |
-| `date_unregistration` | integer | days | Unregistration date relative to presentation start; empty if student completed the course |
+| Cột                   | Kiểu dữ liệu | Đơn vị | Mô tả                                                                                                       |
+| --------------------- | ------------ | ------ | ----------------------------------------------------------------------------------------------------------- |
+| `code_module`         | nominal      | —      | Mã học phần                                                                                                 |
+| `code_presentation`   | nominal      | —      | Mã đợt mở học phần                                                                                          |
+| `id_student`          | integer      | —      | Mã định danh duy nhất của sinh viên                                                                         |
+| `date_registration`   | integer      | ngày   | Ngày đăng ký, tính tương đối so với ngày bắt đầu khóa học (giá trị âm = đăng ký trước khi khóa học bắt đầu) |
+| `date_unregistration` | integer      | ngày   | Ngày hủy đăng ký, tính tương đối so với ngày bắt đầu khóa học; để trống nếu sinh viên hoàn thành khóa học   |
 
 ---
 
 ### `studentAssessment.csv`
 
-| Column | Type | Unit | Description |
-|--------|------|------|-------------|
-| `id_assessment` | integer | — | Assessment identifier |
-| `id_student` | integer | — | Unique student identifier |
-| `date_submitted` | integer | days | Submission date, measured from presentation start |
-| `is_banked` | integer | — | Flag indicating the result was transferred from a previous presentation |
-| `score` | integer | 0–100 | Student's score; scores below 40 are considered a Fail |
+| Cột              | Kiểu dữ liệu | Đơn vị | Mô tả                                              |
+| ---------------- | ------------ | ------ | -------------------------------------------------- |
+| `id_assessment`  | integer      | —      | Mã định danh bài đánh giá                          |
+| `id_student`     | integer      | —      | Mã định danh duy nhất của sinh viên                |
+| `date_submitted` | integer      | ngày   | Ngày nộp bài, tính từ thời điểm bắt đầu khóa học   |
+| `is_banked`      | integer      | —      | Đánh dấu kết quả được chuyển từ đợt học trước      |
+| `score`          | integer      | 0–100  | Điểm của sinh viên; điểm dưới 40 được xem là Fail  |
 
 ---
 
 ### `studentVle.csv`
 
-| Column | Type | Unit | Description |
-|--------|------|------|-------------|
-| `code_module` | nominal | — | Module identifier |
-| `code_presentation` | nominal | — | Presentation identifier |
-| `id_student` | integer | — | Unique student identifier |
-| `id_site` | integer | — | VLE material identifier |
-| `date` | integer | days | Date of interaction, measured from presentation start |
-| `sum_click` | integer | — | Number of times the student interacted with the material on that day |
+| Cột                 | Kiểu dữ liệu | Đơn vị | Mô tả                                                   |
+| ------------------- | ------------ | ------ | ------------------------------------------------------- |
+| `code_module`       | nominal      | —      | Mã học phần                                             |
+| `code_presentation` | nominal      | —      | Mã đợt mở học phần                                      |
+| `id_student`        | integer      | —      | Mã định danh duy nhất của sinh viên                     |
+| `id_site`           | integer      | —      | Mã định danh tài nguyên VLE                             |
+| `date`              | integer      | ngày   | Ngày tương tác, tính từ thời điểm bắt đầu khóa học      |
+| `sum_click`         | integer      | —      | Số lần sinh viên tương tác với tài nguyên trong ngày đó |
 
 ---
 
-## Missing Values
+## Giá trị thiếu
 
-Yes — some attributes contain missing values.
+Có — một số thuộc tính chứa giá trị bị thiếu.
 
 ---
 
-## Class Distribution (`final_result`)
+## Phân bố nhãn (`final_result`)
 
-| Class | Count | % |
-|-------|------:|--:|
-| Distinction | 3,024 | 9.3% |
-| Fail | 7,052 | 21.6% |
-| Pass | 12,361 | 37.9% |
-| Withdrawn | 10,156 | 31.2% |
-| **Total** | **32,593** | **100%** |
+| Lớp                    |   Số lượng |        % |
+| ---------------------- | ---------: | -------: |
+| Distinction (Xuất sắc) |      3,024 |     9.3% |
+| Fail (Trượt)           |      7,052 |    21.6% |
+| Pass (Đạt)             |     12,361 |    37.9% |
+| Withdrawn (Bỏ học)    |     10,156 |    31.2% |
+| **Tổng cộng**          | **32,593** | **100%** |

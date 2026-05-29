@@ -28,7 +28,7 @@ Dự đoán được thực hiện tại **4 mốc thời gian**: ngày **60, 12
 
 ## Research Gap
 
-Các nghiên cứu hiện có trên OULAD chủ yếu giải quyết bài toán **phân loại nhị phân** (bỏ học / không bỏ học, đậu / trượt), ít nghiên cứu giữ nguyên cấu trúc 4 nhãn đầy đủ. Dự đoán theo thời gian tại nhiều mốc kiểm tra vẫn chưa được khai thác triệt để. Ngoài ra, việc áp dụng **XAI (Explainable AI)** để làm cho kết quả dự đoán có thể giải thích được vẫn còn rất hạn chế. Nhiều nghiên cứu cũng chỉ sử dụng một hoặc hai trong ba nhóm feature (nhân khẩu học, tương tác VLE, kết quả kiểm tra), chưa khai thác giá trị kết hợp của cả ba.
+Các nghiên cứu hiện có trên OULAD chủ yếu giải quyết bài toán **phân loại nhị phân** (bỏ học / không bỏ học, đậu / trượt), ít nghiên cứu giữ nguyên cấu trúc 4 nhãn đầy đủ. Dự đoán theo thời gian tại nhiều mốc kiểm tra vẫn chưa được khai thác triệt để. Ngoài ra, việc áp dụng **XAI (Explainable AI)** để làm cho kết quả dự đoán có thể giải thích được vẫn còn rất hạn chế. 
 
 ---
 

@@ -9,6 +9,7 @@ __pycache__/
 
 # Data - derived files (large, reproducible)
 data/*.parquet
+data/oulad.db
 
 # ML artifacts
 models/

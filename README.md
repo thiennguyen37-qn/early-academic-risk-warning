@@ -22,7 +22,7 @@ Bài toán được xây dựng dưới dạng **phân loại 4 nhãn**, trong �
 
 Sinh viên thuộc nhóm **Fail** hoặc **Withdrawn** được xem là *có rủi ro*, do đó **Recall** cho hai nhãn này là tiêu chí đánh giá ưu tiên — bỏ sót một sinh viên có rủi ro tốn kém hơn nhiều so với cảnh báo nhầm.
 
-Dự đoán được thực hiện tại **4 mốc thời gian**: ngày **60, 120, 180, 240** của khoá học, chỉ sử dụng dữ liệu có sẵn đến thời điểm đó. Sinh viên đã bỏ học trước mỗi mốc dự đoán sẽ bị loại khỏi tập dữ liệu tại mốc đó, đảm bảo model chỉ hoạt động trên những sinh viên đang còn học.
+Dự đoán được thực hiện tại **8 mốc thời gian**: ngày **30, 60, 90, 120, 150, 180, 210, 240** của khoá học, chỉ sử dụng dữ liệu có sẵn đến thời điểm đó. Sinh viên đã bỏ học trước mỗi mốc dự đoán sẽ bị loại khỏi tập dữ liệu tại mốc đó, đảm bảo model chỉ hoạt động trên những sinh viên đang còn học.
 
 ---
 
@@ -44,7 +44,7 @@ Dự án xây dựng một pipeline dự đoán theo thời gian, có khả năn
 
 ## Objectives
 
-- Dự đoán kết quả học tập theo 4 nhãn tại các mốc ngày 60, 120, 180, 240
+- Dự đoán kết quả học tập theo 4 nhãn tại 8 mốc ngày 30, 60, 90, 120, 150, 180, 210, 240
 - Đạt recall cao cho nhãn Fail và Withdrawn tại mỗi mốc thời gian
 - Cung cấp kết quả dự đoán có thể giải thích được, phù hợp với nhu cầu của cố vấn học tập
 

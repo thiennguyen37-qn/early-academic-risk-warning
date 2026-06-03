@@ -19,7 +19,7 @@ CLASSES = ["Distinction", "Pass", "Fail", "Withdrawn"]
 AT_RISK_CLASSES = ["Fail", "Withdrawn"]
 
 # --- Temporal snapshots (days from course start) ---
-SNAPSHOTS = [60, 120, 180, 240]
+SNAPSHOTS = [30, 60, 90, 120, 150, 180, 210, 240]
 
 # --- Features ---
 STATIC_FEATURES = [

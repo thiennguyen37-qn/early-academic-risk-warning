@@ -1,9 +1,10 @@
-import pandas as pd
+import sys
 import sqlite3
+import pandas as pd
 from pathlib import Path
 
-DB_PATH = Path("data/oulad.db")
-DATA_DIR = Path("data/")
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from config import DATA_DIR, DB_PATH
 
 TABLES = [
     "assessments",
@@ -25,4 +26,4 @@ for table in TABLES:
     print(f"✅ {table}: {len(df):,} rows")
 
 conn.close()
-print("\nXong! File database: data/oulad.db")
+print(f"\nXong! File database: {DB_PATH}")

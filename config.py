@@ -1,7 +1,9 @@
 from pathlib import Path
 
 # --- Paths ---
-DATA_DIR = Path("data/")
+PROJECT_ROOT = Path(__file__).resolve().parent
+DATA_DIR     = PROJECT_ROOT / "data"
+DB_PATH      = DATA_DIR / "oulad.db"
 
 RAW_FILES = {
     "courses":              DATA_DIR / "courses.csv",
@@ -15,7 +17,7 @@ RAW_FILES = {
 
 # --- Target ---
 TARGET_COL = "final_result"
-CLASSES = ["Distinction", "Pass", "Fail", "Withdrawn"]
+CLASSES = ["Pass", "Fail", "Withdrawn"] 
 AT_RISK_CLASSES = ["Fail", "Withdrawn"]
 
 # --- Temporal snapshots (days from course start) ---

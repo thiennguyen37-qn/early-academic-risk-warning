@@ -7,9 +7,6 @@ __pycache__/
 # Jupyter
 .ipynb_checkpoints/
 
-# Data - raw CSV files (too large for GitHub, download from OULAD website)
-data/raw/
-
 # Data - derived files (large, reproducible)
 data/*.parquet
 data/oulad.db

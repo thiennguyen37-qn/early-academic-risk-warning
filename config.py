@@ -3,16 +3,17 @@ from pathlib import Path
 # --- Paths ---
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_DIR     = PROJECT_ROOT / "data"
+RAW_DIR      = DATA_DIR / "raw"
 DB_PATH      = DATA_DIR / "oulad.db"
 
 RAW_FILES = {
-    "courses":              DATA_DIR / "courses.csv",
-    "assessments":          DATA_DIR / "assessments.csv",
-    "vle":                  DATA_DIR / "vle.csv",
-    "student_info":         DATA_DIR / "studentInfo.csv",
-    "student_registration": DATA_DIR / "studentRegistration.csv",
-    "student_assessment":   DATA_DIR / "studentAssessment.csv",
-    "student_vle":          DATA_DIR / "studentVle.csv",
+    "courses":              RAW_DIR / "courses.csv",
+    "assessments":          RAW_DIR / "assessments.csv",
+    "vle":                  RAW_DIR / "vle.csv",
+    "student_info":         RAW_DIR / "studentInfo.csv",
+    "student_registration": RAW_DIR / "studentRegistration.csv",
+    "student_assessment":   RAW_DIR / "studentAssessment.csv",
+    "student_vle":          RAW_DIR / "studentVle.csv",
 }
 
 # --- Target ---

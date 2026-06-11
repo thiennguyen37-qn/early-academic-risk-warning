@@ -9,7 +9,6 @@ from config import SNAPSHOTS, STATIC_FEATURES
 
 def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
     # --- Load tables ---
-    assessment   = pd.read_sql("SELECT * FROM assessments", conn)
     student_info = pd.read_sql("SELECT * FROM studentInfo WHERE code_module != 'GGG'", conn)
     student_regs = pd.read_sql("SELECT * FROM studentRegistration", conn)
 
@@ -43,6 +42,7 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
         FROM studentAssessment sa
         JOIN assessments a ON sa.id_assessment = a.id_assessment
         WHERE sa.is_banked = 0
+          AND sa.score != '?'
     """, conn)
 
     student_assessment_joined['deadline'] = pd.to_numeric(
@@ -83,16 +83,6 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
         )
         vle_feat['avg_weekly_clicks'] = vle_feat['total_clicks'] / vle_feat['active_weeks']
 
-        # Số bài đến hạn tính đến T (theo lịch module)
-        assessment_copy = assessment.copy()
-        assessment_copy['date_num'] = pd.to_numeric(assessment_copy['date'], errors='coerce')
-        num_due_per_module = (
-            assessment_copy[assessment_copy['date_num'] <= T]
-            .groupby(['code_module', 'code_presentation'])
-            .agg(num_due=('id_assessment', 'count'))
-            .reset_index()
-        )
-
         # Assessment features — chỉ bài có deadline <= T và đã nộp trước T
         submitted_in_window = student_assessment_joined[
             (student_assessment_joined['deadline'] <= T) &
@@ -117,10 +107,8 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
         assess_feat['avg_days_early'] = assess_feat['avg_days_early'].round(2)
         assess_feat.drop(columns=['total_w_score', 'total_weight'], inplace=True)
 
-        assess_feat = assess_feat.merge(
-            num_due_per_module, on=['code_module', 'code_presentation'], how='left'
-        )
-        assess_feat['submission_rate'] = assess_feat['num_submitted'] / assess_feat['num_due']
+        # num_due và submission_rate được tính trong fill_in_assessment (notebook),
+        # nơi xử lý đúng cả sinh viên không nộp bài nào
 
         # Static features + label
         static = student_info[

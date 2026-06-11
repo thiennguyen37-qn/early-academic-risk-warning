@@ -10,7 +10,7 @@ from config import SNAPSHOTS, STATIC_FEATURES
 def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
     # --- Load tables ---
     assessment   = pd.read_sql("SELECT * FROM assessments", conn)
-    student_info = pd.read_sql("SELECT * FROM studentInfo", conn)
+    student_info = pd.read_sql("SELECT * FROM studentInfo WHERE code_module != 'GGG'", conn)
     student_regs = pd.read_sql("SELECT * FROM studentRegistration", conn)
 
     student_regs['date_unregistration'] = pd.to_numeric(
@@ -42,6 +42,7 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
             a.weight
         FROM studentAssessment sa
         JOIN assessments a ON sa.id_assessment = a.id_assessment
+        WHERE sa.is_banked = 0
     """, conn)
 
     student_assessment_joined['deadline'] = pd.to_numeric(

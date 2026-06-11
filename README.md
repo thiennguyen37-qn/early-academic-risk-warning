@@ -11,12 +11,11 @@ Project này sử dụng bộ dữ liệu **OULAD (Open University Learning Anal
 
 ## Problem Definition
 
-Bài toán được xây dựng dưới dạng **phân loại 4 nhãn**, trong đó biến mục tiêu là `final_result` ∈ {Distinction, Pass, Fail, Withdrawn}.
+Bài toán được xây dựng dưới dạng **phân loại 3 nhãn**, trong đó biến mục tiêu là `final_result` ∈ {Pass, Fail, Withdrawn}. Nhãn gốc Distinction (hoàn thành xuất sắc) được gộp vào Pass, vì cả hai đều thuộc nhóm hoàn thành khoá học và không cần can thiệp.
 
 | Nhãn | Ý nghĩa |
 |------|---------|
-| Distinction | Hoàn thành khoá học với kết quả xuất sắc |
-| Pass | Hoàn thành khoá học với kết quả đạt yêu cầu |
+| Pass | Hoàn thành khoá học đạt yêu cầu (bao gồm cả Distinction) |
 | Fail | Hoàn thành khoá học nhưng không đạt |
 | Withdrawn | Bỏ học giữa chừng |
 
@@ -28,7 +27,7 @@ Dự đoán được thực hiện tại **8 mốc thời gian**: ngày **30, 60
 
 ## Research Gap
 
-Các nghiên cứu hiện có trên OULAD chủ yếu giải quyết bài toán **phân loại nhị phân** (bỏ học / không bỏ học, đậu / trượt), ít nghiên cứu giữ nguyên cấu trúc 4 nhãn đầy đủ. Dự đoán theo thời gian tại nhiều mốc kiểm tra vẫn chưa được khai thác triệt để. Ngoài ra, việc áp dụng **XAI (Explainable AI)** để làm cho kết quả dự đoán có thể giải thích được vẫn còn rất hạn chế. 
+Các nghiên cứu hiện có trên OULAD chủ yếu giải quyết bài toán **phân loại nhị phân** (bỏ học / không bỏ học, đậu / trượt), ít nghiên cứu phân biệt hai nhóm rủi ro **Fail** và **Withdrawn** — vốn có cơ chế khác nhau và đòi hỏi biện pháp can thiệp khác nhau. Dự đoán theo thời gian tại nhiều mốc kiểm tra vẫn chưa được khai thác triệt để. Ngoài ra, việc áp dụng **XAI (Explainable AI)** để làm cho kết quả dự đoán có thể giải thích được vẫn còn rất hạn chế. 
 
 ---
 
@@ -37,14 +36,14 @@ Các nghiên cứu hiện có trên OULAD chủ yếu giải quyết bài toán 
 Dự án xây dựng một pipeline dự đoán theo thời gian, có khả năng giải thích, bao gồm:
 
 1. **Feature Engineering theo thời gian**: xây dựng feature tại mỗi mốc từ cả ba nhóm — nhân khẩu học, hành vi tương tác VLE tích luỹ, và hành vi nộp bài kiểm tra
-2. **Mô hình phân loại 4 nhãn**: tối ưu hoá recall cho nhãn Fail và Withdrawn, kết hợp xử lý mất cân bằng nhãn (class imbalance)
+2. **Mô hình phân loại 3 nhãn**: tối ưu hoá recall cho nhãn Fail và Withdrawn, kết hợp xử lý mất cân bằng nhãn (class imbalance)
 3. **Giải thích kết quả (XAI)**: cung cấp lý do dự đoán theo từng sinh viên, phù hợp để cố vấn học tập hành động
 
 ---
 
 ## Objectives
 
-- Dự đoán kết quả học tập theo 4 nhãn tại 8 mốc ngày 30, 60, 90, 120, 150, 180, 210, 240
+- Dự đoán kết quả học tập theo 3 nhãn (Pass / Fail / Withdrawn) tại 8 mốc ngày 30, 60, 90, 120, 150, 180, 210, 240
 - Đạt recall cao cho nhãn Fail và Withdrawn tại mỗi mốc thời gian
 - Cung cấp kết quả dự đoán có thể giải thích được, phù hợp với nhu cầu của cố vấn học tập
 

@@ -128,3 +128,46 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
         frames.append(df_T)
 
     return pd.concat(frames, ignore_index=True)
+
+
+def fill_in_weekly_clicks(df):
+    df = df.copy()
+    df[['total_clicks', 'active_weeks', 'avg_weekly_clicks']] = (
+        df[['total_clicks', 'active_weeks', 'avg_weekly_clicks']].fillna(0)
+    )
+    return df
+
+
+def fill_in_assessment(df, assessment):
+    df = df.copy()
+
+    assessment_copy = assessment.copy()
+    assessment_copy['date_num'] = pd.to_numeric(assessment_copy['date'], errors='coerce')
+
+    num_due_frames = []
+    for T in df['prediction_point'].unique():
+        tmp = (
+            assessment_copy[assessment_copy['date_num'] <= T]
+            .groupby(['code_module', 'code_presentation'])
+            .agg(num_due_true=('id_assessment', 'count'))
+            .reset_index()
+        )
+        tmp['prediction_point'] = T
+        num_due_frames.append(tmp)
+    num_due_all = pd.concat(num_due_frames, ignore_index=True)
+
+    df = df.merge(num_due_all, on=['code_module', 'code_presentation', 'prediction_point'], how='left')
+    df['num_due'] = df['num_due_true'].fillna(0).astype(int)
+    df.drop(columns='num_due_true', inplace=True)
+
+    df[['num_submitted', 'num_failed']] = (
+        df[['num_submitted', 'num_failed']].fillna(0).astype(int)
+    )
+
+    df['submission_rate'] = df['num_submitted'] / df['num_due'].where(df['num_due'] > 0)
+
+    df['no_submission_despite_due'] = (
+        (df['num_due'] > 0) & (df['num_submitted'] == 0)
+    ).astype(int)
+
+    return df

@@ -10,16 +10,21 @@ DB_PATH      = DATA_DIR / "oulad.db"
 SNAPSHOTS = [30, 60, 90, 120, 150, 180, 210, 240]
 
 # --- Features ---
-STATIC_FEATURES = [
+DEMOGRAPHIC_COLS = [
     "gender",
     "region",
     "age_band",
     "imd_band",
     "highest_education",
-    "num_of_prev_attempts",
-    "studied_credits",
     "disability",
 ]
+
+BEHAVIORAL_STATIC_COLS = [
+    "num_of_prev_attempts",
+    "studied_credits",
+]
+
+STATIC_FEATURES = DEMOGRAPHIC_COLS + BEHAVIORAL_STATIC_COLS
 
 # --- Reproducibility ---
 RANDOM_SEED = 42

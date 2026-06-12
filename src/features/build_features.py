@@ -8,6 +8,37 @@ from config import SNAPSHOTS, STATIC_FEATURES
 
 
 def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
+    """Xây dựng dataset cho bài toán dự báo rủi ro học tập sớm.
+
+    Với mỗi mốc thời gian T trong [30, 60, 90, 120, 150, 180, 210, 240] ngày,
+    hàm tạo một snapshot thể hiện trạng thái của từng sinh viên tại thời điểm đó.
+
+    Trước khi vào vòng lặp:
+        - Join studentAssessment với assessments để lấy deadline, weight, loại bài thi.
+        - Tính các cột phái sinh:
+            - days_early: số ngày nộp sớm (âm = nộp trễ).
+            - is_failed: 1 nếu điểm < 40, ngược lại 0.
+            - weighted_score: điểm có trọng số = score × weight / 100.
+            - Chuyển date_unregistration sang số để so sánh với T.
+
+    Trong mỗi vòng lặp tại T:
+        - Lọc sinh viên còn active: loại những sinh viên đã rút khỏi khoá trước ngày T.
+        - VLE features (chỉ lấy dữ liệu đến tuần T // 7):
+            - total_clicks: tổng số click tích luỹ đến T.
+            - active_weeks: số tuần có tương tác.
+            - avg_weekly_clicks: click trung bình mỗi tuần.
+        - Assessment features (chỉ lấy bài có deadline <= T và đã nộp trước T):
+            - num_submitted: số bài đã nộp.
+            - avg_score: điểm trung bình có trọng số.
+            - avg_days_early: độ trễ/sớm nộp bài trung bình.
+            - num_failed: số bài bị trượt (< 40 điểm).
+            - num_due và submission_rate được tính trong fill_in_assessment().
+        - Static features: thông tin cá nhân sinh viên và nhãn final_result.
+        - Merge tất cả lại, gắn prediction_point = T.
+
+    Returns:
+        DataFrame gồm 8 snapshot ghép lại — mỗi sinh viên xuất hiện tối đa 8 lần.
+    """
     # --- Load tables ---
     student_info = pd.read_sql("SELECT * FROM studentInfo WHERE code_module != 'GGG'", conn)
     student_regs = pd.read_sql("SELECT * FROM studentRegistration", conn)

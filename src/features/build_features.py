@@ -228,19 +228,31 @@ def fit_imd_distributions(train_df):
     return distributions
 
 
-def apply_imd_imputation(df, distributions, rng):
+def transform_imd_imputation(df, distributions, rng):
     df = df.copy()
+    student_key = ['id_student', 'code_module', 'code_presentation']
+
+    # imd_band là static feature — impute 1 lần per student rồi broadcast về tất cả rows.
+    # Không deduplicate thì cùng student nhận giá trị khác nhau ở mỗi snapshot.
+    students = df[student_key + ['region', 'imd_band']].drop_duplicates(subset=student_key).copy()
+
     for region, dist in distributions.items():
         if region == '__overall__':
             continue
-        mask = (df['region'] == region) & (df['imd_band'] == '?')
-        n = mask.sum()
-        if n > 0:
-            df.loc[mask, 'imd_band'] = rng.choice(dist.index, size=n, p=dist.values)
-    still_missing = df['imd_band'] == '?'
+        mask = (students['region'] == region) & (students['imd_band'] == '?')
+        if mask.sum() > 0:
+            students.loc[mask, 'imd_band'] = rng.choice(dist.index, size=mask.sum(), p=dist.values)
+
+    still_missing = students['imd_band'] == '?'
     if still_missing.any():
         overall = distributions['__overall__']
-        df.loc[still_missing, 'imd_band'] = rng.choice(
+        students.loc[still_missing, 'imd_band'] = rng.choice(
             overall.index, size=still_missing.sum(), p=overall.values
         )
+
+    # Merge imputed values về df gốc (rename tránh conflict với cột imd_band hiện có)
+    imputed = students[student_key + ['imd_band']].rename(columns={'imd_band': '_imd_imputed'})
+    df = df.merge(imputed, on=student_key, how='left')
+    df['imd_band'] = df['_imd_imputed']
+    df.drop(columns='_imd_imputed', inplace=True)
     return df

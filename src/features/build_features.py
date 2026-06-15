@@ -7,6 +7,24 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from config import SNAPSHOTS, STATIC_FEATURES
 
 
+# --- Encoding maps (dùng chung cho preprocessing pipeline) ---
+DISAB_MAP = {'Y': 1, 'N': 0}
+
+EDU_ORDER = {
+    'No Formal quals':             0,
+    'Lower Than A Level':          1,
+    'A Level or Equivalent':       2,
+    'HE Qualification':            3,
+    'Post Graduate Qualification': 4,
+}
+
+# '10-20' (không có %) là cách ghi gốc trong OULAD
+IMD_ORDER = {
+    '0-10%': 0, '10-20': 1, '20-30%': 2, '30-40%': 3, '40-50%': 4,
+    '50-60%': 5, '60-70%': 6, '70-80%': 7, '80-90%': 8, '90-100%': 9,
+}
+
+
 def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
     """Xây dựng dataset cho bài toán dự báo rủi ro học tập sớm.
 
@@ -138,9 +156,6 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
         assess_feat['avg_days_early'] = assess_feat['avg_days_early'].round(2)
         assess_feat.drop(columns=['total_w_score', 'total_weight'], inplace=True)
 
-        # num_due và submission_rate được tính trong fill_in_assessment (notebook),
-        # nơi xử lý đúng cả sinh viên không nộp bài nào
-
         # Static features + label
         static = student_info[
             ['id_student', 'code_module', 'code_presentation'] + STATIC_FEATURES + ['final_result']
@@ -201,4 +216,31 @@ def fill_in_assessment(df, assessment):
         (df['num_due'] > 0) & (df['num_submitted'] == 0)
     ).astype(int)
 
+    return df
+
+
+def fit_imd_distributions(train_df):
+    distributions = {}
+    non_missing = train_df[train_df['imd_band'] != '?']
+    for region, group in non_missing.groupby('region'):
+        distributions[region] = group['imd_band'].value_counts(normalize=True)
+    distributions['__overall__'] = non_missing['imd_band'].value_counts(normalize=True)
+    return distributions
+
+
+def apply_imd_imputation(df, distributions, rng):
+    df = df.copy()
+    for region, dist in distributions.items():
+        if region == '__overall__':
+            continue
+        mask = (df['region'] == region) & (df['imd_band'] == '?')
+        n = mask.sum()
+        if n > 0:
+            df.loc[mask, 'imd_band'] = rng.choice(dist.index, size=n, p=dist.values)
+    still_missing = df['imd_band'] == '?'
+    if still_missing.any():
+        overall = distributions['__overall__']
+        df.loc[still_missing, 'imd_band'] = rng.choice(
+            overall.index, size=still_missing.sum(), p=overall.values
+        )
     return df

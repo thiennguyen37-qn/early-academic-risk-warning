@@ -50,7 +50,7 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
             - avg_score: điểm trung bình có trọng số.
             - avg_days_early: độ trễ/sớm nộp bài trung bình.
             - num_failed: số bài bị trượt (< 40 điểm).
-            - num_due và submission_rate được tính trong fill_in_assessment().
+            - num_due được tính trong fill_in_assessment().
         - Static features: thông tin cá nhân sinh viên và nhãn final_result.
         - Merge tất cả lại, gắn prediction_point = T.
 
@@ -178,9 +178,9 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
 
 def fill_in_weekly_clicks(df):
     df = df.copy()
-    df[['total_clicks', 'active_weeks', 'avg_weekly_clicks']] = (
-        df[['total_clicks', 'active_weeks', 'avg_weekly_clicks']].fillna(0)
-    )
+    df['total_clicks_filled']      = df['total_clicks'].fillna(0)
+    df['active_weeks_filled']      = df['active_weeks'].fillna(0)
+    df['avg_weekly_clicks_filled'] = df['avg_weekly_clicks'].fillna(0)
     return df
 
 
@@ -206,14 +206,11 @@ def fill_in_assessment(df, assessment):
     df['num_due'] = df['num_due_true'].fillna(0).astype(int)
     df.drop(columns='num_due_true', inplace=True)
 
-    df[['num_submitted', 'num_failed']] = (
-        df[['num_submitted', 'num_failed']].fillna(0).astype(int)
-    )
-
-    df['submission_rate'] = df['num_submitted'] / df['num_due'].where(df['num_due'] > 0)
+    df['num_submitted_filled'] = df['num_submitted'].fillna(0).astype(int)
+    df['num_failed_filled']    = df['num_failed'].fillna(0).astype(int)
 
     df['no_submission_despite_due'] = (
-        (df['num_due'] > 0) & (df['num_submitted'] == 0)
+        (df['num_due'] > 0) & (df['num_submitted_filled'] == 0)
     ).astype(int)
 
     return df
@@ -235,24 +232,22 @@ def transform_imd_imputation(df, distributions, rng):
     # imd_band là static feature — impute 1 lần per student rồi broadcast về tất cả rows.
     # Không deduplicate thì cùng student nhận giá trị khác nhau ở mỗi snapshot.
     students = df[student_key + ['region', 'imd_band']].drop_duplicates(subset=student_key).copy()
+    students['imd_band_filled'] = students['imd_band']
 
     for region, dist in distributions.items():
         if region == '__overall__':
             continue
-        mask = (students['region'] == region) & (students['imd_band'] == '?')
+        mask = (students['region'] == region) & (students['imd_band_filled'] == '?')
         if mask.sum() > 0:
-            students.loc[mask, 'imd_band'] = rng.choice(dist.index, size=mask.sum(), p=dist.values)
+            students.loc[mask, 'imd_band_filled'] = rng.choice(dist.index, size=mask.sum(), p=dist.values)
 
-    still_missing = students['imd_band'] == '?'
+    still_missing = students['imd_band_filled'] == '?'
     if still_missing.any():
         overall = distributions['__overall__']
-        students.loc[still_missing, 'imd_band'] = rng.choice(
+        students.loc[still_missing, 'imd_band_filled'] = rng.choice(
             overall.index, size=still_missing.sum(), p=overall.values
         )
 
-    # Merge imputed values về df gốc (rename tránh conflict với cột imd_band hiện có)
-    imputed = students[student_key + ['imd_band']].rename(columns={'imd_band': '_imd_imputed'})
+    imputed = students[student_key + ['imd_band_filled']]
     df = df.merge(imputed, on=student_key, how='left')
-    df['imd_band'] = df['_imd_imputed']
-    df.drop(columns='_imd_imputed', inplace=True)
     return df

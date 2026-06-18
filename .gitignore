@@ -15,6 +15,7 @@ data/processed/
 # ML artifacts
 models/
 outputs/
+catboost_info/
 
 # OS
 .DS_Store

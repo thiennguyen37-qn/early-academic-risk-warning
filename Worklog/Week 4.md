@@ -129,7 +129,7 @@ Xây dựng baseline tối giản làm mốc so sánh (`baseline.ipynb`):
 
 ---
 
-### 8. `aggregate_data` — So sánh tập trung tại 3 mốc (90 / 180 / 240)
+### 8. `modeling_snapshots_roc` — So sánh tập trung tại 3 mốc (90 / 180 / 240)
 
 Notebook chạy lại cả pipeline 3-class lẫn binary nhưng **chỉ trên 3 mốc** (giảm thời gian, đủ đại diện early/mid/late), bổ sung phân tích **ROC-AUC**:
 

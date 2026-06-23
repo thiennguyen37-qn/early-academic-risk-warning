@@ -60,3 +60,97 @@ Dự án xây dựng một pipeline dự đoán theo thời gian, có khả năn
 | `assessments.csv` | Thông tin các bài kiểm tra | ~8 KB |
 | `vle.csv` | Danh sách tài nguyên học tập VLE | ~264 KB |
 | `courses.csv` | Thông tin các khoá học | ~526 B |
+
+---
+
+## Project Structure
+
+```
+early-academic-risk-warning/
+├── config.py                       # Hằng số tập trung: paths, snapshots, features, seed
+├── requirements.txt
+├── data/
+│   ├── raw/                        # 7 file CSV gốc của OULAD (không commit)
+│   ├── oulad.db                    # SQLite sinh từ raw (không commit)
+│   └── processed/                  # train/test + X/y parquet (không commit, sinh lại được)
+├── src/
+│   ├── database/setup_database.py  # Nạp 7 CSV vào SQLite
+│   ├── features/build_features.py  # Snapshot dataset + hàm fill-in / imputation
+│   └── models/train_best_model.py  # Train & lưu model tốt nhất (LightGBM @ T=180)
+├── notebooks/
+│   ├── EDA.ipynb                       # EDA + dựng temporal dataset → train/test.parquet
+│   ├── preprocessing.ipynb             # Imputation + encoding → X/y parquet (15 features)
+│   ├── baseline.ipynb                  # Baseline HistGB 3-class (8 mốc)
+│   ├── modeling.ipynb                  # 3-class: SMOTE + Optuna (F2 At-risk, 8 mốc)
+│   ├── modeling_2label.ipynb           # Binary At-risk: SMOTE + Optuna (F1, 8 mốc)
+│   ├── modeling_snapshots_roc.ipynb    # 3-class + binary tại 3 mốc + ROC-AUC
+│   └── testing_other_models_2_label.ipynb  # So sánh 4 thuật toán + SHAP (@ T=180)
+├── models/                         # Artifact đã train (không commit, sinh lại được)
+├── docs/                           # Data Overview + papers tham khảo
+└── worklog/                        # Nhật ký công việc theo tuần
+```
+
+---
+
+## How to Run
+
+**1. Cài đặt môi trường**
+
+```bash
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+**2. Chuẩn bị dữ liệu** — đặt 7 file CSV của OULAD vào `data/raw/`, rồi nạp vào SQLite:
+
+```bash
+python -m src.database.setup_database
+```
+
+**3. Chạy pipeline** (theo thứ tự, mỗi notebook sinh đầu vào cho bước sau):
+
+| Bước | Notebook | Đầu ra |
+|------|----------|--------|
+| 1 | `notebooks/EDA.ipynb` | `data/processed/train.parquet`, `test.parquet` |
+| 2 | `notebooks/preprocessing.ipynb` | `X_train`, `X_test`, `y_train`, `y_test`, `*_meta` parquet |
+| 3 | `notebooks/baseline.ipynb` | Baseline 3-class để đối chiếu |
+| 4 | `notebooks/modeling.ipynb` / `modeling_2label.ipynb` | Model 3-class / binary (8 mốc) |
+| 5 | `notebooks/modeling_snapshots_roc.ipynb` | So sánh 3 mốc + ROC-AUC |
+| 6 | `notebooks/testing_other_models_2_label.ipynb` | So sánh 4 thuật toán + SHAP |
+
+**4. (Tuỳ chọn) Train & lưu model tốt nhất** ra `models/best_lgbm_t180.joblib`:
+
+```bash
+python -m src.models.train_best_model
+```
+
+> Các file trong `data/` và `models/` đều bị gitignore vì **sinh lại được** từ pipeline trên (deterministic theo `RANDOM_SEED`).
+
+---
+
+## Results
+
+### Feature Engineering
+
+Feature matrix cuối cùng gồm **15 đặc trưng, 0 missing**, tại mỗi mốc thời gian — kết hợp nhân khẩu học, hành vi tương tác VLE tích luỹ, và hành vi nộp bài. Giá trị `imd_band = '?'` được kiểm định là **MAR** (liên quan mạnh nhất tới `region`, Cramér's V = 0.58) nên được impute theo phân phối từng region, kèm indicator `imd_missing`.
+
+### Hiệu năng mô hình
+
+So sánh 4 thuật toán cho bài toán **binary At-risk (Pass vs Fail+Withdrawn) tại T=180**, mỗi model fine-tune bằng Optuna (SMOTE + class_weight, tối ưu F1 At-risk):
+
+| Model | Accuracy | Precision | Recall | F1 At-risk | ROC-AUC |
+|-------|----------|-----------|--------|------------|---------|
+| **LightGBM** | 0.8686 | 0.8076 | 0.7973 | **0.8024** | 0.9292 |
+| CatBoost | 0.8728 | 0.8464 | 0.7576 | 0.7996 | 0.9304 |
+| Random Forest | 0.8681 | 0.8251 | 0.7690 | 0.7960 | 0.9248 |
+| Logistic Regression | 0.8451 | 0.7533 | 0.7987 | 0.7754 | 0.9163 |
+
+→ **LightGBM** cho F1 At-risk tốt nhất (0.8024); được lưu thành artifact qua `src/models/train_best_model.py`.
+
+### Nhận định chính
+
+- **Đặc trưng hành vi trong khoá áp đảo**: số bài đã nộp, số tuần hoạt động, điểm trung bình, số bài đến hạn và cờ "có bài đến hạn nhưng không nộp" là các yếu tố dự báo rủi ro mạnh nhất — vượt xa nhóm nhân khẩu học tĩnh.
+- **Tín hiệu rõ dần theo thời gian**: ROC-AUC tăng từ mốc T=90 → T=240; tuy nhiên **T=90 có giá trị thực tiễn cao nhất** cho can thiệp sớm khi vẫn còn đủ thời gian hỗ trợ sinh viên.
+- **Fail và Withdrawn có cơ chế rủi ro khác nhau** (Fail: khó khăn học thuật tích luỹ; Withdrawn: quá tải khối lượng + rào cản cá nhân) — củng cố lý do tách 3 nhãn thay vì chỉ nhị phân.
+- **Giải thích được (XAI)**: SHAP cung cấp lý do dự đoán ở cả mức tổng thể (beeswarm) lẫn từng sinh viên (waterfall), phù hợp để cố vấn học tập hành động.

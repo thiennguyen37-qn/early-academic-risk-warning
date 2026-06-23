@@ -12,9 +12,9 @@ data/*.parquet
 data/oulad.db
 data/processed/
 
-# ML artifacts
-models/
-outputs/
+# ML artifacts (top-level only; src/models/ holds source code and is tracked)
+/models/
+/outputs/
 catboost_info/
 
 # OS

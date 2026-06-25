@@ -126,29 +126,3 @@ python -m src.models.train_best_model
 ```
 
 ---
-
-## Results
-
-### Feature Engineering
-
-Feature matrix cuối cùng gồm **15 đặc trưng, 0 missing**, tại mỗi mốc thời gian — kết hợp nhân khẩu học, hành vi tương tác VLE tích luỹ, và hành vi nộp bài. Giá trị `imd_band = '?'` được kiểm định là **MAR** (liên quan mạnh nhất tới `region`, Cramér's V = 0.58) nên được impute theo phân phối từng region, kèm indicator `imd_missing`.
-
-### Hiệu năng mô hình
-
-So sánh 4 thuật toán cho bài toán **binary At-risk (Pass vs Fail+Withdrawn) tại T=180**, mỗi model fine-tune bằng Optuna (SMOTE + class_weight, tối ưu F1 At-risk):
-
-| Model | Accuracy | Precision | Recall | F1 At-risk | ROC-AUC |
-|-------|----------|-----------|--------|------------|---------|
-| **LightGBM** | 0.8686 | 0.8076 | 0.7973 | **0.8024** | 0.9292 |
-| CatBoost | 0.8728 | 0.8464 | 0.7576 | 0.7996 | 0.9304 |
-| Random Forest | 0.8681 | 0.8251 | 0.7690 | 0.7960 | 0.9248 |
-| Logistic Regression | 0.8451 | 0.7533 | 0.7987 | 0.7754 | 0.9163 |
-
-→ **LightGBM** cho F1 At-risk tốt nhất (0.8024); được lưu thành artifact qua `src/models/train_best_model.py`.
-
-### Nhận định chính
-
-- **Đặc trưng hành vi trong khoá áp đảo**: số bài đã nộp, số tuần hoạt động, điểm trung bình, số bài đến hạn và cờ "có bài đến hạn nhưng không nộp" là các yếu tố dự báo rủi ro mạnh nhất — vượt xa nhóm nhân khẩu học tĩnh.
-- **Tín hiệu rõ dần theo thời gian**: ROC-AUC tăng từ mốc T=90 → T=240; tuy nhiên **T=90 có giá trị thực tiễn cao nhất** cho can thiệp sớm khi vẫn còn đủ thời gian hỗ trợ sinh viên.
-- **Fail và Withdrawn có cơ chế rủi ro khác nhau** (Fail: khó khăn học thuật tích luỹ; Withdrawn: quá tải khối lượng + rào cản cá nhân) — củng cố lý do tách 3 nhãn thay vì chỉ nhị phân.
-- **Giải thích được (XAI)**: SHAP cung cấp lý do dự đoán ở cả mức tổng thể (beeswarm) lẫn từng sinh viên (waterfall), phù hợp để cố vấn học tập hành động.

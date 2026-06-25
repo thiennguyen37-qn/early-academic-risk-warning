@@ -81,8 +81,8 @@ early-academic-risk-warning/
 │   ├── EDA.ipynb                       # EDA + dựng temporal dataset → train/test.parquet
 │   ├── preprocessing.ipynb             # Imputation + encoding → X/y parquet (15 features)
 │   ├── baseline.ipynb                  # Baseline HistGB 3-class (8 mốc)
-│   ├── modeling.ipynb                  # 3-class: SMOTE + Optuna (F2 At-risk, 8 mốc)
-│   ├── modeling_2label.ipynb           # Binary At-risk: SMOTE + Optuna (F1, 8 mốc)
+│   ├── modeling.ipynb                  # 3-class: SMOTE + Optuna 
+│   ├── modeling_2label.ipynb           # Binary At-risk: SMOTE + Optuna
 │   ├── modeling_snapshots_roc.ipynb    # 3-class + binary tại 3 mốc + ROC-AUC
 │   └── testing_other_models_2_label.ipynb  # So sánh 4 thuật toán + SHAP (@ T=180)
 ├── models/                         # Artifact đã train (không commit, sinh lại được)
@@ -124,8 +124,6 @@ python -m src.database.setup_database
 ```bash
 python -m src.models.train_best_model
 ```
-
-> Các file trong `data/` và `models/` đều bị gitignore vì **sinh lại được** từ pipeline trên (deterministic theo `RANDOM_SEED`).
 
 ---
 

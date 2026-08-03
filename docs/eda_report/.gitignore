@@ -1,0 +1,10 @@
+# File phụ LaTeX (giữ trên máy để compile một lần vẫn có mục lục, nhưng không đưa vào git)
+*.aux
+*.log
+*.toc
+*.lof
+*.lot
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz

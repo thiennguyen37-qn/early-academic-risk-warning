@@ -1,0 +1,2257 @@
+% !TEX program = xelatex
+% Biên dịch: xelatex main.tex (chạy 2 lần để cập nhật mục lục & tham chiếu)
+%
+% Báo cáo hoàn chỉnh, gộp từ ba phần đã biên soạn riêng:
+%   docs/eda_report          -> Phần I  (Phân tích khám phá dữ liệu)
+%   docs/algorithms_theory   -> Phần II (Cơ sở lý thuyết các thuật toán)
+%   docs/build_model_report  -> Phần III (Xây dựng và so sánh mô hình)
+% Hình và bảng được sao chép nguyên trạng từ ba thư mục trên; xem các
+% gen_tables.py / gen_figures.py tương ứng ở đó nếu cần tái tạo.
+\RequirePackage{fix-cm}
+\documentclass[a4paper]{article}
+
+% ---------- Cỡ chữ 13pt thật sự (lớp report chuẩn chỉ hỗ trợ 10/11/12pt,
+% nên option [13pt] bị bỏ qua; gói fontsize cho phép đặt cỡ tuỳ ý) ----------
+\usepackage[fontsize=13pt]{fontsize}
+
+% ---------- Ngôn ngữ & font (XeLaTeX) ----------
+\usepackage{fontspec}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{unicode-math}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+% Font Latin Modern (font TeX cổ điển) — giống bài mẫu, có hỗ trợ tiếng Việt
+\setmainfont{Latin Modern Roman}
+\setmathfont{Latin Modern Math}
+% LM Mono không có bản bold → ánh xạ bold về regular để tránh cảnh báo font
+\setmonofont{Latin Modern Mono}[BoldFont={Latin Modern Mono}]
+
+% ---------- Trình bày trang ----------
+\usepackage[a4paper,left=3.5cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+% Cho phép TeX nới dòng ở bước cuối để tránh text tràn lề (overfull hbox)
+\setlength{\emergencystretch}{3em}
+% Bỏ qua các cảnh báo underfull nhẹ do tiếng Việt và tên vùng dài trong danh sách.
+\hbadness=2000
+
+% ---------- Hình, bảng, biểu ----------
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{subcaption}
+\usepackage[table]{xcolor}
+
+% ---------- Sơ đồ minh hoạ ----------
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
+
+% ---------- Liên kết ----------
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+
+% \code: định danh dạng monospace; cho phép ngắt dòng ngay sau dấu gạch dưới
+% để các tên biến dài (vd. num_of_prev_attempts) không tràn ra lề.
+\newcommand{\code}[1]{{\ttfamily\def\_{\textunderscore\discretionary{}{}{}}#1}}
+\pdfstringdefDisableCommands{%
+  \def\code#1{#1}%
+  \def\_{ }%
+}
+
+\begin{document}
+
+% =====================================================================
+%  TRANG BÌA
+% =====================================================================
+\begin{titlepage}
+  \centering
+  {\large\bfseries TRƯỜNG ĐẠI HỌC QUY NHƠN\\[3pt]
+   KHOA TOÁN \& THỐNG KÊ\par}
+
+  \vspace{1.3cm}
+
+  % ----- LOGO trường -----
+  \includegraphics[width=3.5cm]{logo_qnu.png}\par
+
+  \vspace{1.4cm}
+
+  {\bfseries TIỂU LUẬN MÔN HỌC:\\[3pt]
+   PHÂN TÍCH DỮ LIỆU KHOA HỌC CHUYÊN NGÀNH\par}
+
+  \vspace{0.5cm}
+  \rule{\textwidth}{0.4pt}\\[0.55cm]
+  {\LARGE\bfseries PHÂN TÍCH DỮ LIỆU, CƠ SỞ LÝ THUYẾT\\[6pt]
+   VÀ XÂY DỰNG MÔ HÌNH HỌC MÁY\\[6pt]
+   CẢNH BÁO SỚM RỦI RO HỌC TẬP\par}
+  \vspace{0.5cm}
+  \rule{\textwidth}{0.4pt}
+
+  \vspace{2.4cm}
+
+  {\normalsize
+  \begin{tabular}{r@{\hspace{0.5em}}l}
+    \itshape Trình độ đào tạo:      & Thạc sĩ \\[5pt]
+    \itshape Học viên thực hiện:    & Nguyễn Hồ Bảo Thiên \\[5pt]
+    \itshape Mã số sinh viên:       & 8282548017 \\[5pt]
+    \itshape Lớp:                   & Khoa học dữ liệu K28B \\[5pt]
+    \itshape Giảng viên hướng dẫn:  & TS. Hồ Văn Lâm \\
+  \end{tabular}\par}
+
+  \vfill
+  {\itshape Gia Lai, 2026\par}
+\end{titlepage}
+
+% =====================================================================
+%  PHẦN ĐẦU (mục lục, danh mục hình/bảng) — đánh số La Mã
+% =====================================================================
+\pagenumbering{roman}
+\tableofcontents
+\listoffigures
+\listoftables
+\clearpage
+
+% =====================================================================
+%  NỘI DUNG CHÍNH — đánh số Ả Rập
+% =====================================================================
+\pagenumbering{arabic}
+
+\section{Giới thiệu}
+
+Báo cáo này trình bày toàn bộ quá trình nghiên cứu xây dựng hệ thống
+\textit{cảnh báo sớm rủi ro học tập} (early academic risk warning), phục vụ
+mục tiêu nhận diện sớm những sinh viên có nguy cơ \textbf{trượt môn} (Fail)
+hoặc \textbf{bỏ học} (Withdrawn) tại nhiều thời điểm trong suốt khoá học, từ đó
+giúp nhà trường can thiệp kịp thời.
+
+Dữ liệu sử dụng là bộ \textbf{Open University Learning Analytics Dataset
+(OULAD)} do The Open University (Vương quốc Anh) công bố tháng 12 năm 2015. Bộ
+dữ liệu ghi lại thông tin về các học phần, sinh viên và toàn bộ tương tác của
+họ với Môi trường học tập trực tuyến (Virtual Learning Environment -- VLE) trên
+bảy học phần được lựa chọn.
+
+Toàn bộ nghiên cứu được tổ chức thành ba phần kế tiếp nhau:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Phân tích khám phá dữ liệu (EDA)}: tìm hiểu cấu trúc, quy mô và
+        chất lượng của bộ dữ liệu OULAD; xây dựng tập dữ liệu dạng
+        \textit{panel} (snapshot theo nhiều mốc thời gian) phù hợp với bài
+        toán dự báo sớm; khám phá mối quan hệ giữa các đặc trưng nhân khẩu
+        học, hành vi học tập và kết quả cuối khoá; từ đó rút ra định hướng cho
+        việc lựa chọn thuật toán.
+  \item \textbf{Cơ sở lý thuyết}: trình bày nguyên lý hoạt động, công thức
+        toán học cốt lõi và phân tích ưu điểm --- hạn chế của bốn thuật toán
+        học máy được đề xuất ở Phần I --- Logistic Regression, Random Forest,
+        CatBoost và LightGBM.
+  \item \textbf{Xây dựng và so sánh mô hình}: tiền xử lý dữ liệu, khảo sát sơ
+        bộ hiệu suất theo thời gian, huấn luyện và tinh chỉnh bốn thuật toán
+        kết hợp kỹ thuật xử lý mất cân bằng nhãn, so sánh hiệu suất, đánh giá
+        độ ổn định khi rút gọn đặc trưng, và diễn giải mô hình bằng SHAP.
+\end{enumerate}
+
+% =====================================================================
+%  PHẦN I — PHÂN TÍCH KHÁM PHÁ DỮ LIỆU
+% =====================================================================
+\part{Phân tích khám phá dữ liệu (EDA)}
+
+\section{Tổng quan bộ dữ liệu OULAD}
+
+Bộ dữ liệu OULAD được tổ chức thành bảy bảng dữ liệu liên kết với nhau qua các
+định danh duy nhất, bao gồm các nhóm thông tin: bài đánh giá, học phần, thông tin
+sinh viên, đăng ký học, kết quả bài đánh giá và nhật ký tương tác của sinh viên
+với hệ thống học trực tuyến (VLE). Sơ đồ quan hệ giữa các bảng được minh hoạ ở
+Hình~\ref{fig:erd}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth]{oulad_erd.jpg}
+  \caption{Sơ đồ quan hệ thực thể (ERD) của bộ dữ liệu OULAD.}
+  \label{fig:erd}
+\end{figure}
+
+Quy mô tổng thể của bộ dữ liệu được tóm tắt trong Bảng~\ref{tab:overview}.
+
+\begin{table}[H]
+  \centering
+  \caption{Thống kê tổng quan bộ dữ liệu OULAD.}
+  \label{tab:overview}
+  \begin{tabular}{lr}
+    \toprule
+    \textbf{Thực thể} & \textbf{Số lượng} \\
+    \midrule
+    Sinh viên tham gia khóa học & 32{,}953 \\
+    Đợt mở học phần             & 22 \\
+    Trang/tài nguyên VLE        & 6{,}364 \\
+    Nhật ký tương tác VLE       & 10{,}655{,}280 \\
+    Bản ghi đăng ký học         & 32{,}953 \\
+    Bài đánh giá                & 206 \\
+    Bản ghi kết quả đánh giá    & 173{,}912 \\
+    \textbf{Tổng số thuộc tính} & \textbf{43} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Mỗi đợt mở học phần được định danh bằng mã \code{code\_presentation} gồm
+\textbf{năm khai giảng} kèm \textbf{một chữ cái chỉ tháng khai giảng}. Chữ cái
+này mã hoá tháng theo \textbf{vị trí của nó trong bảng chữ cái}: A là chữ thứ 1
+ứng với tháng 1, B là chữ thứ 2 ứng với tháng 2, \ldots, J là chữ thứ 10 ứng với
+tháng 10. Trong bộ dữ liệu chỉ xuất hiện hai giá trị: \code{B} (\textbf{tháng 2})
+và \code{J} (\textbf{tháng 10}). Ví dụ, mã \code{2013J} là đợt khai giảng tháng
+10 năm 2013, còn \code{2014B} là đợt khai giảng tháng 2 năm 2014. Mọi mốc thời gian trong dữ liệu
+(ngày nộp bài, ngày đăng ký, ngày tương tác VLE\ldots) đều được tính tương đối so
+với ngày bắt đầu khoá học (ngày 0), cho phép so sánh nhất quán giữa các đợt học
+khác nhau.
+
+\section{Phân tích dữ liệu đánh giá (Assessment)}
+
+\subsection{Cấu trúc chung}
+
+Dữ liệu đánh giá được ghép với thông tin học phần để bổ sung độ dài của từng
+đợt học. Sau khi làm sạch, dữ liệu có các đặc điểm sau:
+
+\begin{itemize}[leftmargin=*]
+  \item Bộ dữ liệu gồm \textbf{7 học phần}: AAA, BBB, CCC, DDD, EEE, FFF và GGG.
+        Trong đó FFF có nhiều bài đánh giá nhất với 52 bài.
+  \item Có \textbf{4 đợt mở học phần}: 2013B, 2013J, 2014B và 2014J.
+  \item Có \textbf{3 loại bài đánh giá}, trong đó TMA chiếm nhiều nhất với
+        106/206 bài ($\approx 51\%$):
+    \begin{itemize}
+      \item \textbf{TMA} (\textit{Tutor Marked Assessment}) --- bài đánh giá do
+            giảng viên hoặc trợ giảng chấm thủ công, thường là bài tập tự luận
+            nộp theo từng mốc trong khoá học.
+      \item \textbf{CMA} (\textit{Computer Marked Assessment}) --- bài đánh giá
+            được hệ thống chấm tự động bằng máy tính, thường ở dạng trắc nghiệm.
+      \item \textbf{Exam} (\textit{bài thi cuối kỳ}) --- bài thi tổng kết, quyết
+            định phần lớn hoặc toàn bộ kết quả học phần.
+    \end{itemize}
+  \item Toàn bộ 206 bài đánh giá đều có mã định danh duy nhất ---
+        \textbf{không có bài đánh giá nào bị trùng lặp}.
+\end{itemize}
+
+Bảng~\ref{tab:desc_assessment} tóm tắt thống kê mô tả các biến phân loại của dữ
+liệu đánh giá.
+
+\input{table_desc_assessment}
+
+Phân phối số bài đánh giá theo học phần và tỷ lệ các loại bài đánh giá lần lượt
+được thể hiện ở Hình~\ref{fig:module_dist} và Hình~\ref{fig:assess_type}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{module_dist.png}
+  \caption{Phân phối số bài đánh giá theo học phần (code module).}
+  \label{fig:module_dist}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{assessment_type_pie.png}
+  \caption{Tỷ lệ các loại bài đánh giá (TMA, CMA, Exam).}
+  \label{fig:assess_type}
+\end{figure}
+
+\subsection{Phân tích trọng số và phát hiện bất thường}
+
+Tổng trọng số (\code{weight}) của các bài đánh giá được tính theo từng cặp
+(học phần, đợt học), qua đó ghi nhận một số điểm đáng chú ý:
+
+\begin{itemize}[leftmargin=*]
+  \item Phần lớn học phần (AAA, BBB, DDD, EEE, FFF) có tổng trọng số $= 200$
+        theo quy ước chung: 100\% cho nhóm bài TMA/CMA và 100\% cho bài thi
+        cuối kỳ. Ngoài ra, không phải học phần nào cũng được mở đủ cả 4 đợt ---
+        ví dụ AAA chỉ có 2013J và 2014J.
+  \item \textbf{GGG có tổng trọng số $= 100$:} tất cả bài TMA và CMA của GGG đều
+        có \code{weight} $= 0$, chỉ bài Exam mới có \code{weight} $= 100$. Nói
+        cách khác, kết quả học phần GGG phụ thuộc \textbf{hoàn toàn} vào bài thi
+        cuối kỳ.
+  \item \textbf{CCC có tổng trọng số $= 300$:} học phần CCC có 2 bài Exam trong
+        mỗi đợt (mỗi bài \code{weight} $= 100$), cộng với TMA + CMA $= 100$, dẫn
+        đến tổng bằng 300.
+  \item Ở học phần CCC, giá trị ngày thi bị thiếu (ký hiệu \code{'?'}) ở các bài
+        thuộc loại Exam.
+\end{itemize}
+
+\subsection{Giá trị thiếu ở biến ngày thi}
+
+Kiểm tra các bài có giá trị ngày thi bị thiếu cho thấy:
+
+\begin{itemize}[leftmargin=*]
+  \item Giá trị \code{'?'} chỉ xuất hiện ở loại Exam, không có ở TMA hay CMA ---
+        đây là dạng \textbf{thiếu có tính hệ thống}, không ngẫu nhiên.
+  \item Có 11/24 bản ghi Exam bị thiếu ngày, chiếm gần một nửa
+        ($\approx 45.8\%$).
+  \item Mức độ thiếu theo học phần:
+    \begin{itemize}
+      \item AAA, BBB, CCC: thiếu hoàn toàn --- không đợt học nào có ngày thi
+            chính xác.
+      \item DDD: chỉ thiếu 1 đợt (2014J), 3 đợt còn lại đầy đủ.
+      \item EEE, FFF, GGG: đầy đủ ngày thi cho tất cả các đợt.
+    \end{itemize}
+  \item Nhiều khả năng các học phần này có lịch thi linh hoạt nên ngày thi
+        không được ấn định sẵn trong hệ thống. Do bài thi cuối kỳ thường nằm
+        ngoài khoảng thời gian dự báo, ảnh hưởng thực tế của việc thiếu này là
+        \textbf{không đáng kể}.
+\end{itemize}
+
+\section{Phân tích hành vi tương tác VLE}
+
+Dữ liệu tương tác VLE được tổng hợp về mức \textbf{tuần}: với mỗi sinh viên, số
+lần click được cộng dồn theo tuần, trong đó tuần được tính bằng
+$\lfloor \text{ngày}/7 \rfloor$ kể từ ngày bắt đầu học phần. Sau khi tổng hợp,
+dữ liệu tương tác theo tuần còn \textbf{627{,}031} bản ghi --- giảm khoảng 4 lần
+so với dữ liệu chi tiết ban đầu (2{,}518{,}170 dòng); mỗi bản ghi là tổng số
+click của một sinh viên trong một tuần.
+
+\subsection{Đặc điểm phân phối}
+
+Bảng~\ref{tab:desc_vle} trình bày thống kê mô tả của số tuần (\code{week}) và số
+click theo tuần (\code{weekly\_clicks}).
+
+\input{table_desc_vle}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Biến \code{week}:} giá trị nhỏ nhất $= -4$ cho thấy một số sinh
+        viên đã truy cập VLE \textit{trước} khi khoá học chính thức bắt đầu. 50\%
+        số bản ghi nằm trong khoảng tuần 4--23 (giai đoạn giữa khoá). Giá trị lớn
+        nhất $= 38$ ($\approx 9.5$ tháng) phù hợp với độ dài các học phần trong
+        OULAD ($\approx 240$--$270$ ngày).
+  \item \textbf{Biến \code{weekly\_clicks}:} phân phối lệch phải nặng ---
+        trung vị chỉ bằng 30 trong khi trung bình lên tới 63.16, chứng tỏ giá
+        trị trung bình bị đẩy lên bởi các giá trị ngoại lai; cá biệt có giá trị
+        lớn nhất bằng $6{,}999$ trong khi $Q_3 = 78$. Độ lệch chuẩn (96.59) còn
+        lớn hơn cả giá trị trung bình, cho thấy mức độ phân tán rất lớn.
+\end{itemize}
+
+Để mô tả rõ hơn đuôi phải của phân phối, Hình~\ref{fig:pctl} biểu diễn giá trị
+\code{weekly\_clicks} theo các phân vị.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{weekly_clicks_percentile.png}
+  \caption{Giá trị \code{weekly\_clicks} theo các phân vị (percentile).}
+  \label{fig:pctl}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item Từ P0 đến P75, \code{weekly\_clicks} tăng chậm từ 1 đến khoảng 80 ---
+        phần lớn sinh viên tương tác ở mức vừa phải mỗi tuần.
+  \item Từ P75 trở đi, đường cong dốc lên nhanh --- dấu hiệu của phân phối lệch
+        phải với đuôi dài.
+  \item $P_{90} = 159$ và $P_{95} = 232$: nhóm 10\% sinh viên tích cực nhất có
+        lượng click gấp $\approx 2.5$ lần mức trung bình chung ($63.16$).
+\end{itemize}
+
+\section{Xây dựng tập dữ liệu dạng snapshot}
+
+\subsection{Thiết kế panel theo thời gian}
+\label{sec:panel_design}
+
+Để phù hợp với mục tiêu \textit{dự báo sớm}, dữ liệu được tái cấu trúc thành
+dạng panel (dữ liệu bảng theo thời gian). Với mỗi mốc thời gian
+$T \in \{30, 60, 90, 120, 150, 180, 210, 240\}$ (ngày kể từ đầu khoá), ta tạo
+một \textit{snapshot} thể hiện trạng thái của từng sinh viên tại thời điểm đó.
+Mỗi sinh viên xuất hiện tối đa 8 lần (8 snapshot).
+
+Tại mỗi mốc $T$, quy trình tính đặc trưng như sau:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Lọc sinh viên còn hoạt động:} loại bỏ những sinh viên đã hủy
+        đăng ký trước ngày $T$.
+  \item \textbf{Đặc trưng VLE} (chỉ lấy dữ liệu đến tuần tương ứng với $T$):
+        \code{total\_clicks} (tổng click tích luỹ), \code{active\_weeks} (số
+        tuần có tương tác), \code{avg\_weekly\_clicks} (click trung bình mỗi
+        tuần).
+  \item \textbf{Đặc trưng đánh giá} (chỉ lấy bài có hạn nộp $\le T$ và đã nộp
+        trước $T$): \code{num\_submitted}, \code{avg\_score} (điểm trung bình có
+        trọng số), \code{avg\_days\_early} (độ sớm/trễ khi nộp),
+        \code{num\_failed} (số bài trượt, điểm $< 40$).
+  \item \textbf{Đặc trưng tĩnh và nhãn:} thông tin nhân khẩu học của sinh viên
+        và nhãn \code{final\_result}.
+\end{itemize}
+
+\textbf{Lưu ý:} học phần GGG được loại khỏi tập dữ liệu do đặc thù trọng số bất
+thường đã phân tích ở trên --- kết quả của học phần này phụ thuộc hoàn toàn vào
+bài thi cuối kỳ nên không phù hợp với cách dự báo dựa trên hành vi tích luỹ.
+
+\subsection{Quy mô và giá trị thiếu}
+
+Tập dữ liệu thu được gồm \textbf{178{,}294 dòng} và \textbf{22 biến}, bao gồm
+thông tin nhân khẩu học, hành vi học tập (VLE), kết quả bài tập và kết quả cuối
+kỳ, với nhiều kiểu dữ liệu: 10 biến dạng phân loại, 10 biến số thực và 2 biến số
+nguyên.
+
+Bảng~\ref{tab:null} liệt kê các biến có giá trị thiếu cùng tỷ lệ tương ứng.
+
+\input{table_null}
+
+Nhận xét về giá trị thiếu:
+
+\begin{itemize}[leftmargin=*]
+  \item Biến \textbf{ngày hủy đăng ký} thiếu nhiều nhất ($\approx 91.0\%$) vì
+        phần lớn sinh viên theo học đến hết khoá nên không có ngày hủy đăng ký
+        --- đây là dạng thiếu mang ý nghĩa tích cực.
+  \item Các biến VLE (\code{total\_clicks}, \code{active\_weeks},
+        \code{avg\_weekly\_clicks}) thiếu $\approx 1.7\%$, nhiều khả năng do một
+        số sinh viên chưa từng truy cập hệ thống.
+  \item Các biến đánh giá (\code{avg\_score}, \code{num\_submitted}\ldots) thiếu
+        đáng kể ($\approx 9$--$10\%$), do một số sinh viên chưa nộp bài tại thời
+        điểm dự báo.
+\end{itemize}
+
+Ngoài dạng thiếu thông thường (giá trị rỗng) nêu trên, biến \code{imd\_band}
+còn có một dạng thiếu \textbf{được mã hoá bằng ký hiệu \code{'?'}} (khoảng
+$4\%$ số sinh viên). Dạng thiếu này không xuất hiện khi thống kê giá trị rỗng
+nên cần được nhận diện và xử lý riêng; phân bố cụ thể sẽ được phân tích ở
+Mục~\ref{sec:imd}.
+
+\subsection{Phân phối nhãn mục tiêu}
+
+Phân phối nhãn \code{final\_result} ban đầu gồm bốn lớp
+(Hình~\ref{fig:result4}):
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{final_result_4.png}
+  \caption{Phân phối nhãn \code{final\_result} (4 lớp).}
+  \label{fig:result4}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Pass} chiếm tỷ lệ cao nhất với 89{,}944 bản ghi (50.4\%).
+  \item \textbf{Fail} đứng thứ hai với 50{,}525 bản ghi (28.3\%) --- gần 1/3
+        lượt đăng ký không đạt, là nhóm quan trọng nhất cần được dự báo sớm.
+  \item \textbf{Distinction} chiếm 11.8\% (21{,}024 bản ghi) --- nhóm sinh viên
+        xuất sắc.
+  \item \textbf{Withdrawn} chiếm 9.4\% (16{,}801 bản ghi) --- lượt đăng ký bị
+        hủy giữa chừng; nhóm này thường bộc lộ dấu hiệu sớm qua mức tương tác
+        thấp.
+\end{itemize}
+
+Mỗi bản ghi là một bộ ba (sinh viên, học phần, đợt học) tại một snapshot $T$;
+một sinh viên có thể xuất hiện nhiều lần nếu đăng ký nhiều học phần hoặc nhiều
+đợt. Với bài toán cảnh báo sớm, việc phân biệt Distinction với Pass là không cần
+thiết --- mục tiêu là phát hiện sinh viên có nguy cơ trượt hoặc bỏ học. Do đó,
+\textbf{Distinction được gộp vào Pass} (Hình~\ref{fig:result3}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{final_result_3.png}
+  \caption{Phân phối nhãn sau khi gộp Distinction vào Pass (3 lớp).}
+  \label{fig:result3}
+\end{figure}
+
+Sau khi gộp, tỷ lệ Pass : Fail : Withdrawn $= 62.2\% : 28.3\% : 9.4\%$, cho thấy
+tập dữ liệu có mức \textbf{mất cân bằng nhãn vừa phải} --- cần lưu ý ở bước xây
+dựng mô hình.
+
+\subsection{Chia tập huấn luyện và kiểm tra}
+
+Tập dữ liệu được chia thành tập huấn luyện (train) và kiểm tra (test) theo
+\textbf{từng sinh viên}, đảm bảo toàn bộ lịch sử của một sinh viên chỉ nằm trong
+một tập duy nhất. Nếu chia theo từng dòng, cùng một sinh viên có thể xuất hiện ở cả train
+lẫn test với các snapshot khác nhau. Khi đó, mô hình được huấn luyện trên chính
+hành vi của sinh viên có mặt trong tập kiểm tra, dẫn đến hiện tượng rò rỉ dữ liệu
+(data leakage) và làm sai lệch kết quả đánh giá.
+
+Với tỷ lệ train:test $= 80:20$, kết quả chia được tóm tắt ở
+Bảng~\ref{tab:split}.
+
+\begin{table}[H]
+  \centering
+  \caption{Kết quả chia tập train/test theo sinh viên.}
+  \label{tab:split}
+  \begin{tabular}{lrr}
+    \toprule
+    \textbf{Tập} & \textbf{Số sinh viên} & \textbf{Số snapshot} \\
+    \midrule
+    Train & 17{,}921 & 142{,}384 \\
+    Test  & 4{,}481  & 35{,}910 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Phân tích khám phá các đặc trưng tĩnh}
+
+Thông tin tĩnh của sinh viên được xem xét theo hai nhóm phục vụ phân tích:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Thông tin nhân khẩu học} (\code{gender}, \code{region},
+        \code{age\_band}, \code{imd\_band}, \code{highest\_education},
+        \code{disability}), xét mỗi sinh viên một lần (loại bỏ trùng lặp).
+  \item \textbf{Đặc trưng hành vi tĩnh} (\code{num\_of\_prev\_attempts},
+        \code{studied\_credits}) gắn với từng lượt đăng ký học phần, kèm nhãn kết
+        quả \code{final\_result}.
+\end{itemize}
+
+\subsection{Chỉ số thiếu thốn kinh tế (\code{imd\_band})}
+\label{sec:imd}
+
+Biến \code{imd\_band} đo mức độ thiếu thốn kinh tế theo khu vực địa lý (Index of
+Multiple Deprivation), được kỳ vọng có liên quan đến kết quả học tập.
+Hình~\ref{fig:imd_dist} thể hiện phân phối của biến này.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{imd_dist.png}
+  \caption{Phân phối \code{imd\_band} trong tập huấn luyện (nhóm \code{'?'}
+  được tô màu cam).}
+  \label{fig:imd_dist}
+\end{figure}
+
+Phân phối \code{imd\_band} tập trung cao nhất ở band 30--40\% (1{,}925 sinh
+viên) và giảm dần về hai phía. Nhìn chung, phần lớn sinh viên đến từ các khu
+vực có mức độ thiếu thốn trung bình đến cao, trong khi số sinh viên ở các khu
+vực khá giả ít hơn. Đáng chú ý, có 720 sinh viên ($\approx 4.2\%$) mang giá trị
+\code{'?'}, cần được xử lý trước khi đưa vào mô hình.
+
+\paragraph{Giá trị thiếu theo vùng.}
+Giá trị \code{'?'} trong \code{imd\_band} tập trung gần như hoàn toàn ở hai
+vùng: North Region (64.86\%) và Ireland (25.42\%) --- cộng lại chiếm
+$\approx 90.3\%$ tổng số giá trị thiếu; các vùng còn lại chỉ đóng góp
+$\approx 9.7\%$.
+Xét theo chiều ngược lại (tỷ lệ \code{'?'} trong mỗi vùng):
+
+\begin{itemize}[leftmargin=*]
+  \item North Region (45.65\%) và Ireland (23.40\%) có tỷ lệ \code{'?'} vượt
+        trội so với tất cả các vùng còn lại (đều $\le 2\%$), cho thấy tình trạng
+        thiếu dữ liệu này gắn với đặc thù của từng vùng địa lý.
+  \item North Western (0--10\%: 23.09\%), Yorkshire (0--10\%: 19.42\%) và West
+        Midlands (0--10\%: 17.52\%) là những vùng tập trung nhiều sinh viên
+        thuộc band IMD thấp nhất. London cũng nghiêng về các mức IMD thấp
+        (10--20\%: 19.30\%; 20--30\%: 18.37\%).
+  \item South Region (90--100\%: 21.74\%; 80--90\%: 15.55\%) và South East Region
+        tập trung ở các band cao. East Anglian Region có xu hướng tương tự.
+  \item Scotland, East Midlands, Wales và South West Region không lệch rõ về phía
+        nào, các band dao động tương đối đều trong khoảng 7--13\%.
+\end{itemize}
+
+Bảng~\ref{tab:imd_region} trình bày đầy đủ phân phối \code{imd\_band} theo từng
+vùng (chuẩn hoá theo hàng), làm rõ các nhận xét trên.
+
+\input{table_imd_region}
+
+\paragraph{Giá trị thiếu theo trình độ học vấn.}
+Xét quan hệ giữa \code{imd\_band} và \code{highest\_education}:
+
+\begin{itemize}[leftmargin=*]
+  \item \textit{No Formal quals} tập trung mạnh ở các band thấp (20--30\%:
+        22.50\%; 0--10\%: 18.75\%\ldots), gần như không xuất hiện ở band 80--90\%.
+        Tỷ lệ \code{'?'} $= 9.38\%$ (cao thứ hai).
+  \item \textit{Lower Than A Level} giảm dần từ band thấp đến band cao (11.43\%
+        $\to$ 6.39\%). Tỷ lệ \code{'?'} $= 3.72\%$.
+  \item \textit{A Level or Equivalent} phân phối tương đối đồng đều (8--11\%).
+        Tỷ lệ \code{'?'} $= 2.34\%$.
+  \item \textit{HE Qualification} phân bố đồng đều chủ yếu ở các band trung bình
+        đến cao, nhóm 90--100\% chiếm tỷ lệ lớn nhất (10.95\%). Tỷ lệ \code{'?'}
+        $= 6.68\%$.
+  \item \textit{Post Graduate Qualification} có tỷ lệ \code{'?'} cao nhất
+        (41.85\%), gần như không có sinh viên ở band 0--10\%, tập trung rõ ở band
+        90--100\% (25\%).
+\end{itemize}
+
+Bảng~\ref{tab:imd_edu} trình bày đầy đủ các con số này.
+
+\input{table_imd_edu}
+
+Hình~\ref{fig:edu_imd_extreme} và Hình~\ref{fig:edu_imd_middle} trực quan hoá xu
+hướng này. Ở nhóm band cực trị (Hình~\ref{fig:edu_imd_extreme}), hai band thấp
+(0--10\%, 10--20\%) và hai band cao (80--90\%, 90--100\%) biến động ngược chiều
+nhau theo trình độ học vấn: tỷ trọng band thấp giảm mạnh còn band cao tăng dần
+khi học vấn tăng --- đặc biệt band 90--100\% tăng vọt ở nhóm Post Graduate
+Qualification. Bốn đường gần như giao nhau quanh mức \textit{A Level or
+Equivalent}, cho thấy đây là ngưỡng học vấn mà mối liên hệ với \code{imd\_band}
+bắt đầu đảo chiều. Ở nhóm band trung gian (20--80\%,
+Hình~\ref{fig:edu_imd_middle}), các đường biến động khá tương đồng và không band
+nào nổi bật hẳn.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.93\textwidth]{edu_imd_extreme.png}
+  \caption{Tỷ lệ \code{imd\_band} theo trình độ học vấn --- nhóm band cực trị
+  (0--20\% và 80--100\%).}
+  \label{fig:edu_imd_extreme}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.93\textwidth]{edu_imd_middle.png}
+  \caption{Tỷ lệ \code{imd\_band} theo trình độ học vấn --- nhóm band trung gian
+  (20--80\%).}
+  \label{fig:edu_imd_middle}
+\end{figure}
+
+\subsection{Tình trạng khuyết tật (\code{disability})}
+
+Phân phối \code{disability} trong tập huấn luyện được thể hiện ở
+Hình~\ref{fig:disability}: phần lớn sinh viên không khai báo khuyết tật
+(91.1\%), nhóm có khuyết tật chỉ chiếm 8.9\%.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.73\textwidth]{disability_dist.png}
+  \caption{Phân phối tình trạng khuyết tật (\code{disability}).}
+  \label{fig:disability}
+\end{figure}
+
+Tỷ lệ khuyết tật thể hiện xu hướng \textbf{nghịch biến rõ rệt} với
+\code{imd\_band}: các band thấp (0--40\%) có tỷ lệ sinh viên khuyết tật cao hơn
+(11--13\%), trong khi các band cao (70--100\%) có tỷ lệ thấp hơn (5--7\%). Như
+vậy, sinh viên ở những khu vực khó khăn hơn về kinh tế có tỷ lệ khai báo khuyết
+tật cao hơn --- điều này có thể phản ánh sự chênh lệch trong khả năng tiếp cận
+hỗ trợ y tế và giáo dục giữa các nhóm kinh tế -- xã hội.
+
+\subsection{Lịch sử học lại (\code{num\_of\_prev\_attempts})}
+
+Biến \code{num\_of\_prev\_attempts} cho biết số lần sinh viên đã đăng ký học
+phần này trước đây, qua đó phân biệt sinh viên học lần đầu với sinh viên học lại
+(retake). Phân phối được thể hiện ở Hình~\ref{fig:prev}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{prev_attempts.png}
+  \caption{Phân phối số lần đăng ký học phần trước đó.}
+  \label{fig:prev}
+\end{figure}
+
+Từ biến này, ta tạo biến nhị phân \code{is\_retake\_the\_course}: nhận giá trị
+1 nếu sinh viên đã từng đăng ký học phần trước đó và 0 nếu học lần đầu. Các mức
+học lại ($1, 2, 3\ldots$) được gộp thành một nhóm duy nhất, vì điều quan trọng
+là sinh viên \textit{đã từng} phải học lại hay chưa, chứ không phải học lại bao
+nhiêu lần (Hình~\ref{fig:retake}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{is_retake.png}
+  \caption{Phân phối biến \code{is\_retake\_the\_course}.}
+  \label{fig:retake}
+\end{figure}
+
+Phần lớn sinh viên (86.5\%) đăng ký học phần lần đầu, 13.5\% còn lại là các
+trường hợp học lại. Tỷ lệ này giảm rất nhanh theo số lần học lại: học lại lần
+đầu chiếm 10.8\%, lần hai chỉ còn 2.1\%, và từ ba lần trở lên rất hiếm
+($< 0.5\%$). Điều này cho thấy phần lớn sinh viên không đăng ký học lại sau khi
+trượt học phần.
+
+\paragraph{Học lại và tình trạng khuyết tật.}
+Hình~\ref{fig:retake_dis} cho thấy nhóm sinh viên khuyết tật có tỷ lệ học lại
+(20.1\%) cao hơn rõ rệt so với nhóm không khuyết tật (12.9\%). Kết quả này gợi
+ý khuyết tật là một yếu tố rủi ro trong học tập: nhóm này gặp nhiều trở ngại
+hơn nên phải học lại thường xuyên hơn.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{retake_disability.png}
+  \caption{Tỷ lệ học lại theo tình trạng khuyết tật.}
+  \label{fig:retake_dis}
+\end{figure}
+
+\paragraph{Học lại và khối lượng tín chỉ.}
+Hình~\ref{fig:credits_box} so sánh phân phối \code{studied\_credits} giữa hai
+nhóm. Sinh viên học lại đăng ký nhiều tín chỉ hơn đáng kể so với nhóm học lần
+đầu: trung vị 90 so với 60 tín chỉ, trung bình 98.9 so với 77.8. Phân phối của
+nhóm học lại cũng rộng hơn (độ lệch chuẩn $\approx 47$ so với 35). Điều này có
+thể do sinh viên học lại chủ động đăng ký thêm học phần để bù lại tiến độ của
+kỳ trước, hoặc do nhóm này quyết tâm hoàn thành chương trình cao hơn sau lần
+học chưa đạt.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{credits_retake_box.png}
+  \caption{Biểu đồ hộp: \code{studied\_credits} theo nhóm học lần đầu / học
+  lại.}
+  \label{fig:credits_box}
+\end{figure}
+
+Thống kê mô tả chi tiết của số tín chỉ theo hai nhóm được trình bày ở
+Bảng~\ref{tab:desc_credits}.
+
+\input{table_desc_credits}
+
+\subsection{Phân tích theo nhãn mục tiêu}
+
+\subsubsection{Đặc điểm ba nhóm kết quả}
+
+Giá trị trung bình của các đặc trưng tĩnh theo từng nhóm kết quả được chuẩn hoá
+và biểu diễn bằng biểu đồ radar (Hình~\ref{fig:radar_static}). Từ biểu đồ, có
+thể nhận thấy ba nhóm mang ba đặc điểm rủi ro khác biệt:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{radar_static.png}
+  \caption{Biểu đồ radar các đặc trưng tĩnh theo nhóm kết quả.}
+  \label{fig:radar_static}
+\end{figure}
+
+Giá trị trung bình của từng đặc trưng theo nhóm kết quả --- số liệu gốc của
+biểu đồ radar --- được trình bày ở Bảng~\ref{tab:mean_static}.
+
+\input{table_mean_static}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Pass} là nhóm an toàn nhất: đa giác của nhóm này nhỏ nhất, tức
+        các chỉ số rủi ro đều ở mức thấp. Phần lớn sinh viên học lần đầu với
+        khối lượng đăng ký vừa phải, tỷ lệ khuyết tật thấp nhất; tỷ lệ sinh
+        viên trẻ cũng thấp nhất, cho thấy nhóm lớn tuổi có xu hướng hoàn thành
+        học phần tốt hơn.
+  \item \textbf{Fail} nổi bật ở các đặc trưng về lịch sử học tập: số lần học
+        trước và tỷ lệ học lại đều cao nhất, tỷ lệ sinh viên trẻ cũng cao nhất.
+        Trong khi đó, khối lượng tín chỉ không cao hơn Pass đáng kể --- vấn đề
+        của nhóm này nằm ở việc học lại nhiều lần mà kết quả chưa cải thiện,
+        chứ không phải do học quá tải.
+  \item \textbf{Withdrawn} có xu hướng ngược lại: khối lượng tín chỉ và tỷ lệ
+        khuyết tật cao nhất, trong khi các chỉ số học lại chỉ ở mức trung bình.
+        Nguyên nhân bỏ học vì vậy thiên về quá tải học tập và các trở ngại cá
+        nhân hoặc sức khoẻ.
+\end{itemize}
+
+Như vậy, Fail và Withdrawn đại diện cho hai dạng rủi ro khác nhau: Fail gắn với
+lịch sử học lại và nhóm sinh viên trẻ, còn Withdrawn gắn với khối lượng đăng ký
+và tình trạng khuyết tật.
+
+\subsubsection{Kết quả theo trình độ học vấn}
+
+Hình~\ref{fig:edu_result} thể hiện tỷ lệ Pass / Fail / Withdrawn theo từng bậc
+học vấn khi nhập học.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.93\textwidth]{edu_result.png}
+  \caption{Tỷ lệ kết quả học tập theo trình độ học vấn.}
+  \label{fig:edu_result}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Pass} tăng liên tục theo trình độ học vấn: từ 38.3\% (\textit{No
+        Formal quals}) lên 73.1\% (\textit{Post Graduate Qualification}).
+  \item \textbf{Fail} giảm theo chiều ngược lại: từ 34.9\% xuống còn 11.5\% ---
+        sinh viên có nền tảng học vấn cao hơn ít trượt môn hơn.
+  \item \textbf{Withdrawn} cũng giảm nhưng chậm hơn Fail.
+\end{itemize}
+
+Đáng chú ý, \textit{No Formal quals} là nhóm rủi ro cao nhất: tỷ lệ Pass chỉ
+đạt 38.3\%, trong khi Fail và Withdrawn cộng lại chiếm tới \textbf{61.7\%} ---
+đây là nhóm duy nhất có tỷ lệ không hoàn thành vượt quá tỷ lệ hoàn thành.
+\textit{Post Graduate Qualification} là nhóm duy nhất có tỷ lệ Withdrawn
+(15.4\%) cao hơn Fail (11.5\%): sinh viên sau đại học ít trượt môn nhưng lại có
+xu hướng rút lui nhiều hơn, có thể vì lý do cá nhân hoặc công việc. Khoảng cách
+giữa Pass và hai nhóm còn lại mở rộng rõ rệt từ \textit{A Level or Equivalent}
+trở lên, cho thấy đây có thể là ngưỡng mà nền tảng học vấn bắt đầu tạo ra lợi
+thế rõ ràng.
+
+\subsubsection{Kết quả theo chỉ số thiếu thốn kinh tế}
+
+Hình~\ref{fig:imd_result} thể hiện tỷ lệ Pass / Fail / Withdrawn theo từng nhóm
+IMD.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth]{imd_result.png}
+  \caption{Tỷ lệ kết quả học tập theo nhóm \code{imd\_band}.}
+  \label{fig:imd_result}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Pass} tăng đều từ 43.4\% (0--10\%) lên 65.3\% (90--100\%) ---
+        sinh viên từ khu vực khá giả hơn có tỷ lệ hoàn thành cao hơn.
+  \item \textbf{Fail} giảm từ 33.8\% xuống 18.5\% --- nghịch biến với mức độ
+        kinh tế, giảm tương đối đều.
+  \item \textbf{Withdrawn} giảm nhẹ và không đều, dao động 18--23\% ở các band
+        giữa.
+\end{itemize}
+
+Đáng chú ý, mối liên hệ giữa tỷ lệ Pass và IMD \textbf{yếu hơn} rõ rệt so với
+mối liên hệ giữa Pass và trình độ học vấn ở mục trước: tỷ lệ Pass tăng theo học
+vấn với biên độ lớn hơn ($38.3\% \to 73.1\%$) so với theo IMD
+($43.4\% \to 65.3\%$). Điều này gợi ý \textbf{nền tảng học vấn ảnh hưởng đến kết
+quả học tập nhiều hơn điều kiện kinh tế}. Ngoài ra, tỷ lệ Withdrawn gần như
+không thay đổi theo IMD, và nhóm \code{'?'} có tỷ lệ Pass cao bất thường
+(71.6\% --- cao nhất trong tất cả các nhóm).
+
+\section{Phân tích khám phá các đặc trưng động}
+
+Các đặc trưng động được tính trong khoảng thời gian $[0, T]$ tại mỗi mốc dự đoán, phản ánh
+mức độ tương tác VLE và kết quả bài kiểm tra tích luỹ đến thời điểm đó. Bảy đặc
+trưng động gồm: \code{total\_clicks}, \code{active\_weeks},
+\code{avg\_weekly\_clicks}, \code{num\_submitted}, \code{avg\_score},
+\code{num\_failed} và \code{avg\_days\_early}.
+
+\subsection{Thống kê mô tả}
+
+Thống kê mô tả của bảy đặc trưng động được trình bày ở
+Bảng~\ref{tab:desc_dynamic}.
+
+\input{table_desc_dynamic}
+
+\begin{itemize}[leftmargin=*]
+  \item Các đặc trưng VLE lệch phải mạnh: \code{total\_clicks} có độ lệch
+        chuẩn ($1{,}358$) lớn hơn cả giá trị trung bình ($1{,}072$), giá trị
+        lớn nhất lên tới $23{,}115$; \code{avg\_weekly\_clicks} cũng tương tự
+        (trung bình $60.7$ nhưng giá trị lớn nhất $1{,}070.5$).
+  \item \code{num\_failed} có giá trị nhỏ nhất, trung vị và $Q_3$ đều bằng 0
+        --- phần lớn sinh viên không trượt bài nào trong khoảng thời gian quan
+        sát. Trung bình chỉ đạt $0.16$ nhưng giá trị lớn nhất lên tới 8, tức
+        vẫn có một nhóm nhỏ trượt nhiều bài.
+  \item \code{avg\_days\_early} trải trên khoảng giá trị rất rộng: từ $-123$
+        (nộp trễ 123 ngày) đến $236$ (nộp sớm 236 ngày). Trung vị bằng 0, với
+        $Q_1 = -1.5$ và $Q_3 = 1.5$: khoảng một nửa số sinh viên nộp bài trong
+        vòng $\pm 1.5$ ngày quanh hạn nộp.
+  \item \code{avg\_score} tương đối tập trung: $Q_1 = 64.7$ và $Q_3 = 85$ ---
+        phần lớn sinh viên đạt điểm trung bình ở mức khá trở lên.
+\end{itemize}
+
+\subsection{Số sinh viên còn học theo thời gian}
+
+Hình~\ref{fig:retention} thể hiện số sinh viên còn hoạt động tại mỗi mốc dự đoán.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{retention.png}
+  \caption{Số sinh viên còn hoạt động theo mốc dự đoán (mỗi 30 ngày).}
+  \label{fig:retention}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item Số sinh viên còn hoạt động giảm đều qua các mốc: từ \textbf{17{,}921}
+        (ngày 30) xuống \textbf{15{,}171} (ngày 240) --- tổng cộng
+        \textbf{2{,}750 sinh viên} ($\approx 15.3\%$) rút khỏi khoá học trong
+        210 ngày quan sát.
+  \item Mức giảm lớn nhất rơi vào giai đoạn đầu (ngày 30 $\to$ ngày 60:
+        $-629$), sau đó chậm dần và ổn định hơn về cuối khoá (ngày 180 $\to$
+        ngày 210: $-214$; ngày 210 $\to$ ngày 240: $-208$ --- chỉ bằng khoảng
+        1/3 giai đoạn đầu).
+  \item Trung bình mỗi 30 ngày có $\approx 393$ sinh viên rời khoá học; tuy
+        nhiên con số trung bình này chưa phản ánh đúng thực tế, vì phần lớn
+        trường hợp rút lui tập trung ở giai đoạn đầu khoá.
+\end{itemize}
+
+\subsection{Phân tích tương quan}
+
+Ma trận tương quan giữa các đặc trưng động được thể hiện ở
+Hình~\ref{fig:corr}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{corr_matrix.png}
+  \caption{Ma trận tương quan giữa các đặc trưng động.}
+  \label{fig:corr}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Cụm hoạt động trực tuyến} (\code{total\_clicks},
+        \code{active\_weeks}, \code{avg\_weekly\_clicks}) tương quan chặt với
+        nhau; đặc biệt \code{total\_clicks} và \code{avg\_weekly\_clicks} gần
+        như đo lường cùng một khía cạnh --- đưa cả hai vào mô hình có thể gây
+        \textbf{đa cộng tuyến} (multicollinearity). \code{active\_weeks} có
+        tương quan khá cao với \code{num\_submitted}, nhưng số click mỗi tuần
+        lại gần như không liên quan đến số bài nộp --- cho thấy lượng click
+        không phải lúc nào cũng phản ánh việc học có mục đích.
+  \item \textbf{Cặp nghịch chiều rõ nhất} là \code{avg\_score} và
+        \code{num\_failed}: điểm trung bình cao đi kèm số bài trượt thấp, do đó
+        có thể cân nhắc chỉ giữ lại một trong hai đặc trưng.
+  \item \code{avg\_days\_early} tương quan thấp với hầu hết các đặc trưng còn
+        lại --- đây là một tín hiệu tương đối độc lập, phản ánh thói quen quản
+        lý thời gian của sinh viên.
+  \item \code{num\_failed} gần như không tương quan với các đặc trưng hoạt động
+        --- tương tác nhiều hay học đều đặn không bảo đảm tránh được điểm kém;
+        kết quả còn phụ thuộc vào chất lượng của việc học.
+\end{itemize}
+
+Quan hệ giữa \code{avg\_score} và \code{num\_failed} được thể hiện rõ hơn qua
+biểu đồ bong bóng ở Hình~\ref{fig:bubble}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{bubble_score_failed.png}
+  \caption{Biểu đồ bong bóng: \code{avg\_score} theo \code{num\_failed}.}
+  \label{fig:bubble}
+\end{figure}
+
+Phần lớn sinh viên không trượt bài nào (\code{num\_failed} $= 0$) và có
+\code{avg\_score} tập trung ở mức cao, rõ nhất trong vùng 80--100 điểm. Khi số
+bài trượt tăng, số sinh viên giảm dần và điểm trung bình phân tán hơn. Tuy
+nhiên, ở các mức \code{num\_failed} thấp (1--5) vẫn có những sinh viên đạt điểm
+khá cao. Đây là lý do hai đặc trưng này không thể thay thế cho nhau:
+\code{num\_failed} nắm bắt được một dạng rủi ro mà điểm trung bình bỏ sót ---
+sinh viên học ổn định nhưng bỏ hoặc trượt một vài bài, có thể do thiếu chuyên
+cần hoặc do hoàn cảnh cá nhân.
+
+\subsection{Đặc trưng động theo nhãn mục tiêu}
+
+Biểu đồ radar các đặc trưng động theo nhóm kết quả (Hình~\ref{fig:radar_dyn})
+làm rõ hơn sự khác biệt giữa các nhóm.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{radar_dynamic.png}
+  \caption{Biểu đồ radar các đặc trưng động theo nhóm kết quả.}
+  \label{fig:radar_dyn}
+\end{figure}
+
+Giá trị trung bình các đặc trưng động theo nhóm kết quả được trình bày ở
+Bảng~\ref{tab:mean_dynamic}.
+
+\input{table_mean_dynamic}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Pass} chiếm diện tích lớn nhất, vượt trội ở cả ba đặc trưng
+        tương tác VLE (\code{active\_weeks}, \code{total\_clicks},
+        \code{avg\_weekly\_clicks}) lẫn số bài nộp. Đây là nhóm duy nhất vừa
+        duy trì mức độ tham gia cao, vừa đạt kết quả bài đánh giá tốt.
+  \item \textbf{Fail} nổi bật nhất ở số bài trượt (\code{num\_failed}), cao hơn
+        cả hai nhóm còn lại, trong khi số bài nộp tương đương nhóm Pass. Như
+        vậy, sinh viên Fail vẫn nộp bài đầy đủ nhưng kết quả không đạt yêu cầu
+        --- dấu hiệu của khó khăn học tập kéo dài.
+  \item \textbf{Withdrawn} thì ngược lại: số bài nộp thấp nhất trong ba nhóm,
+        còn số bài trượt gần như bằng 0. Điều này không có nghĩa là họ làm bài
+        tốt --- họ nộp quá ít bài nên hầu như không có bài nào bị tính trượt.
+        Đáng chú ý, những bài đã nộp vẫn đạt điểm ở mức trung bình khá, cho
+        thấy nhóm này bỏ học không hẳn vì học kém, mà nhiều khả năng do mất dần
+        sự gắn kết với khoá học.
+\end{itemize}
+
+Cuối cùng, xét \code{avg\_days\_early} theo nhóm kết quả
+(Hình~\ref{fig:days_early}): Pass là nhóm duy nhất có giá trị dương ($+1.59$
+ngày, tức nộp trước hạn), thể hiện thái độ học tập chủ động. Hai nhóm còn lại
+đều mang giá trị âm, trong đó Withdrawn nộp trễ nhiều nhất ($-0.91$ ngày, gấp
+gần 5 lần mức $-0.19$ ngày của Fail) --- phù hợp với xu hướng giảm dần sự gắn
+kết đã ghi nhận ở trên. Tuy vậy, mức chênh lệch giữa ba nhóm đều nhỏ (dưới 2
+ngày), nên khi đứng một mình, \code{avg\_days\_early} có thể chưa đủ mạnh để
+phân biệt các nhóm.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{avg_days_early.png}
+  \caption{Giá trị trung bình \code{avg\_days\_early} theo nhóm kết quả.}
+  \label{fig:days_early}
+\end{figure}
+
+\section{Định hướng lựa chọn thuật toán học máy}
+\label{sec:algo_proposal}
+
+Từ quá trình phân tích khám phá dữ liệu, có thể rút ra một số đặc điểm của dữ
+liệu ảnh hưởng trực tiếp đến việc lựa chọn thuật toán:
+
+\begin{itemize}[leftmargin=*]
+  \item Bài toán ở dạng \textbf{phân loại nhị phân và mất cân bằng nhãn}: gộp
+        hai nhóm Fail và Withdrawn thành nhóm \textbf{có nguy cơ} (At-risk),
+        nhóm Pass còn lại; nhóm có nguy cơ chiếm tỷ lệ nhỏ hơn.
+  \item Dữ liệu gồm \textbf{nhiều kiểu đặc trưng}: vừa có biến phân loại (khu
+        vực, trình độ học vấn, \code{imd\_band}\ldots) vừa có biến số (số
+        click, điểm trung bình, số bài nộp\ldots).
+  \item Giữa các đặc trưng tồn tại \textbf{quan hệ phi tuyến và tương tác}, đồng
+        thời một số nhóm đặc trưng có \textbf{đa cộng tuyến} (cụm hoạt động trực
+        tuyến).
+  \item Nhiều đặc trưng \textbf{lệch phải mạnh, có giá trị ngoại lai} và tồn tại
+        \textbf{giá trị thiếu}.
+\end{itemize}
+
+Dựa trên các đặc điểm này, bốn thuật toán sau được đề xuất và đưa vào thử
+nghiệm trong nghiên cứu: \textbf{Logistic Regression}, \textbf{Random Forest},
+\textbf{CatBoost} và \textbf{LightGBM}. Nguyên lý hoạt động, công thức toán học
+và phân tích ưu điểm --- hạn chế chi tiết của từng thuật toán, trong bối cảnh
+các đặc điểm dữ liệu nêu trên, được trình bày ở Phần II; kết quả huấn luyện và
+so sánh thực nghiệm trên chính dữ liệu này được trình bày ở Phần III.
+
+% =====================================================================
+%  PHẦN II — CƠ SỞ LÝ THUYẾT CÁC THUẬT TOÁN
+% =====================================================================
+\part{Cơ sở lý thuyết các thuật toán học máy}
+
+\section{Tổng quan bốn thuật toán}
+
+Bốn thuật toán đã được đề xuất ở Mục~\ref{sec:algo_proposal} (Phần I), dựa
+trên đặc điểm dữ liệu quan sát được qua quá trình phân tích khám phá --- dữ
+liệu dạng bảng, mất cân bằng nhãn, có cả đặc trưng phân loại lẫn đặc trưng số,
+tồn tại quan hệ phi tuyến và đa cộng tuyến giữa một số nhóm đặc trưng. Bốn
+thuật toán này đại diện cho ba trường phái tiếp cận khác nhau trong học máy có
+giám sát:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Mô hình tuyến tính} (Logistic Regression) --- đơn giản, dễ
+        diễn giải, làm cơ sở đối chiếu (baseline).
+  \item \textbf{Học tập hợp dạng bagging} (Random Forest) --- tổng hợp nhiều
+        cây quyết định độc lập để giảm phương sai.
+  \item \textbf{Học tập hợp dạng boosting} (CatBoost, LightGBM) --- xây dựng
+        tuần tự nhiều mô hình yếu để giảm sai số một cách có hệ thống, với hai
+        cách hiện thực hoá khác nhau.
+\end{itemize}
+
+Với mỗi thuật toán, các mục tiếp theo trình bày: nguyên lý hoạt động, công
+thức toán học cốt lõi, các cơ chế đặc trưng riêng (nếu có), và phân tích ưu
+điểm --- hạn chế trong bối cảnh bài toán cảnh báo sớm. Mục cuối của Phần II
+tổng hợp một bảng so sánh xuyên suốt bốn thuật toán theo nhiều tiêu chí thực
+tiễn.
+
+\section{Hồi quy Logistic (Logistic Regression)}
+
+\subsection{Mô hình xác suất}
+
+Logistic Regression là một mô hình \textbf{tuyến tính suy rộng} (generalized
+linear model) cho bài toán phân loại nhị phân. Với vector đặc trưng đầu vào
+$\mathbf{x} \in \mathbb{R}^p$, mô hình trước tiên tính một tổ hợp tuyến tính:
+
+\[
+  z = \mathbf{w}^\top \mathbf{x} + b,
+\]
+
+trong đó $\mathbf{w} \in \mathbb{R}^p$ là vector trọng số và $b$ là hệ số chặn
+(bias). Giá trị $z$ sau đó được ánh xạ về khoảng $(0, 1)$ thông qua \textbf{hàm
+sigmoid}:
+
+\[
+  \hat{p} = \sigma(z) = \frac{1}{1 + e^{-z}},
+\]
+
+được diễn giải là xác suất dự báo của lớp dương (ở đây là At-risk). Quyết định
+phân loại cuối cùng dựa trên một ngưỡng $\tau$ (mặc định $\tau = 0.5$):
+$\hat{y} = 1$ nếu $\hat{p} \ge \tau$, ngược lại $\hat{y} = 0$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{sigmoid_logloss.png}
+  \caption{Hàm sigmoid (trái) và hàm mất mát Binary Cross-Entropy theo xác
+  suất dự báo, ứng với hai trường hợp nhãn thật $y=1$ và $y=0$ (phải).}
+  \label{fig:sigmoid}
+\end{figure}
+
+Như minh hoạ ở Hình~\ref{fig:sigmoid} (trái), hàm sigmoid có dạng chữ S, đối
+xứng qua điểm $(0, 0.5)$, bão hoà dần về 0 và 1 ở hai đầu --- đây chính là cơ
+chế giúp mô hình tuyến tính $z$ (có thể nhận giá trị bất kỳ trên
+$\mathbb{R}$) được chuyển thành một xác suất hợp lệ.
+
+\subsection{Hàm mất mát và ước lượng tham số}
+
+Tham số $(\mathbf{w}, b)$ được ước lượng bằng phương pháp \textbf{hợp lý cực
+đại} (Maximum Likelihood Estimation), tương đương với việc tối thiểu hoá hàm
+mất mát \textbf{Binary Cross-Entropy} (hay log-loss) trên tập huấn luyện gồm
+$N$ mẫu:
+
+\[
+  \mathcal{L}(\mathbf{w}, b) = -\frac{1}{N} \sum_{i=1}^{N}
+  \Big[ y_i \log(\hat{p}_i) + (1 - y_i) \log(1 - \hat{p}_i) \Big].
+\]
+
+Hình~\ref{fig:sigmoid} (phải) minh hoạ trực quan hàm mất mát này: khi nhãn
+thật $y_i = 1$, mất mát giảm dần về 0 khi $\hat{p}_i \to 1$ nhưng tiến tới vô
+cực khi $\hat{p}_i \to 0$ --- tức mô hình bị phạt rất nặng nếu dự báo sai với
+độ tin cậy cao. Vì $\mathcal{L}$ là hàm lồi theo $(\mathbf{w}, b)$, việc tối ưu
+thường dùng các phương pháp lặp dựa trên gradient (gradient descent hoặc các
+biến thể tựa Newton như L-BFGS), với đạo hàm riêng theo $\mathbf{w}$ có dạng
+tường minh:
+
+\[
+  \nabla_{\mathbf{w}} \mathcal{L} = \frac{1}{N} \mathbf{X}^\top
+  (\hat{\mathbf{p}} - \mathbf{y}).
+\]
+
+\subsection{Điều chuẩn (Regularization)}
+\label{sec:logreg_reg}
+
+Để hạn chế hiện tượng học vẹt (overfitting) khi số đặc trưng lớn hoặc các đặc
+trưng có tương quan mạnh, một số hạng điều chuẩn được cộng thêm vào hàm mục
+tiêu. Với điều chuẩn $L_2$ (Ridge), bài toán tối ưu trở thành:
+
+\[
+  \min_{\mathbf{w}, b} \; \frac{1}{2} \lVert \mathbf{w} \rVert_2^2
+  + C \sum_{i=1}^{N} \ell(y_i, \hat{p}_i),
+\]
+
+trong đó $\ell$ là hàm mất mát log-loss của từng mẫu, và $C > 0$ là siêu tham
+số \textbf{nghịch đảo} của cường độ điều chuẩn: $C$ càng nhỏ, mô hình bị ràng
+buộc càng chặt (trọng số $\mathbf{w}$ bị co về gần 0), giảm phương sai nhưng có
+thể tăng độ chệch (bias); $C$ càng lớn, mô hình càng tự do khớp dữ liệu huấn
+luyện. Đây chính là siêu tham số $C$ được tinh chỉnh bằng Optuna ở Phần III.
+
+\subsection{Trọng số lớp cho dữ liệu mất cân bằng}
+\label{sec:logreg_weight}
+
+Với bài toán mất cân bằng nhãn, hàm mất mát có thể được điều chỉnh bằng cách
+gán trọng số khác nhau cho từng lớp:
+
+\[
+  \mathcal{L}_w(\mathbf{w}, b) = -\frac{1}{N} \sum_{i=1}^{N} w_{y_i}
+  \Big[ y_i \log(\hat{p}_i) + (1 - y_i) \log(1 - \hat{p}_i) \Big],
+\]
+
+trong đó $w_{y_i}$ là trọng số ứng với lớp của mẫu $i$ (thường $w_0 = 1$ và
+$w_1 > 1$ cho lớp thiểu số At-risk). Việc tăng $w_1$ khiến mô hình phải trả giá
+mất mát lớn hơn khi phân loại sai một sinh viên At-risk, thúc đẩy mô hình dịch
+chuyển ranh giới quyết định để bắt được nhiều trường hợp At-risk hơn --- đây
+chính là cơ chế \code{class\_weight} được tinh chỉnh đồng thời với $C$ và tỷ lệ
+SMOTE ở Phần III.
+
+\subsection{Ưu điểm và hạn chế}
+
+\textbf{Ưu điểm:}
+\begin{itemize}[leftmargin=*]
+  \item Đơn giản, huấn luyện nhanh, phù hợp làm mô hình cơ sở để đối chiếu với
+        các mô hình phức tạp hơn.
+  \item Khả năng diễn giải cao: dấu và độ lớn của từng trọng số $w_j$ (trên dữ
+        liệu đã chuẩn hoá) cho biết chiều và mức độ ảnh hưởng của đặc trưng
+        tương ứng đến nguy cơ At-risk.
+  \item Đầu ra là xác suất được hiệu chỉnh tốt (well-calibrated) trong nhiều
+        trường hợp, thuận lợi cho việc điều chỉnh ngưỡng cảnh báo theo nhu cầu
+        thực tế.
+\end{itemize}
+
+\textbf{Hạn chế:}
+\begin{itemize}[leftmargin=*]
+  \item Ranh giới quyết định về bản chất là một siêu phẳng tuyến tính trong
+        không gian đặc trưng, nên khó nắm bắt quan hệ phi tuyến và tương tác
+        giữa các đặc trưng, trừ khi tự thêm số hạng tương tác thủ công.
+  \item Nhạy cảm với đa cộng tuyến --- khi hai đặc trưng tương quan cao, ma
+        trận $\mathbf{X}^\top \mathbf{X}$ gần suy biến, khiến hệ số ước lượng
+        bất ổn và khó diễn giải.
+  \item Nhạy với thang đo của đặc trưng, bắt buộc phải chuẩn hoá dữ liệu số
+        trước khi huấn luyện.
+  \item Không tự xử lý được giá trị thiếu hay đặc trưng phân loại; cần điền
+        khuyết và mã hoá thủ công trước khi đưa vào mô hình.
+\end{itemize}
+
+\section{Cây quyết định và Random Forest}
+
+\subsection{Cây quyết định (Decision Tree)}
+
+Cây quyết định (cụ thể là thuật toán CART --- Classification and Regression
+Tree) xây dựng mô hình bằng cách chia đệ quy không gian đặc trưng thành các
+vùng ngày càng nhỏ, mỗi vùng ứng với một \textbf{lá} (leaf) mang một dự báo cụ
+thể. Tại mỗi nút, thuật toán chọn một đặc trưng $j$ và một ngưỡng $s$ sao cho
+việc chia dữ liệu thành hai nhánh $\{\mathbf{x} : x_j \le s\}$ và
+$\{\mathbf{x} : x_j > s\}$ làm giảm nhiều nhất một độ đo \textbf{tạp chất}
+(impurity). Với bài toán phân loại, độ đo phổ biến nhất là chỉ số
+\textbf{Gini}:
+
+\[
+  \text{Gini}(t) = 1 - \sum_{k} p_k(t)^2,
+\]
+
+trong đó $p_k(t)$ là tỷ lệ mẫu thuộc lớp $k$ tại nút $t$. Gini$(t) = 0$ khi nút
+$t$ hoàn toàn thuần nhất (chỉ chứa một lớp), và đạt giá trị lớn nhất khi các
+lớp phân bố đều. Độ giảm tạp chất khi chia nút $t$ thành hai nút con
+$t_L, t_R$ là:
+
+\[
+  \Delta \text{Gini} = \text{Gini}(t) - \frac{N_L}{N_t}\text{Gini}(t_L)
+  - \frac{N_R}{N_t}\text{Gini}(t_R),
+\]
+
+và thuật toán chọn cặp $(j, s)$ tối đa hoá $\Delta \text{Gini}$ tại mỗi nút.
+Quá trình chia dừng lại khi đạt điều kiện dừng (độ sâu tối đa, số mẫu tối
+thiểu mỗi lá, hoặc tạp chất bằng 0).
+
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{%
+  \begin{tikzpicture}[
+      level distance=15mm,
+      every node/.style={draw, rounded corners, align=center, font=\small},
+      internal/.style={fill=blue!8, minimum width=3.6cm},
+      leaf/.style={fill=green!12, minimum width=2.6cm},
+      edge label/.style={font=\scriptsize, midway}
+    ]
+    \node[internal] (root) {\code{num\_submitted\_filled} $< 3$?};
+    \node[internal, below left=of root, xshift=-1.6cm] (n1) {\code{avg\_score\_filled} $< 40$?};
+    \node[leaf, below right=of root, xshift=1.6cm] (n2) {Pass\\($p=0.82$)};
+    \node[leaf, below left=of n1, xshift=-0.6cm] (n3) {At-risk\\($p=0.91$)};
+    \node[leaf, below right=of n1, xshift=0.6cm] (n4) {At-risk\\($p=0.58$)};
+
+    \draw (root) -- node[edge label, left] {Đúng} (n1);
+    \draw (root) -- node[edge label, right] {Sai} (n2);
+    \draw (n1) -- node[edge label, left] {Đúng} (n3);
+    \draw (n1) -- node[edge label, right] {Sai} (n4);
+  \end{tikzpicture}}
+  \caption{Ví dụ minh hoạ một cây quyết định nông (2 tầng) trên các đặc trưng
+  của bài toán cảnh báo sớm. Giá trị $p$ trong mỗi lá là xác suất At-risk ước
+  lượng từ tỷ lệ mẫu huấn luyện rơi vào lá đó.}
+  \label{fig:tree}
+\end{figure}
+
+Cây quyết định đơn lẻ có ưu điểm diễn giải trực quan (Hình~\ref{fig:tree}) và
+tự nhiên xử lý được cả đặc trưng số lẫn phân loại, nhưng có \textbf{phương sai
+rất cao}: chỉ cần thay đổi nhỏ trong dữ liệu huấn luyện cũng có thể dẫn đến một
+cấu trúc cây hoàn toàn khác, dễ học vẹt nếu để cây phát triển quá sâu.
+
+\subsection{Bagging (Bootstrap Aggregating)}
+
+Để giảm phương sai của cây quyết định, \textbf{bagging} huấn luyện nhiều cây
+độc lập trên các tập dữ liệu được lấy mẫu lại (bootstrap) từ tập huấn luyện
+gốc, rồi tổng hợp kết quả dự báo.
+
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{%
+  \begin{tikzpicture}[
+      node distance=6mm and 9mm,
+      box/.style={draw, rounded corners, align=center, font=\small, minimum width=2.1cm, minimum height=0.9cm},
+      >={Stealth[length=2mm]}
+    ]
+    \node[box, fill=gray!10] (D) {Tập dữ liệu\\huấn luyện $D$};
+
+    \node[box, fill=blue!8, right=of D, yshift=2.4cm] (b1) {Mẫu bootstrap\\$D_1$};
+    \node[box, fill=blue!8, right=of D] (b2) {Mẫu bootstrap\\$D_2$};
+    \node[box, fill=blue!8, right=of D, yshift=-2.4cm] (b3) {Mẫu bootstrap\\$D_B$};
+
+    \node[box, fill=green!10, right=of b1] (t1) {Cây $T_1$};
+    \node[box, fill=green!10, right=of b2] (t2) {Cây $T_2$};
+    \node[box, fill=green!10, right=of b3] (t3) {Cây $T_B$};
+
+    \node[box, fill=orange!15, right=18mm of t2] (agg) {Tổng hợp\\(vote / trung bình)};
+
+    \draw[->] (D) -- (b1);
+    \draw[->] (D) -- (b2);
+    \draw[->] (D) -- (b3);
+    \draw[->] (b1) -- (t1);
+    \draw[->] (b2) -- (t2);
+    \draw[->] (b3) -- (t3);
+    \draw[->] (t1) -- (agg);
+    \draw[->] (t2) -- (agg);
+    \draw[->] (t3) -- (agg);
+
+    \node[right=6mm of agg, align=left, font=\small] (out) {Dự báo\\cuối cùng};
+    \draw[->] (agg) -- (out);
+  \end{tikzpicture}}
+  \caption{Sơ đồ nguyên lý Bagging: $B$ cây được huấn luyện độc lập trên các
+  mẫu bootstrap khác nhau, kết quả được tổng hợp bằng biểu quyết đa số (phân
+  loại) hoặc trung bình (hồi quy).}
+  \label{fig:bagging}
+\end{figure}
+
+Mỗi mẫu bootstrap $D_b$ ($b = 1, \ldots, B$) có cùng kích thước với $D$ nhưng
+được lấy \textbf{có hoàn lại}, nên trung bình khoảng 63.2\% số mẫu gốc xuất
+hiện trong mỗi $D_b$ (một số mẫu lặp lại, một số không xuất hiện). Với bài
+toán phân loại, dự báo cuối cùng là lớp chiếm đa số trong $B$ dự báo:
+
+\[
+  \hat{y}(\mathbf{x}) = \text{mode}\big\{ T_1(\mathbf{x}), T_2(\mathbf{x}),
+  \ldots, T_B(\mathbf{x}) \big\}.
+\]
+
+Vì các cây được huấn luyện trên các mẫu khác nhau nên sai số của chúng có xu
+hướng \textbf{không tương quan hoàn toàn}; việc lấy trung bình/biểu quyết giúp
+triệt tiêu bớt nhiễu ngẫu nhiên, giảm phương sai tổng thể mà không làm tăng
+đáng kể độ chệch.
+
+\subsection{Random Forest}
+
+Random Forest cải tiến bagging bằng cách thêm một nguồn ngẫu nhiên hoá thứ
+hai: tại \textbf{mỗi nút} của mỗi cây, thay vì xét toàn bộ $p$ đặc trưng để tìm
+điểm chia tốt nhất, thuật toán chỉ xét một tập con ngẫu nhiên gồm
+$m < p$ đặc trưng (thường $m \approx \sqrt{p}$ cho bài toán phân loại). Cơ chế
+này \textbf{decorrelate} (giảm tương quan) giữa các cây: nếu không có bước
+này, các cây bagging vẫn có xu hướng chọn cùng một vài đặc trưng mạnh nhất ở
+gần gốc, khiến chúng giống nhau và hạn chế hiệu quả giảm phương sai.
+
+\subsection{Độ quan trọng đặc trưng}
+\label{sec:rf_importance}
+
+Random Forest cung cấp một thước đo độ quan trọng đặc trưng dựa trên tổng độ
+giảm tạp chất (Mean Decrease in Impurity):
+
+\[
+  \text{Importance}(x_j) = \frac{1}{B} \sum_{b=1}^{B} \;
+  \sum_{t \in T_b : \, \text{split trên } x_j} \frac{N_t}{N} \Delta\text{Gini}(t),
+\]
+
+tức trung bình cộng (qua toàn bộ $B$ cây) tổng mức giảm Gini tại các nút sử
+dụng đặc trưng $x_j$ để chia, có trọng số theo tỷ lệ mẫu đi qua nút đó. Đây là
+thước đo \code{feature\_importances\_} mặc định của Random Forest trong
+scikit-learn.
+
+\subsection{Ưu điểm và hạn chế}
+
+\textbf{Ưu điểm:}
+\begin{itemize}[leftmargin=*]
+  \item Tự nắm bắt quan hệ phi tuyến và tương tác giữa các đặc trưng mà không
+        cần khai báo thủ công.
+  \item Bền vững với giá trị ngoại lai và không yêu cầu chuẩn hoá dữ liệu.
+  \item Cơ chế tổng hợp nhiều cây giúp giảm phương sai, hạn chế học vẹt so với
+        một cây đơn lẻ; đồng thời cung cấp thước đo độ quan trọng đặc trưng.
+\end{itemize}
+
+\textbf{Hạn chế:}
+\begin{itemize}[leftmargin=*]
+  \item Mô hình cồng kềnh (gồm $B$ cây), tốc độ dự báo chậm hơn và khó diễn
+        giải chi tiết so với hồi quy tuyến tính.
+  \item Với dữ liệu mất cân bằng, cần kết hợp thêm trọng số lớp hoặc kỹ thuật
+        lấy mẫu lại mới nhận diện tốt nhóm thiểu số.
+  \item Không hỗ trợ xử lý giá trị thiếu trực tiếp trong hầu hết cài đặt phổ
+        biến (như scikit-learn). Đặc trưng tương quan mạnh cũng làm sai lệch
+        thước đo độ quan trọng --- tầm quan trọng thực sự bị ``chia sẻ'' giữa
+        các đặc trưng tương quan với nhau.
+\end{itemize}
+
+\section{Gradient Boosting và CatBoost}
+\label{sec:catboost}
+
+\subsection{Nguyên lý Gradient Boosting}
+
+Khác với bagging (huấn luyện các cây \textbf{độc lập} rồi tổng hợp), boosting
+xây dựng mô hình theo kiểu \textbf{tuần tự} (additive): mỗi cây mới được huấn
+luyện để sửa chữa sai số của tổ hợp các cây trước đó. Gọi $F_m(\mathbf{x})$ là
+mô hình tổng hợp sau $m$ vòng, gradient boosting cập nhật:
+
+\[
+  F_m(\mathbf{x}) = F_{m-1}(\mathbf{x}) + \eta \, h_m(\mathbf{x}),
+\]
+
+trong đó $\eta \in (0, 1]$ là tốc độ học (learning rate) và $h_m$ là một cây
+quyết định yếu (thường nông, vài tầng), được huấn luyện để xấp xỉ
+\textbf{gradient âm} của hàm mất mát tại $F_{m-1}$ --- gọi là \textbf{giả
+phần dư} (pseudo-residual):
+
+\[
+  r_i^{(m)} = -\left[ \frac{\partial \, \ell(y_i, F(\mathbf{x}_i))}
+  {\partial \, F(\mathbf{x}_i)} \right]_{F = F_{m-1}}.
+\]
+
+Với hàm mất mát log-loss (như ở Logistic Regression), giả phần dư có dạng đơn
+giản $r_i^{(m)} = y_i - \hat{p}_i^{(m-1)}$ --- tức phần chênh lệch giữa nhãn
+thật và xác suất dự báo hiện tại. Cây $h_m$ được huấn luyện để dự báo chính
+các giả phần dư này, và mô hình dần được "sửa lỗi" qua từng vòng lặp.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+      node distance=5mm,
+      box/.style={draw, rounded corners, align=center, font=\small, minimum height=0.9cm},
+      >={Stealth[length=2mm]}
+    ]
+    \node[box, fill=gray!10, minimum width=1.7cm] (f0) {$F_0$\\(hằng số)};
+    \node[box, fill=blue!8, right=of f0, minimum width=1.7cm] (h1) {$h_1$};
+    \node[box, fill=gray!10, right=of h1, minimum width=1.7cm] (f1) {$F_1$};
+    \node[box, fill=blue!8, right=of f1, minimum width=1.7cm] (h2) {$h_2$};
+    \node[box, fill=gray!10, right=of h2, minimum width=1.7cm] (f2) {$F_2$};
+    \node[right=4mm of f2, font=\small] (dots) {$\cdots$};
+    \node[box, fill=gray!10, right=8mm of dots, minimum width=1.9cm] (fm) {$F_M$};
+
+    \draw[->] (f0) -- node[above, font=\scriptsize] {residual $r^{(1)}$} (h1);
+    \draw[->] (h1) -- node[above, font=\scriptsize] {$+\,\eta h_1$} (f1);
+    \draw[->] (f1) -- node[above, font=\scriptsize] {residual $r^{(2)}$} (h2);
+    \draw[->] (h2) -- node[above, font=\scriptsize] {$+\,\eta h_2$} (f2);
+    \draw[->] (f2) -- (dots);
+    \draw[->] (dots) -- (fm);
+  \end{tikzpicture}
+  \caption{Sơ đồ boosting tuần tự: mỗi cây yếu $h_m$ được huấn luyện để dự báo
+  giả phần dư của mô hình tổng hợp ở vòng trước, sau đó được cộng dồn (có
+  trọng số $\eta$) vào mô hình.}
+  \label{fig:boosting}
+\end{figure}
+
+CatBoost và LightGBM đều thuộc họ \textbf{Gradient Boosted Decision Trees}
+(GBDT) --- dùng cây quyết định làm bộ học yếu $h_m$ --- nhưng khác nhau đáng
+kể ở cách hiện thực hoá nhằm giải quyết các nhược điểm cố hữu của GBDT
+truyền thống, được trình bày ở các mục tiếp theo.
+
+\subsection{Ordered Boosting}
+
+Một vấn đề tinh vi của GBDT truyền thống là \textbf{prediction shift}
+(lệch dự báo, hay rò rỉ mục tiêu): giả phần dư $r_i^{(m)}$ của một mẫu
+$\mathbf{x}_i$ được tính từ mô hình $F_{m-1}$ vốn \textbf{đã được huấn luyện
+trên chính mẫu đó} ở các vòng trước, khiến giả phần dư bị chệch (thiên lệch
+lạc quan) so với giả phần dư thật sự trên dữ liệu chưa nhìn thấy.
+
+CatBoost khắc phục vấn đề này bằng \textbf{Ordered Boosting}: tại mỗi vòng, dữ
+liệu được xáo trộn ngẫu nhiên theo một hoán vị $\pi$; giả phần dư của mẫu thứ
+$i$ trong hoán vị chỉ được tính từ một mô hình $F_{m-1}^{(i)}$ huấn luyện
+\textbf{riêng} trên các mẫu \textbf{đứng trước} $i$ trong hoán vị đó
+($\{\mathbf{x}_j : \pi(j) < \pi(i)\}$) --- tức mô hình dùng để tính giả phần dư
+của một mẫu chưa từng ``nhìn thấy'' nhãn của chính mẫu đó. Trong thực tế,
+CatBoost duy trì đồng thời nhiều mô hình phụ trợ ứng với nhiều tiền tố của
+hoán vị để việc này khả thi về mặt tính toán, thay vì huấn luyện lại từ đầu
+cho mỗi mẫu.
+
+\subsection{Ordered Target Statistics cho đặc trưng phân loại}
+
+Với đặc trưng phân loại có nhiều mức giá trị (ví dụ \code{region} trong dữ
+liệu OULAD), CatBoost không dùng one-hot encoding (tốn kém khi số mức lớn) mà
+mã hoá mỗi mức giá trị bằng một \textbf{thống kê mục tiêu} (target statistic)
+--- xấp xỉ giá trị trung bình của nhãn ứng với mức giá trị đó. Để tránh rò rỉ
+thông tin (một dạng leakage tương tự prediction shift), thống kê này cũng được
+tính theo nguyên tắc \textit{ordered}, chỉ dùng các mẫu đứng trước trong hoán
+vị ngẫu nhiên:
+
+\[
+  \text{TS}(\mathbf{x}_i^{(k)}) = \frac{\displaystyle\sum_{j : \pi(j) < \pi(i),\, x_j^{(k)} = x_i^{(k)}} y_j \; + \; a \cdot P}
+  {\displaystyle\sum_{j : \pi(j) < \pi(i),\, x_j^{(k)} = x_i^{(k)}} 1 \; + \; a},
+\]
+
+trong đó $x_i^{(k)}$ là giá trị của đặc trưng phân loại thứ $k$ tại mẫu $i$,
+$P$ là giá trị tiên nghiệm (thường là tỷ lệ nhãn dương toàn cục) và $a > 0$ là
+trọng số làm trơn (smoothing), giúp tránh ước lượng cực đoan khi một mức giá
+trị chỉ xuất hiện ở rất ít mẫu đứng trước nó trong hoán vị.
+
+\subsection{Cây đối xứng (Oblivious Trees)}
+
+CatBoost sử dụng \textbf{cây đối xứng} (oblivious trees) làm bộ học yếu: tại
+mỗi \textbf{tầng} của cây, toàn bộ các nút sử dụng \textbf{cùng một} cặp
+(đặc trưng, ngưỡng) để chia, thay vì mỗi nút được chọn độc lập như cây CART
+thông thường. Nhờ vậy, cây đối xứng có thể được biểu diễn như một
+\textbf{bảng tra cứu} (decision table) với $2^d$ lá ứng với $d$ tầng, cho phép
+dự báo cực nhanh (chỉ cần $d$ phép so sánh, không cần duyệt cây), đồng thời
+đóng vai trò như một cơ chế điều chuẩn tự nhiên, giảm nguy cơ học vẹt so với
+cây bất đối xứng thông thường.
+
+\subsection{Ưu điểm và hạn chế}
+
+\textbf{Ưu điểm:}
+\begin{itemize}[leftmargin=*]
+  \item Xử lý trực tiếp và hiệu quả các đặc trưng phân loại nhờ Ordered Target
+        Statistics, không cần mã hoá thủ công.
+  \item Ordered Boosting giảm đáng kể prediction shift, giúp mô hình ổn định
+        và ít học vẹt ngay cả khi chưa tinh chỉnh nhiều.
+  \item Bền vững với ngoại lai, nắm bắt tốt quan hệ phi tuyến, hỗ trợ trọng số
+        lớp để bù đắp mất cân bằng nhãn, và tự động xử lý giá trị thiếu.
+  \item Tốc độ dự báo rất nhanh nhờ cấu trúc cây đối xứng.
+\end{itemize}
+
+\textbf{Hạn chế:}
+\begin{itemize}[leftmargin=*]
+  \item Thời gian huấn luyện thường lâu hơn LightGBM, do chi phí duy trì nhiều
+        mô hình phụ trợ cho Ordered Boosting.
+  \item Vẫn là mô hình dạng ``hộp đen'', cần công cụ bổ trợ (như SHAP) để diễn
+        giải chi tiết từng dự báo.
+  \item Kích thước mô hình khi lưu trữ thường nặng hơn so với các thuật toán
+        cây khác.
+\end{itemize}
+
+\section{LightGBM}
+
+LightGBM cũng là một hiện thực hoá của GBDT (Mục~\ref{sec:catboost}), nhưng
+theo hướng tối ưu \textbf{tốc độ và bộ nhớ} trên tập dữ liệu lớn, thông qua ba
+cải tiến chính: cách cây tăng trưởng, cách lấy mẫu dữ liệu, và cách nén đặc
+trưng.
+
+\subsection{Tăng trưởng cây theo lá (Leaf-wise Growth)}
+
+Hầu hết cài đặt GBDT truyền thống (bao gồm cả cây đối xứng của CatBoost) phát
+triển cây theo \textbf{tầng} (level-wise/depth-wise): tại mỗi vòng, \textbf{tất
+cả} các lá ở tầng hiện tại đều được xét để chia trước khi chuyển sang tầng kế
+tiếp, tạo ra cây cân đối. LightGBM thay vào đó phát triển cây theo
+\textbf{lá} (leaf-wise, hay best-first): ở mỗi bước, thuật toán chỉ chia
+\textbf{một} lá --- lá mang lại mức giảm mất mát lớn nhất trong số tất cả các
+lá hiện có --- bất kể lá đó nằm ở tầng nào.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.47\textwidth}
+    \centering
+    \begin{tikzpicture}[
+        level distance=11mm, sibling distance=13mm,
+        every node/.style={circle, draw, fill=blue!10, minimum size=5.5mm, font=\scriptsize}
+      ]
+      \node {}
+        child { node {}
+          child { node {} }
+          child { node {} }
+        }
+        child { node {}
+          child { node {} }
+          child { node {} }
+        };
+    \end{tikzpicture}
+    \caption{Level-wise: chia đều tất cả các lá ở mỗi tầng, cây cân đối.}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.47\textwidth}
+    \centering
+    \begin{tikzpicture}[
+        level distance=11mm,
+        every node/.style={circle, draw, fill=orange!15, minimum size=5.5mm, font=\scriptsize}
+      ]
+      \node {}
+        child { node {}
+          child { node {}
+            child { node {} }
+            child { node {} }
+          }
+          child { node {} }
+        }
+        child { node {} };
+    \end{tikzpicture}
+    \caption{Leaf-wise: luôn chia lá giảm mất mát nhiều nhất, cây bất đối
+    xứng.}
+  \end{subfigure}
+  \caption{So sánh chiến lược tăng trưởng cây level-wise (trái) và leaf-wise
+  (phải) với cùng số lá.}
+  \label{fig:growth}
+\end{figure}
+
+Như minh hoạ ở Hình~\ref{fig:growth}, với cùng số lượng lá, chiến lược
+leaf-wise thường đạt mức giảm mất mát lớn hơn level-wise (vì luôn ưu tiên
+``điểm nóng'' của sai số), nhưng đổi lại có thể tạo ra cây \textbf{sâu và lệch}
+hơn --- dễ học vẹt hơn trên tập dữ liệu nhỏ nếu không kiểm soát chặt các siêu
+tham số như \code{num\_leaves}, \code{max\_depth} hay
+\code{min\_child\_samples}.
+
+\subsection{GOSS --- Gradient-based One-Side Sampling}
+
+Trực giác của GOSS: những mẫu có \textbf{gradient lớn} (mô hình hiện tại dự
+báo sai nhiều) đóng góp nhiều thông tin hơn cho việc tìm điểm chia tốt ở vòng
+tiếp theo, trong khi những mẫu có gradient nhỏ (đã được dự báo tốt) đóng góp
+ít hơn. GOSS khai thác điều này để giảm số mẫu cần xét khi tìm điểm chia:
+
+\begin{itemize}[leftmargin=*]
+  \item Giữ lại \textbf{toàn bộ} $a\%$ số mẫu có gradient (trị tuyệt đối) lớn
+        nhất.
+  \item Lấy mẫu \textbf{ngẫu nhiên} $b\%$ trong số các mẫu gradient nhỏ còn
+        lại.
+  \item Để không làm chệch ước lượng độ giảm mất mát (vì đã bỏ bớt mẫu gradient
+        nhỏ), gradient của các mẫu được lấy mẫu ngẫu nhiên này được
+        \textbf{nhân bù} với hệ số $\frac{1-a}{b}$ khi tính toán thống kê tại
+        mỗi điểm chia tiềm năng.
+\end{itemize}
+
+Nhờ đó, LightGBM có thể tìm điểm chia gần chính xác như khi dùng toàn bộ dữ
+liệu, nhưng chỉ cần xét một tập con nhỏ hơn nhiều --- giảm đáng kể thời gian
+huấn luyện trên tập dữ liệu lớn.
+
+\subsection{EFB --- Exclusive Feature Bundling}
+
+Với dữ liệu có nhiều đặc trưng thưa và \textbf{loại trừ lẫn nhau} (mutually
+exclusive --- hiếm khi cùng khác 0, điển hình là các đặc trưng one-hot từ mã
+hoá biến phân loại nhiều mức), EFB gộp nhiều đặc trưng như vậy thành
+\textbf{một} đặc trưng tổng hợp duy nhất, bằng cách gán cho mỗi đặc trưng gốc
+một khoảng giá trị riêng biệt trong đặc trưng gộp. Việc xác định nhóm đặc
+trưng nào có thể gộp với nhau (cho phép một tỷ lệ xung đột nhỏ, có kiểm soát)
+được quy về bài toán \textbf{tô màu đồ thị} (graph coloring) trên đồ thị xung
+đột giữa các đặc trưng, giải gần đúng bằng thuật toán tham lam (greedy). Kết
+quả là số lượng đặc trưng cần xét khi xây dựng histogram cho việc tìm điểm
+chia giảm đáng kể, kéo theo tốc độ huấn luyện nhanh hơn mà hầu như không đánh
+đổi độ chính xác.
+
+\subsection{Ưu điểm và hạn chế}
+
+\textbf{Ưu điểm:}
+\begin{itemize}[leftmargin=*]
+  \item Huấn luyện rất nhanh và tiết kiệm bộ nhớ nhờ GOSS và EFB, phù hợp với
+        tập dữ liệu lớn (hàng trăm nghìn bản ghi khi tính theo nhiều mốc thời
+        gian).
+  \item Chiến lược leaf-wise giúp đạt độ chính xác cao với số lá ít hơn so với
+        level-wise.
+  \item Nắm bắt tốt quan hệ phi tuyến và tương tác; bền vững với đa cộng tuyến
+        và giá trị ngoại lai; tự động xử lý được giá trị thiếu và hỗ trợ trọng
+        số lớp để bù mất cân bằng nhãn.
+\end{itemize}
+
+\textbf{Hạn chế:}
+\begin{itemize}[leftmargin=*]
+  \item Dễ học vẹt nếu không tinh chỉnh cẩn thận --- cây leaf-wise có thể phát
+        triển sâu và lệch, nhất là khi dữ liệu tại một số mốc thời gian còn
+        ít.
+  \item Nhạy với việc chọn siêu tham số (đặc biệt \code{num\_leaves} và
+        \code{min\_child\_samples}), cần tinh chỉnh kỹ để đạt hiệu quả tốt.
+  \item Là mô hình dạng ``hộp đen'', khó diễn giải trực tiếp nếu không dùng
+        công cụ bổ trợ.
+\end{itemize}
+
+\section{So sánh tổng quan bốn thuật toán}
+
+Bảng~\ref{tab:compare_theory} tổng hợp bốn thuật toán theo các tiêu chí thực
+tiễn liên quan trực tiếp đến đặc điểm dữ liệu của bài toán cảnh báo sớm rủi ro
+học tập.
+
+\begin{table}[H]
+  \centering
+  \caption{So sánh đặc điểm lý thuyết của bốn thuật toán.}
+  \label{tab:compare_theory}
+  \small
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lllll}
+    \toprule
+    \textbf{Tiêu chí} & \textbf{LogReg} & \textbf{Random Forest} &
+    \textbf{CatBoost} & \textbf{LightGBM} \\
+    \midrule
+    Kiểu học tập hợp        & Không          & Bagging        & Boosting        & Boosting \\
+    Nắm bắt phi tuyến       & Không          & Có             & Có              & Có \\
+    Cần chuẩn hoá dữ liệu   & Có             & Không          & Không           & Không \\
+    Xử lý đặc trưng phân loại & Cần mã hoá   & Cần mã hoá     & Tự động (Ordered TS) & Tự động (giới hạn) \\
+    Xử lý giá trị thiếu     & Không          & Không          & Có              & Có \\
+    Bền vững với ngoại lai  & Thấp           & Cao            & Cao             & Cao \\
+    Khả năng diễn giải      & Cao            & Trung bình     & Thấp            & Thấp \\
+    Tốc độ huấn luyện       & Rất nhanh      & Trung bình     & Chậm nhất       & Nhanh nhất \\
+    Tốc độ dự báo           & Rất nhanh      & Trung bình     & Rất nhanh       & Nhanh \\
+    Nguy cơ học vẹt         & Thấp           & Trung bình     & Thấp (Ordered Boosting) & Trung bình--cao (leaf-wise) \\
+    \bottomrule
+  \end{tabular}}
+\end{table}
+
+Bốn thuật toán trình bày ở trên bổ khuyết cho nhau về mặt lý thuyết: Logistic
+Regression cung cấp một mô hình cơ sở đơn giản, nhanh và dễ diễn giải nhưng bị
+giới hạn bởi giả định tuyến tính; Random Forest và hai thuật toán boosting
+(CatBoost, LightGBM) đều dựa trên cây quyết định nên tự nhiên nắm bắt được
+quan hệ phi tuyến và tương tác giữa các đặc trưng --- đặc điểm đã được xác
+nhận là tồn tại rõ trong dữ liệu ở Phần I --- nhưng khác biệt về cơ chế tổng
+hợp (song song vs.\ tuần tự) và do đó có đặc tính bias--variance khác nhau.
+Trong hai thuật toán boosting, CatBoost ưu tiên xử lý đặc trưng phân loại và
+giảm rò rỉ mục tiêu một cách nguyên bản, còn LightGBM ưu tiên tốc độ và khả
+năng mở rộng trên dữ liệu lớn. Phần III trình bày kết quả huấn luyện và so
+sánh trực tiếp cả bốn thuật toán này trên chính dữ liệu của bài toán cảnh báo
+sớm rủi ro học tập, đối chiếu những đánh đổi lý thuyết vừa nêu trên thực
+nghiệm.
+
+% =====================================================================
+%  PHẦN III — XÂY DỰNG VÀ SO SÁNH MÔ HÌNH
+% =====================================================================
+\part{Xây dựng và so sánh mô hình}
+
+\section{Tiền xử lý dữ liệu}
+
+Kế thừa kết quả phân tích khám phá dữ liệu ở Phần I và cơ sở lý thuyết bốn
+thuật toán ở Phần II, phần này trình bày quá trình xây dựng và so sánh mô hình
+học máy cho bài toán cảnh báo sớm rủi ro học tập. Bài toán được xác định lại ở
+dạng \textbf{phân loại nhị phân}: nhận diện sinh viên \textbf{có nguy cơ}
+(At-risk) --- gộp từ hai nhóm kết quả trượt môn (Fail) và bỏ học (Withdrawn)
+--- so với nhóm \textbf{hoàn thành} (Pass), dựa trên đặc trưng nhân khẩu học và
+hành vi học tập tích luỹ đến một mốc thời gian xác định trong khoá học.
+
+\subsection{Điền giá trị thiếu ở đặc trưng động}
+
+Các đặc trưng phản ánh hành vi học tập tích luỹ (tương tác với hệ thống học
+trực tuyến và kết quả bài đánh giá) có giá trị thiếu ở những sinh viên chưa
+từng tương tác hoặc chưa nộp bài nào tính đến mốc thời gian quan sát. Quy tắc
+điền khuyết được áp dụng riêng cho từng nhóm đặc trưng:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Đặc trưng tương tác VLE} (\code{total\_clicks},
+        \code{active\_weeks}, \code{avg\_weekly\_clicks}) và \textbf{đặc trưng
+        bài đánh giá} (\code{num\_submitted}, \code{num\_failed}) --- điền bằng
+        0, vì giá trị thiếu ở đây đồng nghĩa với việc sinh viên chưa phát sinh
+        hoạt động nào.
+  \item \code{avg\_score} --- điền bằng giá trị \textbf{-1} (nằm ngoài thang
+        điểm $[0, 100]$) để phân biệt rõ ràng với trường hợp sinh viên nộp bài
+        và bị điểm 0.
+  \item \code{avg\_days\_early} --- điền bằng 0; thông tin về việc sinh viên
+        không nộp bài dù đã đến hạn đã được nắm bắt riêng bởi đặc trưng nhị
+        phân \code{no\_submission\_despite\_due}, nên việc điền 0 ở đây không
+        gây nhầm lẫn.
+\end{itemize}
+
+Sau bước điền khuyết, toàn bộ đặc trưng động không còn giá trị thiếu.
+
+\subsection{Xử lý giá trị thiếu ở \code{imd\_band}}
+
+Như đã trình bày ở Mục~\ref{sec:imd} (Phần I), biến \code{imd\_band} (chỉ số
+thiếu thốn kinh tế theo khu vực) có một dạng thiếu riêng biệt, được mã hoá bằng
+ký hiệu \code{'?'} thay vì giá trị rỗng thông thường. Trước khi điền khuyết,
+cơ chế thiếu được kiểm định thống kê để lựa chọn phương án xử lý phù hợp:
+
+\begin{itemize}[leftmargin=*]
+  \item Kiểm định \textbf{Mann--Whitney U} với các biến số
+        (\code{num\_of\_prev\_attempts}, \code{studied\_credits}) đều cho
+        $p < 0.05$ --- bác bỏ giả thuyết thiếu hoàn toàn ngẫu nhiên (MCAR).
+  \item Kiểm định \textbf{Chi-square} với các biến phân loại
+        (\code{region}, \code{gender}, \code{highest\_education},
+        \code{disability}, \code{final\_result}, \code{code\_module}) đều cho
+        $p < 0.05$, trong đó \code{region} có hệ số Cramér's V cao nhất
+        ($V = 0.577$) --- xác nhận cơ chế \textbf{thiếu ngẫu nhiên có điều
+        kiện} (MAR), phụ thuộc mạnh vào vùng địa lý.
+\end{itemize}
+
+Với kết luận MAR, giá trị thiếu được điền theo \textbf{phân phối riêng của
+từng vùng} (ước lượng trên tập huấn luyện), đồng thời một biến chỉ báo
+\code{imd\_missing} được tạo thêm để mô hình có thể tận dụng chính tín hiệu
+``thiếu dữ liệu'' như một đặc trưng dự báo. Sau bước xử lý, biến
+\code{imd\_band\_filled} không còn giá trị thiếu ở cả hai tập huấn luyện và
+kiểm tra.
+
+\subsection{Mã hoá đặc trưng phân loại}
+
+Các đặc trưng phân loại được mã hoá theo bản chất của từng biến, tóm tắt ở
+Bảng~\ref{tab:encoding}.
+
+\begin{table}[H]
+  \centering
+  \caption{Phương án mã hoá các đặc trưng phân loại.}
+  \label{tab:encoding}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Đặc trưng} & \textbf{Kiểu mã hoá} & \textbf{Lý do} \\
+    \midrule
+    \code{disability}         & Nhị phân & Y $\to$ 1, N $\to$ 0 \\
+    \code{highest\_education} & Thứ tự (ordinal) & Có thứ bậc học vấn rõ ràng \\
+    \code{imd\_band\_filled}  & Thứ tự (ordinal) & Có thứ bậc mức độ nghèo \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Ba đặc trưng nhân khẩu học còn lại từ dữ liệu gốc --- \code{gender},
+\code{region}, \code{age\_band} --- không được đưa vào ma trận đặc trưng huấn
+luyện. Các đặc trưng nhân khẩu học được giữ lại (\code{highest\_education},
+\code{disability}, \code{imd\_band\_filled}) là những đặc trưng đã cho thấy
+liên hệ rõ ràng với kết quả học tập ở Phần I.
+
+\subsection{Tập đặc trưng cuối cùng}
+
+Sau các bước xử lý trên, ma trận đặc trưng dùng cho huấn luyện mô hình gồm
+\textbf{15 đặc trưng}:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Tĩnh (5):} \code{highest\_education}, \code{disability},
+        \code{num\_of\_prev\_attempts}, \code{studied\_credits},
+        \code{imd\_band\_filled}, cùng biến chỉ báo \code{imd\_missing}.
+  \item \textbf{Động (9):} \code{total\_clicks\_filled},
+        \code{active\_weeks\_filled}, \code{avg\_weekly\_clicks\_filled},
+        \code{num\_due}, \code{num\_submitted\_filled},
+        \code{avg\_score\_filled}, \code{num\_failed\_filled},
+        \code{avg\_days\_early\_filled}, \code{no\_submission\_despite\_due}.
+\end{itemize}
+
+Việc chia tập huấn luyện và kiểm tra được giữ nguyên theo \textbf{từng sinh
+viên} như đã thiết lập ở Bảng~\ref{tab:split} (Phần I, tỷ lệ 80:20), đảm bảo
+không xảy ra rò rỉ dữ liệu giữa hai tập.
+
+\subsection{Chuẩn hoá bài toán về phân loại nhị phân}
+
+Với mục tiêu cảnh báo sớm, ranh giới quan trọng nhất không nằm giữa Fail và
+Withdrawn, mà giữa nhóm \textbf{hoàn thành} và nhóm \textbf{không hoàn thành}
+học phần. Do đó, nhãn mục tiêu được chuẩn hoá lại:
+
+\[
+  \text{At-risk (1)} = \text{Fail} \cup \text{Withdrawn}, \qquad
+  \text{Pass (0)} = \text{Pass}.
+\]
+
+Phép gộp nhãn này được áp dụng thống nhất cho toàn bộ dữ liệu dạng panel, tức
+trên mọi bản ghi ở cả tám mốc dự đoán $T \in \{30, 60, \ldots, 240\}$ đã thiết
+kế ở Mục~\ref{sec:panel_design} (Phần I) --- không giới hạn ở một mốc thời
+gian cụ thể nào. Với dữ liệu đã ở dạng nhị phân, câu hỏi tiếp theo là mốc dự
+đoán nào nên được chọn để huấn luyện và đánh giá mô hình; đây là nội dung được
+khảo sát ở phần kế tiếp.
+
+\section{Khảo sát sơ bộ theo các mốc dự đoán}
+\label{sec:snapshot_survey}
+
+Trước khi đi sâu so sánh nhiều thuật toán tại một mốc thời gian cố định, cần
+khảo sát sơ bộ hiệu suất mô hình học máy \textbf{xuyên suốt toàn bộ các mốc dự
+đoán} đã thiết kế ở Mục~\ref{sec:panel_design} (Phần I), nhằm hai mục đích: (i) hiểu xu hướng
+biến động hiệu suất theo thời gian khi sinh viên tích luỹ ngày càng nhiều hành
+vi học tập, và (ii) làm cơ sở lựa chọn một mốc thời gian đại diện, phù hợp cho
+các thử nghiệm chuyên sâu ở phần sau.
+
+\subsection{Thiết lập thử nghiệm}
+
+Với mỗi mốc dự đoán $T$, một mô hình \textbf{Logistic Regression} được huấn
+luyện riêng, chỉ sử dụng dữ liệu của đúng mốc đó --- đây cũng là thuật toán cơ
+sở, đơn giản và dễ diễn giải nhất trong bốn thuật toán đã trình bày cơ sở lý
+thuyết ở Phần II, phù hợp để khảo sát nhanh xu hướng hiệu suất theo thời gian
+trước khi mở rộng sang các mô hình phức tạp hơn. Quy trình tinh chỉnh áp dụng
+cho từng mô hình tương tự cách tiếp cận sẽ được dùng ở giai đoạn so sánh nhiều
+thuật toán tại Mục~\ref{sec:methodology}: dữ liệu được chuẩn hoá bằng
+\code{StandardScaler} (fit trên train-fold, tránh rò rỉ dữ liệu), siêu tham số
+điều chuẩn $C$ của mô hình (Mục~\ref{sec:logreg_reg}), tỷ lệ oversampling
+SMOTE và trọng số lớp At-risk được tinh chỉnh đồng thời bằng Optuna (30 lượt
+thử nghiệm, kiểm định chéo phân tầng 3-fold), sau đó huấn luyện lại trên toàn
+bộ tập huấn luyện của mốc đó và đánh giá trên tập kiểm tra giữ nguyên.
+
+Một lưu ý về mặt phương pháp: ở lần thử đầu tiên, hàm mục tiêu tối ưu là
+\textit{recall thuần} của lớp At-risk, nhưng cách làm này khiến mô hình suy
+biến về việc dự đoán \textbf{toàn bộ} sinh viên đều là At-risk (recall đạt gần
+tuyệt đối nhưng precision rất thấp, không có giá trị thực tiễn). Hàm mục tiêu
+sau đó được đổi sang \textbf{F1-score của lớp At-risk} để buộc mô hình cân
+bằng giữa precision và recall --- đây là hàm mục tiêu được giữ nguyên xuyên
+suốt các thử nghiệm còn lại của báo cáo.
+
+\subsection{Kết quả theo thời gian}
+
+Bảng~\ref{tab:snapshot_results} tổng hợp hiệu suất trên tập kiểm tra của tám
+mô hình, mỗi mô hình ứng với một mốc dự đoán.
+
+\input{table_snapshot_results}
+
+Hình~\ref{fig:trend_snapshot} trực quan hoá xu hướng của bốn chỉ số theo mốc
+thời gian.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{trend_by_snapshot.png}
+  \caption{Xu hướng hiệu suất mô hình theo từng mốc dự đoán (mỗi mốc một mô
+  hình riêng).}
+  \label{fig:trend_snapshot}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Accuracy} và \textbf{precision At-risk} tăng \textbf{đơn điệu
+        tuyệt đối} theo thời gian --- không có mốc nào sụt giảm so với mốc
+        liền trước (accuracy từ 0.6488 ở $T=30$ lên 0.8796 ở $T=240$; precision
+        từ 0.5750 lên 0.8269) --- phù hợp với trực giác: sinh viên càng tích
+        luỹ nhiều hành vi học tập, tín hiệu dự báo càng rõ ràng và đáng tin cậy
+        hơn.
+  \item \textbf{Recall At-risk} lại dao động trong một biên độ hẹp
+        (0.7555--0.8013) mà không theo xu hướng rõ ràng, thậm chí đạt giá trị
+        cao nhất ngay ở mốc sớm nhất $T=30$ (0.8013) --- khi độ chính xác tổng
+        thể còn rất thấp (accuracy 0.6488, precision 0.5750). Điều này cho
+        thấy ở giai đoạn đầu khoá, khi tín hiệu hành vi còn thưa thớt, ranh
+        giới tuyến tính của Logistic Regression có xu hướng dự báo At-risk khá
+        rộng rãi --- bắt được phần lớn sinh viên có nguy cơ nhưng đánh đổi
+        bằng rất nhiều cảnh báo nhầm.
+  \item \textbf{F1 At-risk} --- chỉ số tổng hợp được dùng làm mục tiêu tối ưu
+        --- vì vậy cũng tăng đơn điệu tuyệt đối theo thời gian, từ 0.6695
+        ($T=30$) lên 0.8035 ($T=240$), nhưng động lực tăng chủ yếu đến từ
+        \textbf{precision} chứ không phải recall, vốn gần như đi ngang xuyên
+        suốt khoá học.
+\end{itemize}
+
+Ma trận nhầm lẫn của cả tám mô hình được thể hiện ở Hình~\ref{fig:cm_snapshot}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{cm_grid_snapshots.png}
+  \caption{Ma trận nhầm lẫn trên tập kiểm tra tại từng mốc dự đoán.}
+  \label{fig:cm_snapshot}
+\end{figure}
+
+Bảng~\ref{tab:snapshot_params} cho thấy siêu tham số xử lý mất cân bằng nhãn
+mà Optuna lựa chọn theo từng mốc thời gian.
+
+\input{table_snapshot_params}
+
+Trọng số At-risk tối ưu hầu như luôn hội tụ gần giá trị 1 (1.01--1.33) ở mọi
+mốc thời gian, trong khi tỷ lệ SMOTE dao động ở mức khá cao và không theo xu
+hướng rõ rệt (0.42--0.90x). Nói cách khác, với Logistic Regression, việc bổ
+sung mẫu tổng hợp qua SMOTE đóng vai trò chủ đạo trong xử lý mất cân bằng
+nhãn, hơn là điều chỉnh trọng số lớp --- đây là đặc điểm nhất quán của thuật
+toán này, cũng sẽ được quan sát lại khi so sánh với ba thuật toán còn lại ở
+Bảng~\ref{tab:best_params}.
+
+\subsection{Lựa chọn mốc dự đoán cho phân tích chuyên sâu}
+\label{sec:choose_t180}
+
+Kết quả khảo sát cho thấy một sự đánh đổi rõ ràng giữa \textbf{độ tin cậy của
+dự báo} và \textbf{thời gian còn lại để can thiệp}: các mốc càng muộn cho hiệu
+suất càng cao, nhưng đồng thời càng gần thời điểm kết thúc khoá học, làm giảm
+giá trị thực tiễn của một cảnh báo sớm. Với khoá học OULAD kéo dài khoảng
+240--270 ngày, hai mốc cho F1 cao nhất ($T=210$ và $T=240$, lần lượt 0.7935 và
+0.8035) chỉ còn lại khoảng 10--20\% thời lượng khoá học --- quá muộn để nhà
+trường triển khai các biện pháp hỗ trợ có ý nghĩa.
+
+Mốc \textbf{$T=180$ ngày} được chọn làm đại diện cho các thử nghiệm chuyên sâu
+ở phần còn lại của báo cáo, vì đạt được điểm cân bằng hợp lý nhất: hiệu suất
+đã ở mức khá cao (accuracy 0.8451, F1 At-risk 0.7754 --- chỉ thấp hơn khoảng
+0.02 so với mốc $T=210$ liền sau), trong khi vẫn còn khoảng 60--90 ngày
+(25--35\% thời lượng khoá học) để nhà trường can thiệp trước khi khoá học kết
+thúc.
+
+Bảng~\ref{tab:split_t180} tóm tắt quy mô và phân phối nhãn tại mốc $T=180$ sau
+khi gộp nhãn, được dùng thống nhất cho toàn bộ các thử nghiệm từ Mục~
+\ref{sec:methodology} trở đi.
+
+\input{table_split_t180}
+
+Tỷ lệ At-risk chiếm khoảng \textbf{1/3} tổng số sinh viên ở cả hai tập, tương
+đồng giữa train và test --- xác nhận việc chia dữ liệu theo sinh viên không
+gây lệch phân phối nhãn. Đây vẫn là một bài toán \textbf{mất cân bằng nhãn vừa
+phải}, cần được xử lý ở bước huấn luyện mô hình.
+
+\section{Phương pháp xây dựng mô hình}
+\label{sec:methodology}
+
+Kế thừa kết luận ở Mục~\ref{sec:choose_t180}, các thử nghiệm từ đây trở đi tập
+trung vào mốc $T=180$, mở rộng từ một mô hình cơ sở duy nhất (đã dùng để khảo
+sát xu hướng theo thời gian ở Mục~\ref{sec:snapshot_survey}) sang so sánh trực
+tiếp \textbf{bốn thuật toán học máy} khác nhau.
+
+\subsection{Các thuật toán sử dụng}
+
+Bốn thuật toán đã trình bày cơ sở lý thuyết ở Phần II --- Logistic Regression,
+Random Forest, CatBoost và LightGBM --- được đưa vào huấn luyện và so sánh
+trực tiếp trên dữ liệu thực tế. Thuật toán \textbf{SVM (kernel RBF)} được loại
+khỏi phạm vi thử nghiệm do độ phức tạp huấn luyện tăng theo bậc hai với số
+lượng mẫu, không khả thi với quy mô dữ liệu ở mốc $T=180$ (hơn 16 nghìn bản
+ghi huấn luyện) trong khuôn khổ tài nguyên tính toán của nghiên cứu.
+
+\subsection{Xử lý mất cân bằng nhãn}
+
+Hai kỹ thuật được kết hợp đồng thời để xử lý mất cân bằng nhãn:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{SMOTE} (Synthetic Minority Over-sampling Technique): sinh thêm
+        mẫu tổng hợp cho lớp At-risk, với tỷ lệ oversampling là một siêu tham
+        số được tinh chỉnh riêng cho từng mô hình.
+  \item \textbf{Trọng số lớp} (\code{class\_weight}): tăng chi phí phân loại
+        sai đối với lớp At-risk trong hàm mất mát của mô hình, cũng được tinh
+        chỉnh như một siêu tham số --- tương ứng về mặt toán học với hàm mất
+        mát có trọng số đã trình bày ở Mục~\ref{sec:logreg_weight} (Phần II)
+        cho riêng trường hợp Logistic Regression.
+\end{itemize}
+
+Để tránh rò rỉ dữ liệu, \textbf{SMOTE chỉ được áp dụng trên từng fold huấn
+luyện} trong quá trình kiểm định chéo, không áp dụng lên fold kiểm định. Tương
+tự, với Logistic Regression --- mô hình duy nhất cần chuẩn hoá dữ liệu số
+(\code{StandardScaler}) --- bước chuẩn hoá cũng chỉ được ước lượng (fit) trên
+fold huấn luyện.
+
+\subsection{Thiết lập thực nghiệm}
+
+Với mỗi mô hình, siêu tham số của thuật toán được tinh chỉnh \textbf{đồng thời}
+với tỷ lệ SMOTE và trọng số lớp At-risk, thông qua khung tối ưu Bayesian
+\textbf{Optuna} (thuật toán lấy mẫu TPE), với 30 lượt thử nghiệm cho mỗi mô
+hình. Hàm mục tiêu được tối ưu là \textbf{F1-score của lớp At-risk}, đánh giá
+qua kiểm định chéo phân tầng 3-fold (StratifiedKFold) nhằm giữ nguyên tỷ lệ
+lớp ở mỗi fold. Sau khi xác định bộ siêu tham số tốt nhất, mô hình được huấn
+luyện lại trên toàn bộ tập huấn luyện và đánh giá lần cuối trên tập kiểm tra
+giữ nguyên (holdout), độc lập hoàn toàn với quá trình tinh chỉnh.
+
+Các chỉ số đánh giá trên tập kiểm tra gồm: accuracy, precision, recall, F1
+(tính riêng cho lớp At-risk) và ROC-AUC.
+
+\section{Kết quả trên bộ đặc trưng đầy đủ}
+
+Bảng~\ref{tab:compare_full} tổng hợp hiệu suất của bốn mô hình trên tập kiểm
+tra, sử dụng đầy đủ 15 đặc trưng.
+
+\input{table_compare_full}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{CatBoost} đạt accuracy (0.8728) và precision At-risk (0.8464)
+        cao nhất, đồng thời có ROC-AUC cao nhất (0.9304) --- mô hình phân biệt
+        tốt nhất giữa hai lớp trên toàn dải ngưỡng.
+  \item \textbf{LightGBM} đạt F1 At-risk cao nhất (0.8024), nhờ cân bằng tốt
+        giữa precision (0.8076) và recall (0.7973) --- ít bỏ sót sinh viên có
+        nguy cơ hơn CatBoost (recall 0.7576) trong khi độ chính xác dự báo vẫn
+        ở mức cao.
+  \item \textbf{Random Forest} cho kết quả khá tương đồng với hai mô hình
+        boosting, nhưng không vượt trội ở bất kỳ chỉ số nào.
+  \item \textbf{Logistic Regression} có hiệu suất thấp nhất ở mọi chỉ số, phù
+        hợp với kỳ vọng đặt ra từ Phần I và Phần II: dữ liệu tồn tại quan hệ
+        phi tuyến và đa cộng tuyến giữa các đặc trưng hành vi trực tuyến, là
+        những đặc điểm mà mô hình tuyến tính khó nắm bắt đầy đủ.
+\end{itemize}
+
+Ma trận nhầm lẫn (confusion matrix) của từng mô hình trên tập kiểm tra được
+thể hiện ở Hình~\ref{fig:cm_full}.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{cm_logreg_full.png}
+    \caption{Logistic Regression}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{cm_rf_full.png}
+    \caption{Random Forest}
+  \end{subfigure}\\[0.6em]
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{cm_catboost_full.png}
+    \caption{CatBoost}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{cm_lgbm_full.png}
+    \caption{LightGBM}
+  \end{subfigure}
+  \caption{Ma trận nhầm lẫn trên tập kiểm tra --- bộ đặc trưng đầy đủ
+  (T=180).}
+  \label{fig:cm_full}
+\end{figure}
+
+Nhìn chung, phần lớn sai số của cả bốn mô hình đều nằm ở việc \textbf{bỏ sót
+sinh viên At-risk} (dự báo Pass trong khi thực tế At-risk) nhiều hơn là cảnh
+báo nhầm (dự báo At-risk trong khi thực tế Pass). Đây là điểm cần lưu ý khi
+triển khai thực tế: có thể cân nhắc hạ ngưỡng phân loại để tăng recall, chấp
+nhận đánh đổi thêm một số cảnh báo nhầm nhằm giảm thiểu rủi ro bỏ sót sinh
+viên cần hỗ trợ.
+
+\section{Độ quan trọng của đặc trưng}
+\label{sec:feat_importance}
+
+Hình~\ref{fig:feat_imp} thể hiện độ quan trọng đặc trưng theo định nghĩa riêng
+của từng thuật toán (hệ số hồi quy tuyệt đối với Logistic Regression, độ giảm
+tạp chất Gini với Random Forest --- theo công thức ở Mục~\ref{sec:rf_importance}
+--- PredictionValuesChange với CatBoost, và số lần được dùng để phân tách với
+LightGBM) --- các giá trị này \textbf{không cùng đơn vị} nên chỉ so sánh được
+thứ hạng, không so sánh trực tiếp độ lớn giữa các mô hình.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{feature_importance_native.png}
+  \caption{Độ quan trọng đặc trưng (theo định nghĩa riêng của từng mô hình) tại
+  T=180.}
+  \label{fig:feat_imp}
+\end{figure}
+
+Để tổng hợp một thứ hạng chung, mỗi đặc trưng được xếp hạng riêng trong từng
+mô hình rồi lấy trung bình cộng bốn hạng. Bảng~\ref{tab:feature_rank} trình bày
+kết quả, sắp xếp tăng dần theo hạng trung bình.
+
+\input{table_feature_rank}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Nhóm dẫn đầu} --- \code{num\_submitted\_filled} (số bài đã
+        nộp) đứng hạng 1 ở cả ba mô hình cây và hạng 3 ở Logistic Regression,
+        khẳng định đây là tín hiệu dự báo mạnh và nhất quán nhất. Theo sau là
+        \code{avg\_score\_filled} (điểm trung bình) và \code{num\_due} (số bài
+        đến hạn) --- cả ba đều là đặc trưng \textbf{động}, phản ánh trực tiếp
+        mức độ tham gia và kết quả học tập tích luỹ.
+  \item \textbf{Nhóm giữa} gồm các đặc trưng tương tác VLE
+        (\code{total\_clicks\_filled}, \code{active\_weeks\_filled}) và
+        \code{highest\_education} --- đóng góp bổ sung nhưng không mang tính
+        quyết định.
+  \item \textbf{Nhóm cuối} --- \code{studied\_credits}, \code{disability},
+        \code{imd\_missing} có hạng trung bình cao nhất (ít quan trọng nhất),
+        cho thấy các đặc trưng tĩnh mang tính nhân khẩu học có vai trò dự báo
+        khiêm tốn hơn nhiều so với các đặc trưng hành vi động.
+\end{itemize}
+
+\section{Rút gọn đặc trưng: Top-10 và Top-5}
+
+Dựa trên thứ hạng ở Bảng~\ref{tab:feature_rank}, mười đặc trưng quan trọng
+nhất (Top-10) và năm đặc trưng quan trọng nhất (Top-5) được chọn ra để huấn
+luyện lại theo đúng quy trình tinh chỉnh đã mô tả ở Mục~\ref{sec:methodology},
+nhằm kiểm tra hiệu suất mô hình có \textbf{ổn định} hay không khi giảm số
+lượng đặc trưng đầu vào --- một yếu tố quan trọng khi triển khai hệ thống cảnh
+báo thực tế, nơi việc thu thập và duy trì ít đặc trưng hơn giúp đơn giản hoá
+quy trình vận hành.
+
+Bảng~\ref{tab:compare_top10} và Bảng~\ref{tab:compare_top5} trình bày kết quả
+tương ứng với hai bộ đặc trưng rút gọn.
+
+\input{table_compare_top10}
+\input{table_compare_top5}
+
+Hình~\ref{fig:cm_grid} tổng hợp ma trận nhầm lẫn của toàn bộ 8 tổ hợp (bộ đặc
+trưng $\times$ mô hình) trên cùng một lưới để tiện đối chiếu.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{cm_grid_topn.png}
+  \caption{Ma trận nhầm lẫn của bốn mô hình trên hai bộ đặc trưng rút gọn
+  Top-10 và Top-5 (T=180).}
+  \label{fig:cm_grid}
+\end{figure}
+
+Hình~\ref{fig:stability} theo dõi sự biến động của cả năm chỉ số khi số lượng
+đặc trưng giảm dần từ 15 xuống 10 rồi 5.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{stability_featureset.png}
+  \caption{Biến động các chỉ số hiệu suất khi giảm số lượng đặc trưng:
+  Full(15) $\to$ Top-10 $\to$ Top-5 (T=180).}
+  \label{fig:stability}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item Hiệu suất của cả bốn mô hình \textbf{rất ổn định} qua ba bộ đặc trưng
+        --- không có chỉ số nào sụt giảm đáng kể khi giảm từ 15 xuống chỉ còn
+        5 đặc trưng. Điều này khẳng định thêm kết luận ở
+        Mục~\ref{sec:feat_importance}: phần lớn sức
+        mạnh dự báo tập trung ở một nhóm nhỏ đặc trưng hành vi động.
+  \item Đáng chú ý, \textbf{Random Forest ở bộ Top-5 đạt F1 At-risk cao nhất
+        trong toàn bộ thực nghiệm} (0.8040), nhỉnh hơn cả LightGBM ở bộ đặc
+        trưng đầy đủ (0.8024). CatBoost cũng cải thiện nhẹ recall khi giảm đặc
+        trưng (từ 0.7576 ở Full lên 0.8058 ở Top-5).
+  \item \textbf{Logistic Regression} là mô hình duy nhất có xu hướng giảm nhẹ
+        ở hầu hết chỉ số khi giảm đặc trưng --- phù hợp với đặc tính tuyến
+        tính đã trình bày ở Phần II: mô hình này hưởng lợi từ việc có nhiều
+        biến hơn để bù đắp cho khả năng nắm bắt tương tác hạn chế.
+\end{itemize}
+
+Hình~\ref{fig:f1_bar} so sánh trực tiếp F1 At-risk giữa Top-10 và Top-5 cho
+từng mô hình.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{f1_top10_vs_top5.png}
+  \caption{So sánh F1 At-risk giữa bộ Top-10 và Top-5 theo từng mô hình.}
+  \label{fig:f1_bar}
+\end{figure}
+
+Chênh lệch F1 giữa hai bộ đặc trưng rút gọn đều nhỏ hơn 0.01 ở mọi mô hình,
+củng cố nhận định rằng \textbf{bộ Top-5 là lựa chọn hợp lý cho triển khai thực
+tế}, cân bằng tốt giữa hiệu suất và chi phí thu thập/duy trì đặc trưng.
+
+Cuối cùng, Bảng~\ref{tab:best_params} tổng hợp siêu tham số liên quan đến xử lý
+mất cân bằng nhãn mà Optuna lựa chọn cho từng mô hình, ở cả ba bộ đặc trưng.
+
+\input{table_best_params}
+
+Xu hướng chung: các mô hình cây (Random Forest, CatBoost, LightGBM) có trọng
+số At-risk tối ưu dao động rộng (1.03--1.79) tuỳ mô hình và bộ đặc trưng, trong
+khi Logistic Regression luôn hội tụ về trọng số gần 1.0 và tỷ lệ SMOTE tương
+đối cao (0.51--0.90x) --- mô hình tuyến tính dựa nhiều hơn vào việc tạo thêm
+mẫu tổng hợp thay vì điều chỉnh trọng số lớp để xử lý mất cân bằng, nhất quán
+với xu hướng đã quan sát được ở Mục~\ref{sec:snapshot_survey}.
+
+\section{Diễn giải mô hình bằng SHAP}
+
+Để hiểu sâu hơn cơ chế ra quyết định của mô hình, phương pháp \textbf{SHAP}
+(SHapley Additive exPlanations) được áp dụng cho mô hình có F1 At-risk cao
+nhất trên bộ đặc trưng đầy đủ --- \textbf{LightGBM} --- trên cả ba bộ đặc
+trưng (Full, Top-10, Top-5) để đối chiếu mức độ nhất quán của các diễn giải
+khi số lượng đặc trưng thay đổi.
+
+\subsection{Biểu đồ tổng quan (beeswarm và mean\texorpdfstring{$|$}{|}SHAP\texorpdfstring{$|$}{|})}
+
+Hình~\ref{fig:shap_full} trình bày kết quả SHAP trên bộ đặc trưng đầy đủ: biểu
+đồ beeswarm cho biết chiều và độ phân tán ảnh hưởng của từng đặc trưng lên
+từng sinh viên cụ thể, trong khi biểu đồ cột thể hiện mức độ quan trọng trung
+bình.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.58\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{shap_beeswarm_full.png}
+    \caption{Beeswarm}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.38\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{shap_bar_full.png}
+    \caption{Mean $|$SHAP$|$}
+  \end{subfigure}
+  \caption{Diễn giải SHAP của LightGBM trên bộ đặc trưng đầy đủ (15 đặc
+  trưng).}
+  \label{fig:shap_full}
+\end{figure}
+
+Kết quả SHAP đồng thuận cao với thứ hạng độ quan trọng đặc trưng gốc ở
+Bảng~\ref{tab:feature_rank}: \code{num\_submitted\_filled},
+\code{avg\_score\_filled} và \code{active\_weeks\_filled} là ba đặc trưng có
+ảnh hưởng lớn nhất. Chiều tác động phù hợp với trực giác nghiệp vụ: giá trị
+\code{num\_submitted\_filled} và \code{avg\_score\_filled} \textbf{thấp}
+(màu xanh) đẩy dự báo về phía \textbf{At-risk} (SHAP dương), trong khi giá trị
+\textbf{cao} (màu đỏ/tím) kéo dự báo về phía Pass. Riêng \code{num\_due} (số
+bài đến hạn) thể hiện chiều \textbf{ngược lại}: giá trị cao (màu đỏ) lại đẩy
+về phía At-risk --- hợp lý vì số bài đến hạn cao đồng nghĩa với khối lượng
+công việc dồn lại lớn, thường đi kèm nguy cơ trễ hạn hoặc bỏ bài cao hơn.
+
+Hình~\ref{fig:shap_top10} và Hình~\ref{fig:shap_top5} lặp lại phân tích trên
+với hai bộ đặc trưng rút gọn.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.58\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{shap_beeswarm_top10.png}
+    \caption{Beeswarm}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.38\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{shap_bar_top10.png}
+    \caption{Mean $|$SHAP$|$}
+  \end{subfigure}
+  \caption{Diễn giải SHAP của LightGBM trên bộ đặc trưng Top-10.}
+  \label{fig:shap_top10}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.58\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{shap_beeswarm_top5.png}
+    \caption{Beeswarm}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.38\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{shap_bar_top5.png}
+    \caption{Mean $|$SHAP$|$}
+  \end{subfigure}
+  \caption{Diễn giải SHAP của LightGBM trên bộ đặc trưng Top-5.}
+  \label{fig:shap_top5}
+\end{figure}
+
+Thứ tự và chiều ảnh hưởng của các đặc trưng còn lại hầu như \textbf{không đổi}
+khi loại bỏ dần các đặc trưng ít quan trọng --- một bằng chứng bổ sung cho
+tính ổn định của mô hình đã quan sát ở Hình~\ref{fig:stability}, đồng thời cho
+thấy các đặc trưng bị loại bỏ đóng góp thông tin trùng lặp hoặc không đáng kể.
+
+\subsection{Diễn giải cục bộ: hai trường hợp minh hoạ}
+
+Để minh hoạ cách mô hình đưa ra quyết định ở cấp độ từng cá nhân, Hình~
+\ref{fig:waterfall} trình bày biểu đồ waterfall của hai sinh viên đại diện,
+sử dụng mô hình LightGBM trên bộ đặc trưng đầy đủ: một trường hợp bị đẩy mạnh
+về phía At-risk và một trường hợp bị đẩy mạnh về phía Pass.
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{waterfall_atrisk.png}
+    \caption{Trường hợp đẩy mạnh về At-risk}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{waterfall_pass.png}
+    \caption{Trường hợp đẩy mạnh về Pass}
+  \end{subfigure}
+  \caption{Diễn giải cục bộ (waterfall) cho hai sinh viên đại diện.}
+  \label{fig:waterfall}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Trường hợp At-risk:} sinh viên chưa nộp bài nào
+        (\code{num\_submitted\_filled} $= 0$) trong khi đã có 11 bài đến hạn
+        (\code{num\_due} $= 11$) --- hai yếu tố này đóng góp lần lượt $+3.05$
+        và $+1.31$ vào điểm số dự báo, đẩy tổng điểm lên $7.71$ (rất cao so
+        với giá trị nền $-0.447$), tương ứng xác suất At-risk gần như tuyệt
+        đối.
+  \item \textbf{Trường hợp Pass:} sinh viên có điểm trung bình cao
+        (\code{avg\_score\_filled} $= 94.68$) và số tuần hoạt động nhiều
+        (\code{active\_weeks\_filled} $= 28$), mỗi yếu tố kéo điểm số dự báo
+        giảm gần 1 đơn vị, tổng hợp lại cho điểm số rất thấp ($-5.92$) ---
+        tương ứng xác suất Pass gần như tuyệt đối.
+\end{itemize}
+
+Hai ví dụ trên cho thấy mô hình đưa ra quyết định dựa trên những tín hiệu phù
+hợp với trực giác sư phạm: mức độ hoàn thành bài tập và điểm số tích luỹ là
+yếu tố quyết định, đúng như đã được xác nhận qua phân tích độ quan trọng đặc
+trưng ở quy mô toàn cục.
+
+\section{Kết luận}
+
+Từ toàn bộ quá trình nghiên cứu --- phân tích khám phá dữ liệu, cơ sở lý
+thuyết, xây dựng và so sánh mô hình --- có thể rút ra các kết luận chính sau:
+
+\begin{itemize}[leftmargin=*]
+  \item Việc gộp nhãn Fail và Withdrawn thành nhóm At-risk và giới hạn dữ liệu
+        về mốc dự đoán $T=180$ đưa bài toán về dạng phân loại nhị phân, mất
+        cân bằng nhãn ở mức vừa phải (khoảng 1 At-risk trên 2 Pass) --- được
+        xử lý hiệu quả bằng cách kết hợp SMOTE và trọng số lớp, đồng thời tinh
+        chỉnh cả hai kỹ thuật này cùng với siêu tham số của từng mô hình thông
+        qua Optuna.
+  \item Trong số bốn thuật toán thử nghiệm, \textbf{LightGBM} đạt F1 At-risk
+        cao nhất trên bộ đặc trưng đầy đủ (0.8024), trong khi \textbf{CatBoost}
+        có ROC-AUC và precision cao nhất --- hai mô hình boosting này đều vượt
+        trội hơn Random Forest và Logistic Regression một cách nhất quán trên
+        mọi bộ đặc trưng, đúng như dự đoán từ đặc tính lý thuyết của từng
+        thuật toán ở Phần II.
+  \item Hiệu suất mô hình \textbf{ổn định cao} khi giảm số lượng đặc trưng từ
+        15 xuống chỉ còn 5 --- thậm chí Random Forest trên bộ Top-5 đạt F1
+        At-risk cao nhất toàn thực nghiệm (0.8040). Kết quả này gợi ý một bộ
+        \textbf{5 đặc trưng} (\code{num\_submitted\_filled},
+        \code{avg\_score\_filled}, \code{num\_due}, \code{total\_clicks\_filled},
+        \code{active\_weeks\_filled}) --- toàn bộ đều là đặc trưng hành vi học
+        tập, không yêu cầu thông tin nhân khẩu học --- là đủ để xây dựng một hệ
+        thống cảnh báo sớm gọn nhẹ, dễ triển khai và duy trì.
+  \item Phân tích SHAP xác nhận các dự báo của mô hình dựa trên những tín hiệu
+        phù hợp với trực giác sư phạm --- mức độ hoàn thành bài tập, điểm số
+        tích luỹ và khối lượng công việc còn tồn đọng --- và các diễn giải này
+        giữ nguyên tính nhất quán qua cả ba bộ đặc trưng.
+\end{itemize}
+
+\textbf{Hạn chế và hướng phát triển.} Nghiên cứu hiện chỉ đánh giá tại một mốc
+thời gian duy nhất ($T=180$); một hướng mở rộng tự nhiên là huấn luyện và so
+sánh mô hình tại \textbf{nhiều mốc dự đoán} khác nhau để xác định thời điểm
+cảnh báo sớm nhất mà mô hình vẫn đạt độ tin cậy chấp nhận được, đồng thời theo
+dõi cách các dự báo về cùng một sinh viên thay đổi theo thời gian. Bên cạnh
+đó, việc \textbf{hiệu chỉnh ngưỡng phân loại} theo chi phí thực tế của việc bỏ
+sót so với cảnh báo nhầm, cũng như thử nghiệm mô hình trên dữ liệu của các cơ
+sở đào tạo khác, là những bước cần thiết trước khi đưa hệ thống vào vận hành
+thực tế.
+
+\end{document}

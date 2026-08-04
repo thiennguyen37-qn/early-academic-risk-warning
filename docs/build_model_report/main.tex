@@ -120,14 +120,18 @@ dạng \textbf{phân loại nhị phân}: nhận diện sinh viên \textbf{có n
 --- so với nhóm \textbf{hoàn thành} (Pass), dựa trên đặc trưng nhân khẩu học và
 hành vi học tập tích luỹ đến một mốc thời gian xác định trong khoá học.
 
-Nội dung báo cáo gồm ba phần chính:
+Nội dung báo cáo gồm bốn phần chính:
 
 \begin{enumerate}[leftmargin=*]
   \item \textbf{Tiền xử lý dữ liệu}: điền giá trị thiếu, mã hoá đặc trưng phân
         loại, gộp nhãn và chuẩn hoá bài toán về dạng nhị phân.
+  \item \textbf{Khảo sát sơ bộ theo các mốc dự đoán}: huấn luyện một mô hình cơ
+        sở xuyên suốt toàn bộ các mốc thời gian trong khoá học để hiểu xu hướng
+        hiệu suất theo thời gian, làm cơ sở lựa chọn mốc dự đoán cho các thử
+        nghiệm chuyên sâu.
   \item \textbf{Xây dựng mô hình}: huấn luyện và tinh chỉnh bốn thuật toán học
         máy (Logistic Regression, Random Forest, CatBoost, LightGBM) kết hợp kỹ
-        thuật xử lý mất cân bằng nhãn.
+        thuật xử lý mất cân bằng nhãn, tập trung vào mốc thời gian đã chọn.
   \item \textbf{So sánh và diễn giải mô hình}: đối chiếu hiệu suất giữa các
         thuật toán, đánh giá độ ổn định khi rút gọn số lượng đặc trưng, và diễn
         giải các dự báo bằng phương pháp SHAP.
@@ -243,15 +247,128 @@ học phần. Do đó, nhãn mục tiêu được chuẩn hoá lại:
   \text{Pass (0)} = \text{Pass}.
 \]
 
-Đồng thời, dữ liệu được lọc chỉ giữ lại các bản ghi tại \textbf{mốc dự đoán
-$T = 180$ ngày} kể từ đầu khoá học. Đây là mốc thời gian tương đối giữa khoá
-(khoá học OULAD kéo dài khoảng 240--270 ngày), tại đó sinh viên đã tích luỹ đủ
-lịch sử hành vi để mô hình có thể đưa ra dự báo có ý nghĩa, trong khi vẫn còn
-đủ thời gian để nhà trường can thiệp trước khi khoá học kết thúc. Sinh viên đã
-hủy đăng ký trước ngày 180 không xuất hiện trong snapshot này.
+Phép gộp nhãn này được áp dụng thống nhất cho toàn bộ dữ liệu dạng panel, tức
+trên mọi bản ghi ở cả tám mốc dự đoán $T \in \{30, 60, \ldots, 240\}$ đã thiết
+kế ở giai đoạn EDA --- không giới hạn ở một mốc thời gian cụ thể nào. Với dữ
+liệu đã ở dạng nhị phân, câu hỏi tiếp theo là mốc dự đoán nào nên được chọn để
+huấn luyện và đánh giá mô hình; đây là nội dung được khảo sát ở phần kế tiếp.
 
-Bảng~\ref{tab:split_t180} tóm tắt quy mô và phân phối nhãn sau khi lọc và gộp
-nhãn.
+\section{Khảo sát sơ bộ theo các mốc dự đoán}
+\label{sec:snapshot_survey}
+
+Trước khi đi sâu so sánh nhiều thuật toán tại một mốc thời gian cố định, cần
+khảo sát sơ bộ hiệu suất mô hình học máy \textbf{xuyên suốt toàn bộ các mốc dự
+đoán} đã thiết kế ở giai đoạn tiền xử lý, nhằm hai mục đích: (i) hiểu xu hướng
+biến động hiệu suất theo thời gian khi sinh viên tích luỹ ngày càng nhiều hành
+vi học tập, và (ii) làm cơ sở lựa chọn một mốc thời gian đại diện, phù hợp cho
+các thử nghiệm chuyên sâu ở phần sau.
+
+\subsection{Thiết lập thử nghiệm}
+
+Với mỗi mốc dự đoán $T$, một mô hình \textbf{Logistic Regression} được huấn
+luyện riêng, chỉ sử dụng dữ liệu của đúng mốc đó --- đây cũng là thuật toán cơ
+sở, đơn giản và dễ diễn giải nhất trong bốn thuật toán được đề xuất ở giai
+đoạn EDA, phù hợp để khảo sát nhanh xu hướng hiệu suất theo thời gian trước
+khi mở rộng sang các mô hình phức tạp hơn. Quy trình tinh chỉnh áp dụng cho
+từng mô hình tương tự cách tiếp cận sẽ được dùng ở giai đoạn so sánh nhiều
+thuật toán tại Mục~\ref{sec:methodology}: dữ liệu được chuẩn hoá bằng
+\code{StandardScaler} (fit trên train-fold, tránh rò rỉ dữ liệu), siêu tham số
+điều chuẩn $C$ của mô hình, tỷ lệ oversampling SMOTE và trọng số lớp At-risk
+được tinh chỉnh đồng thời bằng Optuna (30 lượt thử nghiệm, kiểm định chéo phân
+tầng 3-fold), sau đó huấn luyện lại trên toàn bộ tập huấn luyện của mốc đó và
+đánh giá trên tập kiểm tra giữ nguyên.
+
+Một lưu ý về mặt phương pháp: ở lần thử đầu tiên, hàm mục tiêu tối ưu là
+\textit{recall thuần} của lớp At-risk, nhưng cách làm này khiến mô hình suy
+biến về việc dự đoán \textbf{toàn bộ} sinh viên đều là At-risk (recall đạt gần
+tuyệt đối nhưng precision rất thấp, không có giá trị thực tiễn). Hàm mục tiêu
+sau đó được đổi sang \textbf{F1-score của lớp At-risk} để buộc mô hình cân
+bằng giữa precision và recall --- đây là hàm mục tiêu được giữ nguyên xuyên
+suốt các thử nghiệm còn lại của báo cáo.
+
+\subsection{Kết quả theo thời gian}
+
+Bảng~\ref{tab:snapshot_results} tổng hợp hiệu suất trên tập kiểm tra của tám
+mô hình, mỗi mô hình ứng với một mốc dự đoán.
+
+\input{table_snapshot_results}
+
+Hình~\ref{fig:trend_snapshot} trực quan hoá xu hướng của bốn chỉ số theo mốc
+thời gian.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{trend_by_snapshot.png}
+  \caption{Xu hướng hiệu suất mô hình theo từng mốc dự đoán (mỗi mốc một mô
+  hình riêng).}
+  \label{fig:trend_snapshot}
+\end{figure}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Accuracy} và \textbf{precision At-risk} tăng \textbf{đơn điệu
+        tuyệt đối} theo thời gian --- không có mốc nào sụt giảm so với mốc
+        liền trước (accuracy từ 0.6488 ở $T=30$ lên 0.8796 ở $T=240$; precision
+        từ 0.5750 lên 0.8269) --- phù hợp với trực giác: sinh viên càng tích
+        luỹ nhiều hành vi học tập, tín hiệu dự báo càng rõ ràng và đáng tin cậy
+        hơn.
+  \item \textbf{Recall At-risk} lại dao động trong một biên độ hẹp
+        (0.7555--0.8013) mà không theo xu hướng rõ ràng, thậm chí đạt giá trị
+        cao nhất ngay ở mốc sớm nhất $T=30$ (0.8013) --- khi độ chính xác tổng
+        thể còn rất thấp (accuracy 0.6488, precision 0.5750). Điều này cho
+        thấy ở giai đoạn đầu khoá, khi tín hiệu hành vi còn thưa thớt, ranh
+        giới tuyến tính của Logistic Regression có xu hướng dự báo At-risk khá
+        rộng rãi --- bắt được phần lớn sinh viên có nguy cơ nhưng đánh đổi
+        bằng rất nhiều cảnh báo nhầm.
+  \item \textbf{F1 At-risk} --- chỉ số tổng hợp được dùng làm mục tiêu tối ưu
+        --- vì vậy cũng tăng đơn điệu tuyệt đối theo thời gian, từ 0.6695
+        ($T=30$) lên 0.8035 ($T=240$), nhưng động lực tăng chủ yếu đến từ
+        \textbf{precision} chứ không phải recall, vốn gần như đi ngang xuyên
+        suốt khoá học.
+\end{itemize}
+
+Ma trận nhầm lẫn của cả tám mô hình được thể hiện ở Hình~\ref{fig:cm_snapshot}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{cm_grid_snapshots.png}
+  \caption{Ma trận nhầm lẫn trên tập kiểm tra tại từng mốc dự đoán.}
+  \label{fig:cm_snapshot}
+\end{figure}
+
+Bảng~\ref{tab:snapshot_params} cho thấy siêu tham số xử lý mất cân bằng nhãn
+mà Optuna lựa chọn theo từng mốc thời gian.
+
+\input{table_snapshot_params}
+
+Trọng số At-risk tối ưu hầu như luôn hội tụ gần giá trị 1 (1.01--1.33) ở mọi
+mốc thời gian, trong khi tỷ lệ SMOTE dao động ở mức khá cao và không theo xu
+hướng rõ rệt (0.42--0.90x). Nói cách khác, với Logistic Regression, việc bổ
+sung mẫu tổng hợp qua SMOTE đóng vai trò chủ đạo trong xử lý mất cân bằng
+nhãn, hơn là điều chỉnh trọng số lớp --- đây là đặc điểm nhất quán của thuật
+toán này, cũng sẽ được quan sát lại khi so sánh với ba thuật toán còn lại ở
+Bảng~\ref{tab:best_params}.
+
+\subsection{Lựa chọn mốc dự đoán cho phân tích chuyên sâu}
+\label{sec:choose_t180}
+
+Kết quả khảo sát cho thấy một sự đánh đổi rõ ràng giữa \textbf{độ tin cậy của
+dự báo} và \textbf{thời gian còn lại để can thiệp}: các mốc càng muộn cho hiệu
+suất càng cao, nhưng đồng thời càng gần thời điểm kết thúc khoá học, làm giảm
+giá trị thực tiễn của một cảnh báo sớm. Với khoá học OULAD kéo dài khoảng
+240--270 ngày, hai mốc cho F1 cao nhất ($T=210$ và $T=240$, lần lượt 0.7935 và
+0.8035) chỉ còn lại khoảng 10--20\% thời lượng khoá học --- quá muộn để nhà
+trường triển khai các biện pháp hỗ trợ có ý nghĩa.
+
+Mốc \textbf{$T=180$ ngày} được chọn làm đại diện cho các thử nghiệm chuyên sâu
+ở phần còn lại của báo cáo, vì đạt được điểm cân bằng hợp lý nhất: hiệu suất
+đã ở mức khá cao (accuracy 0.8451, F1 At-risk 0.7754 --- chỉ thấp hơn khoảng
+0.02 so với mốc $T=210$ liền sau), trong khi vẫn còn khoảng 60--90 ngày
+(25--35\% thời lượng khoá học) để nhà trường can thiệp trước khi khoá học kết
+thúc.
+
+Bảng~\ref{tab:split_t180} tóm tắt quy mô và phân phối nhãn tại mốc $T=180$ sau
+khi gộp nhãn, được dùng thống nhất cho toàn bộ các thử nghiệm từ Mục~
+\ref{sec:methodology} trở đi.
 
 \input{table_split_t180}
 
@@ -261,6 +378,12 @@ gây lệch phân phối nhãn. Đây vẫn là một bài toán \textbf{mất c
 phải}, cần được xử lý ở bước huấn luyện mô hình.
 
 \section{Phương pháp xây dựng mô hình}
+\label{sec:methodology}
+
+Kế thừa kết luận ở Mục~\ref{sec:choose_t180}, các thử nghiệm từ đây trở đi tập
+trung vào mốc $T=180$, mở rộng từ một mô hình cơ sở duy nhất (đã dùng để khảo
+sát xu hướng theo thời gian ở Mục~\ref{sec:snapshot_survey}) sang so sánh trực
+tiếp \textbf{bốn thuật toán học máy} khác nhau.
 
 \subsection{Các thuật toán sử dụng}
 

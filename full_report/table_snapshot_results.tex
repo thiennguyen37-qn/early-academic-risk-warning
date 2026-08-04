@@ -1,0 +1,20 @@
+\begin{table}[H]
+  \centering
+  \caption{Kết quả sơ bộ của mô hình Logistic Regression --- một mô hình riêng cho mỗi mốc dự đoán $T$ --- trên tập kiểm tra. Precision/Recall/F1 tính riêng cho lớp At-risk.}
+  \label{tab:snapshot_results}
+  \small
+  \begin{tabular}{rrrrrrr}
+    \toprule
+    \textbf{T (ngày)} & \textbf{Train} & \textbf{Test} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
+    \midrule
+    30 & 19{,}988 & 5{,}043 & 0.6488 & 0.5750 & 0.8013 & 0.6695 \\
+    60 & 19{,}123 & 4{,}835 & 0.7231 & 0.6429 & 0.7666 & 0.6993 \\
+    90 & 18{,}508 & 4{,}680 & 0.7402 & 0.6442 & 0.7857 & 0.7080 \\
+    120 & 17{,}917 & 4{,}518 & 0.7915 & 0.7123 & 0.7555 & 0.7333 \\
+    150 & 17{,}386 & 4{,}363 & 0.8263 & 0.7524 & 0.7659 & 0.7591 \\
+    180 & 16{,}786 & 4{,}215 & 0.8451 & 0.7533 & 0.7987 & 0.7754 \\
+    210 & 16{,}486 & 4{,}162 & 0.8659 & 0.7976 & 0.7894 & 0.7935 \\
+    240 & 16{,}190 & 4{,}094 & 0.8796 & 0.8269 & 0.7814 & \textbf{0.8035} \\
+    \bottomrule
+  \end{tabular}
+\end{table}

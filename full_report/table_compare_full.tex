@@ -1,0 +1,17 @@
+\begin{table}[H]
+  \centering
+  \caption{So sánh các mô hình trên bộ 15 đặc trưng đầy đủ (T=180). Chỉ số Precision/Recall/F1 tính riêng cho lớp \textbf{At-risk}.}
+  \label{tab:compare_full}
+  \small
+  \setlength{\tabcolsep}{5pt}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    \textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{ROC-AUC} \\
+    \midrule
+    \textbf{Logistic Regression} & 0.8451 & 0.7533 & \textbf{0.7987} & 0.7754 & 0.9163 \\
+    \textbf{Random Forest} & 0.8681 & 0.8251 & 0.7690 & 0.7960 & 0.9248 \\
+    \textbf{CatBoost} & \textbf{0.8728} & \textbf{0.8464} & 0.7576 & 0.7996 & \textbf{0.9304} \\
+    \textbf{LightGBM} & 0.8686 & 0.8076 & 0.7973 & \textbf{0.8024} & 0.9292 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

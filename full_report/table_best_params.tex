@@ -1,0 +1,27 @@
+\begin{table}[H]
+  \centering
+  \caption{Siêu tham số tối ưu liên quan đến xử lý mất cân bằng nhãn --- tỷ lệ oversampling SMOTE và trọng số lớp At-risk --- được Optuna lựa chọn cho từng mô hình và từng bộ đặc trưng, cùng F1 At-risk trung bình qua 3-fold cross-validation.}
+  \label{tab:best_params}
+  \small
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llrrr}
+    \toprule
+    \textbf{Bộ đặc trưng} & \textbf{Model} & \textbf{F1 At-risk (CV)} & \textbf{Tỷ lệ SMOTE} & \textbf{Trọng số At-risk} \\
+    \midrule
+    \multirow{4}{*}{Full (15)} & \textbf{Logistic Regression} & 0.7918 & +0.90x & 1.01 \\
+     & \textbf{Random Forest} & 0.7986 & +0.51x & 1.10 \\
+     & \textbf{CatBoost} & 0.8074 & +0.62x & 1.04 \\
+     & \textbf{LightGBM} & 0.8043 & +0.10x & 1.46 \\
+    \midrule
+    \multirow{4}{*}{Top-10} & \textbf{Logistic Regression} & 0.7927 & +0.55x & 1.05 \\
+     & \textbf{Random Forest} & 0.8008 & +0.50x & 1.27 \\
+     & \textbf{CatBoost} & 0.8060 & +0.47x & 1.79 \\
+     & \textbf{LightGBM} & 0.8042 & +0.18x & 1.58 \\
+    \midrule
+    \multirow{4}{*}{Top-5} & \textbf{Logistic Regression} & 0.7887 & +0.51x & 1.03 \\
+     & \textbf{Random Forest} & 0.8021 & +0.66x & 1.03 \\
+     & \textbf{CatBoost} & 0.8069 & +0.57x & 1.33 \\
+     & \textbf{LightGBM} & 0.8043 & +0.10x & 1.46 \\
+    \bottomrule
+  \end{tabular}}
+\end{table}

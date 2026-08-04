@@ -1,0 +1,17 @@
+\begin{table}[H]
+  \centering
+  \caption{So sánh các mô hình sau khi rút gọn về 5 đặc trưng quan trọng nhất (Top-5).}
+  \label{tab:compare_top5}
+  \small
+  \setlength{\tabcolsep}{5pt}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    \textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{ROC-AUC} \\
+    \midrule
+    \textbf{Logistic Regression} & 0.8529 & 0.7876 & 0.7675 & 0.7775 & 0.9148 \\
+    \textbf{Random Forest} & \textbf{0.8700} & \textbf{0.8116} & 0.7966 & \textbf{0.8040} & 0.9279 \\
+    \textbf{CatBoost} & 0.8667 & 0.7979 & \textbf{0.8058} & 0.8018 & \textbf{0.9302} \\
+    \textbf{LightGBM} & 0.8626 & 0.7950 & 0.7945 & 0.7948 & 0.9286 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

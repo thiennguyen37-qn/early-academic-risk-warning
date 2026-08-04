@@ -204,5 +204,86 @@ split_table = "\n".join([
 ])
 (OUT / "table_split_t180.tex").write_text(split_table, encoding="utf-8")
 
+# --- Bảng kết quả sơ bộ theo từng mốc dự đoán (một mô hình Logistic Regression
+#     riêng cho mỗi mốc T, trước khi thu hẹp phạm vi về T=180 để so sánh nhiều
+#     thuật toán) ---
+SNAPSHOT_RESULTS = [
+    # T, train, test, accuracy, precision_at_risk, recall_at_risk, f1_at_risk
+    (30,  19988, 5043, 0.6488, 0.5750, 0.8013, 0.6695),
+    (60,  19123, 4835, 0.7231, 0.6429, 0.7666, 0.6993),
+    (90,  18508, 4680, 0.7402, 0.6442, 0.7857, 0.7080),
+    (120, 17917, 4518, 0.7915, 0.7123, 0.7555, 0.7333),
+    (150, 17386, 4363, 0.8263, 0.7524, 0.7659, 0.7591),
+    (180, 16786, 4215, 0.8451, 0.7533, 0.7987, 0.7754),
+    (210, 16486, 4162, 0.8659, 0.7976, 0.7894, 0.7935),
+    (240, 16190, 4094, 0.8796, 0.8269, 0.7814, 0.8035),
+]
+f1_max = max(r[6] for r in SNAPSHOT_RESULTS)
+
+snap_rows = []
+for T, tr, te, acc, prec, rec, f1 in SNAPSHOT_RESULTS:
+    f1_cell = r"\textbf{%.4f}" % f1 if f1 == f1_max else f"{f1:.4f}"
+    snap_rows.append(
+        r"    %d & %s & %s & %.4f & %.4f & %.4f & %s \\"
+        % (T, f"{tr:,}".replace(",", "{,}"), f"{te:,}".replace(",", "{,}"),
+           acc, prec, rec, f1_cell)
+    )
+
+snapshot_table = "\n".join([
+    r"\begin{table}[H]",
+    r"  \centering",
+    r"  \caption{Kết quả sơ bộ của mô hình Logistic Regression --- một mô hình"
+    r" riêng cho mỗi mốc dự đoán $T$ --- trên tập kiểm tra. Precision"
+    r"/Recall/F1 tính riêng cho lớp At-risk.}",
+    r"  \label{tab:snapshot_results}",
+    r"  \small",
+    r"  \begin{tabular}{rrrrrrr}",
+    r"    \toprule",
+    r"    \textbf{T (ngày)} & \textbf{Train} & \textbf{Test} & \textbf{Accuracy} "
+    r"& \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\",
+    r"    \midrule",
+    "\n".join(snap_rows),
+    r"    \bottomrule",
+    r"  \end{tabular}",
+    r"\end{table}",
+    "",
+])
+(OUT / "table_snapshot_results.tex").write_text(snapshot_table, encoding="utf-8")
+
+# --- Bảng siêu tham số tối ưu theo từng mốc dự đoán ---
+SNAPSHOT_PARAMS = [
+    # T, cv_f1, smote_ratio, weight
+    (30,  0.6734, 0.67, 1.12),
+    (60,  0.7065, 0.56, 1.24),
+    (90,  0.7160, 0.57, 1.33),
+    (120, 0.7486, 0.69, 1.01),
+    (150, 0.7767, 0.55, 1.05),
+    (180, 0.7918, 0.90, 1.01),
+    (210, 0.8047, 0.51, 1.03),
+    (240, 0.8182, 0.42, 1.01),
+]
+snap_param_rows = [
+    r"    %d & %.4f & +%.2fx & %.2f \\" % row for row in SNAPSHOT_PARAMS
+]
+snapshot_param_table = "\n".join([
+    r"\begin{table}[H]",
+    r"  \centering",
+    r"  \caption{Siêu tham số xử lý mất cân bằng nhãn được Optuna lựa chọn cho"
+    r" từng mốc dự đoán, cùng F1 At-risk trung bình qua 3-fold cross-validation.}",
+    r"  \label{tab:snapshot_params}",
+    r"  \begin{tabular}{rrrr}",
+    r"    \toprule",
+    r"    \textbf{T (ngày)} & \textbf{F1 At-risk (CV)} & \textbf{Tỷ lệ SMOTE} & "
+    r"\textbf{Trọng số At-risk} \\",
+    r"    \midrule",
+    "\n".join(snap_param_rows),
+    r"    \bottomrule",
+    r"  \end{tabular}",
+    r"\end{table}",
+    "",
+])
+(OUT / "table_snapshot_params.tex").write_text(snapshot_param_table, encoding="utf-8")
+
 print("Wrote table_compare_{full,top10,top5}.tex, table_feature_rank.tex, "
-      "table_best_params.tex, table_split_t180.tex")
+      "table_best_params.tex, table_split_t180.tex, table_snapshot_results.tex, "
+      "table_snapshot_params.tex")

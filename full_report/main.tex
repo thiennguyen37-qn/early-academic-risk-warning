@@ -124,13 +124,20 @@
 \chapter*{Mở đầu}
 \addcontentsline{toc}{chapter}{Mở đầu}
 
-Báo cáo này trình bày toàn bộ quá trình nghiên cứu xây dựng hệ thống
-\textit{cảnh báo sớm rủi ro học tập} (early academic risk warning), phục vụ
-mục tiêu nhận diện sớm những sinh viên có nguy cơ \textbf{trượt môn} (Fail)
-hoặc \textbf{bỏ học} (Withdrawn) tại nhiều thời điểm trong suốt khoá học, từ đó
-giúp nhà trường can thiệp kịp thời.
+Sự phát triển mạnh mẽ của hình thức học trực tuyến và học kết hợp (blended learning) trong những năm gần đây 
+đã tạo ra lượng lớn dữ liệu phản ánh quá trình học tập và tương tác của sinh viên trên các hệ thống 
+quản lý học tập. Nguồn dữ liệu này không chỉ ghi nhận kết quả học tập mà còn phản ánh nhiều khía cạnh khác 
+như mức độ tham gia, tần suất truy cập, thời gian học tập và hành vi tương tác với tài nguyên học tập. 
+Điều đó mở ra cơ hội ứng dụng các phương pháp học máy và phân tích dữ liệu nhằm khai thác những thông tin 
+tiềm ẩn, từ đó hỗ trợ quá trình ra quyết định trong lĩnh vực giáo dục.
 
-Dữ liệu sử dụng là bộ \textbf{Open University Learning Analytics Dataset
+Trong số các ứng dụng của Educational Data Mining (EDM), bài toán phát hiện sớm sinh viên có nguy cơ 
+học tập kém, trượt môn hoặc bỏ học nhận được nhiều sự quan tâm do có ý nghĩa thực tiễn cao. 
+Nếu được nhận diện ở giai đoạn đầu của học phần, các sinh viên này có thể nhận được những biện pháp hỗ trợ 
+và can thiệp phù hợp từ giảng viên hoặc cố vấn học tập, góp phần cải thiện kết quả học tập, giảm tỷ lệ bỏ học
+và nâng cao chất lượng đào tạo.
+
+Trong dự án này, dữ liệu được sử dụng là bộ \textbf{Open University Learning Analytics Dataset
 (OULAD)} do The Open University (Vương quốc Anh) công bố tháng 12 năm 2015. Bộ
 dữ liệu ghi lại thông tin về các học phần, sinh viên và toàn bộ tương tác của
 họ với Môi trường học tập trực tuyến (Virtual Learning Environment -- VLE) trên
@@ -140,7 +147,7 @@ Toàn bộ nghiên cứu được tổ chức thành ba chương kế tiếp nha
 
 \begin{enumerate}[leftmargin=*]
   \item \textbf{Cơ sở lý thuyết}: trình bày nguyên lý hoạt động, công thức
-        toán học cốt lõi và phân tích ưu điểm --- hạn chế của bốn thuật toán
+        toán học cốt lõi của bốn thuật toán
         học máy được sử dụng trong nghiên cứu --- Logistic Regression, Random
         Forest, CatBoost và LightGBM.
   \item \textbf{Phân tích khám phá dữ liệu (EDA)}: tìm hiểu cấu trúc, quy mô và
@@ -688,18 +695,18 @@ Quy mô tổng thể của bộ dữ liệu được tóm tắt trong Bảng~\re
   \centering
   \caption{Thống kê tổng quan bộ dữ liệu OULAD.}
   \label{tab:overview}
-  \begin{tabular}{lr}
+  \begin{tabular}{llr}
     \toprule
-    \textbf{Thực thể} & \textbf{Số lượng} \\
+    \textbf{Bảng gốc} & \textbf{Thực thể} & \textbf{Số lượng} \\
     \midrule
-    Sinh viên tham gia khóa học & 32{,}953 \\
-    Đợt mở học phần             & 22 \\
-    Trang/tài nguyên VLE        & 6{,}364 \\
-    Nhật ký tương tác VLE       & 10{,}655{,}280 \\
-    Bản ghi đăng ký học         & 32{,}953 \\
-    Bài đánh giá                & 206 \\
-    Bản ghi kết quả đánh giá    & 173{,}912 \\
-    \textbf{Tổng số thuộc tính} & \textbf{43} \\
+    \code{studentInfo}         & Sinh viên tham gia khóa học & 32{,}953 \\
+    \code{courses}             & Đợt mở học phần             & 22 \\
+    \code{vle}                 & Trang/tài nguyên VLE        & 6{,}364 \\
+    \code{studentVle}          & Nhật ký tương tác VLE       & 10{,}655{,}280 \\
+    \code{studentRegistration} & Bản ghi đăng ký học         & 32{,}953 \\
+    \code{assessments}         & Bài đánh giá                & 206 \\
+    \code{studentAssessment}   & Bản ghi kết quả đánh giá    & 173{,}912 \\
+    ---                        & \textbf{Tổng số thuộc tính} & \textbf{43} \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -1093,7 +1100,8 @@ nào nổi bật hẳn.
   \label{fig:edu_imd_middle}
 \end{figure}
 
-\subsection{Tình trạng khuyết tật (\code{disability})}
+\subsection{Tình trạng khuyết tật và lịch sử học lại (\code{disability},
+\code{num\_of\_prev\_attempts})}
 
 Phân phối \code{disability} trong tập huấn luyện được thể hiện ở
 Hình~\ref{fig:disability}: phần lớn sinh viên không khai báo khuyết tật
@@ -1106,18 +1114,9 @@ Hình~\ref{fig:disability}: phần lớn sinh viên không khai báo khuyết t�
   \label{fig:disability}
 \end{figure}
 
-Tỷ lệ khuyết tật thể hiện xu hướng \textbf{nghịch biến rõ rệt} với
-\code{imd\_band}: các band thấp (0--40\%) có tỷ lệ sinh viên khuyết tật cao hơn
-(11--13\%), trong khi các band cao (70--100\%) có tỷ lệ thấp hơn (5--7\%). Như
-vậy, sinh viên ở những khu vực khó khăn hơn về kinh tế có tỷ lệ khai báo khuyết
-tật cao hơn --- điều này có thể phản ánh sự chênh lệch trong khả năng tiếp cận
-hỗ trợ y tế và giáo dục giữa các nhóm kinh tế -- xã hội.
-
-\subsection{Lịch sử học lại (\code{num\_of\_prev\_attempts})}
-
-Biến \code{num\_of\_prev\_attempts} cho biết số lần sinh viên đã đăng ký học
-phần này trước đây, qua đó phân biệt sinh viên học lần đầu với sinh viên học lại
-(retake). Phân phối được thể hiện ở Hình~\ref{fig:prev}.
+Bên cạnh khuyết tật, biến \code{num\_of\_prev\_attempts} cho biết số lần sinh
+viên đã đăng ký học phần này trước đây, qua đó phân biệt sinh viên học lần đầu
+với sinh viên học lại (retake). Phân phối được thể hiện ở Hình~\ref{fig:prev}.
 
 \begin{figure}[H]
   \centering
@@ -1157,28 +1156,6 @@ hơn nên phải học lại thường xuyên hơn.
   \caption{Tỷ lệ học lại theo tình trạng khuyết tật.}
   \label{fig:retake_dis}
 \end{figure}
-
-\paragraph{Học lại và khối lượng tín chỉ.}
-Hình~\ref{fig:credits_box} so sánh phân phối \code{studied\_credits} giữa hai
-nhóm. Sinh viên học lại đăng ký nhiều tín chỉ hơn đáng kể so với nhóm học lần
-đầu: trung vị 90 so với 60 tín chỉ, trung bình 98.9 so với 77.8. Phân phối của
-nhóm học lại cũng rộng hơn (độ lệch chuẩn $\approx 47$ so với 35). Điều này có
-thể do sinh viên học lại chủ động đăng ký thêm học phần để bù lại tiến độ của
-kỳ trước, hoặc do nhóm này quyết tâm hoàn thành chương trình cao hơn sau lần
-học chưa đạt.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.95\textwidth]{credits_retake_box.png}
-  \caption{Biểu đồ hộp: \code{studied\_credits} theo nhóm học lần đầu / học
-  lại.}
-  \label{fig:credits_box}
-\end{figure}
-
-Thống kê mô tả chi tiết của số tín chỉ theo hai nhóm được trình bày ở
-Bảng~\ref{tab:desc_credits}.
-
-\input{table_desc_credits}
 
 \subsection{Phân tích theo nhãn mục tiêu}
 

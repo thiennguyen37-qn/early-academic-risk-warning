@@ -268,8 +268,8 @@ gán trọng số khác nhau cho từng lớp:
 \]
 
 trong đó $w_{y_i}$ là trọng số ứng với lớp của mẫu $i$. Việc tăng $w_1$ khiến mô hình phải trả giá
-mất mát lớn hơn khi phân loại sai một sinh viên At-risk, thúc đẩy mô hình dịch
-chuyển ranh giới quyết định để bắt được nhiều trường hợp At-risk hơn.
+mất mát lớn hơn khi phân loại sai một sinh viên At-risk, làm mô hình dịch
+chuyển ngưỡng quyết định để bắt được nhiều trường hợp At-risk hơn.
 
 \section{Cây quyết định (Decision Tree) và Rừng ngẫu nhiên (Random Forest)}
 
@@ -418,29 +418,44 @@ sau đó lấy trung bình trên $B$ cây. Đặc trưng có giá trị Importan
 
 \subsection{Nguyên lý Gradient Boosting}
 
-Khác với bagging (huấn luyện các cây \textbf{độc lập} rồi tổng hợp), boosting
-xây dựng mô hình theo kiểu \textbf{tuần tự} (additive): mỗi cây mới được huấn
-luyện để sửa chữa sai số của tổ hợp các cây trước đó. Gọi $F_m(\mathbf{x})$ là
-mô hình tổng hợp sau $m$ vòng, gradient boosting cập nhật:
+Gradient Boosting là một phương pháp học tập hợp xây dựng mô hình theo cách
+\textbf{tuần tự}. Khác với bagging, trong đó các cây quyết định được huấn luyện
+độc lập rồi kết hợp kết quả dự báo, Gradient Boosting xây dựng từng cây mới dựa
+trên những sai số mà mô hình hiện tại vẫn chưa khắc phục được. Sau mỗi vòng
+lặp, mô hình được cập nhật theo công thức
 
 \[
-  F_m(\mathbf{x}) = F_{m-1}(\mathbf{x}) + \eta \, h_m(\mathbf{x}),
+  F_m(\mathbf{x}) = F_{m-1}(\mathbf{x}) + \eta\,h_m(\mathbf{x}),
 \]
 
-trong đó $\eta \in (0, 1]$ là tốc độ học (learning rate) và $h_m$ là một cây
-quyết định yếu (thường nông, vài tầng), được huấn luyện để xấp xỉ
-\textbf{gradient âm} của hàm mất mát tại $F_{m-1}$ --- gọi là \textbf{giả
-phần dư} (pseudo-residual):
+trong đó $\eta \in (0,1]$ là tốc độ học (learning rate) và $h_m$ là một cây
+quyết định yếu (thường có độ sâu nhỏ). Thay vì dự báo trực tiếp nhãn, cây
+$h_m$ được huấn luyện để xấp xỉ \textbf{gradient âm} của hàm mất mát tại mô
+hình hiện tại $F_{m-1}$. Đại lượng này được gọi là \textbf{giả phần dư}
+(pseudo-residual):
 
 \[
-  r_i^{(m)} = -\left[ \frac{\partial \, \ell(y_i, F(\mathbf{x}_i))}
-  {\partial \, F(\mathbf{x}_i)} \right]_{F = F_{m-1}}.
+  r_i^{(m)}
+  =
+  -
+  \left[
+    \frac{\partial\,\ell(y_i,F(\mathbf{x}_i))}
+    {\partial\,F(\mathbf{x}_i)}
+  \right]_{F=F_{m-1}}.
 \]
 
-Với hàm mất mát log-loss (như ở Logistic Regression), giả phần dư có dạng đơn
-giản $r_i^{(m)} = y_i - \hat{p}_i^{(m-1)}$ --- tức phần chênh lệch giữa nhãn
-thật và xác suất dự báo hiện tại. Cây $h_m$ được huấn luyện để dự báo chính
-các giả phần dư này, và mô hình dần được "sửa lỗi" qua từng vòng lặp.
+Đối với hàm mất mát log-loss trong bài toán phân loại nhị phân, giả phần dư có
+dạng
+
+\[
+r_i^{(m)} = y_i - \hat{p}_i^{(m-1)},
+\]
+
+tức là sai khác giữa nhãn thực tế và xác suất dự báo của mô hình ở vòng trước.
+Sau khi cây $h_m$ được huấn luyện để dự báo các giả phần dư này, dự báo của cây
+được cộng vào mô hình hiện tại nhằm giảm giá trị của hàm mất mát. Quá trình
+được lặp lại nhiều lần cho đến khi đạt số vòng boosting hoặc thỏa mãn tiêu chí
+dừng.
 
 \begin{figure}[H]
   \centering
@@ -464,82 +479,89 @@ các giả phần dư này, và mô hình dần được "sửa lỗi" qua từn
     \draw[->] (f2) -- (dots);
     \draw[->] (dots) -- (fm);
   \end{tikzpicture}
-  \caption{Sơ đồ boosting tuần tự: mỗi cây yếu $h_m$ được huấn luyện để dự báo
-  giả phần dư của mô hình tổng hợp ở vòng trước, sau đó được cộng dồn (có
-  trọng số $\eta$) vào mô hình.}
+  \caption{Sơ đồ nguyên lý Gradient Boosting. Ở mỗi vòng lặp, một cây quyết
+  định yếu được huấn luyện để dự báo giả phần dư của mô hình hiện tại, sau đó
+  được cộng vào mô hình với hệ số học $\eta$.}
   \label{fig:boosting}
 \end{figure}
 
 CatBoost và LightGBM đều thuộc họ \textbf{Gradient Boosted Decision Trees}
-(GBDT) --- dùng cây quyết định làm bộ học yếu $h_m$ --- nhưng khác nhau đáng
-kể ở cách hiện thực hoá nhằm giải quyết các nhược điểm cố hữu của GBDT
-truyền thống, được trình bày ở các mục tiếp theo.
+(GBDT), trong đó cây quyết định được sử dụng làm bộ học yếu. Hai thuật toán đều
+dựa trên nguyên lý Gradient Boosting nhưng khác nhau ở cách xây dựng cây và xử
+lý dữ liệu nhằm cải thiện độ chính xác cũng như khả năng tổng quát hóa của mô
+hình.
 
 \subsection{Ordered Boosting}
 
-Một vấn đề tinh vi của GBDT truyền thống là \textbf{prediction shift}
-(lệch dự báo, hay rò rỉ mục tiêu): giả phần dư $r_i^{(m)}$ của một mẫu
-$\mathbf{x}_i$ được tính từ mô hình $F_{m-1}$ vốn \textbf{đã được huấn luyện
-trên chính mẫu đó} ở các vòng trước, khiến giả phần dư bị chệch (thiên lệch
-lạc quan) so với giả phần dư thật sự trên dữ liệu chưa nhìn thấy.
+Một hạn chế của Gradient Boosting truyền thống là hiện tượng
+\textbf{prediction shift}. Trong quá trình huấn luyện, giả phần dư của một mẫu
+được tính từ mô hình đã từng sử dụng chính mẫu đó ở các vòng boosting trước.
+Điều này khiến sai số ước lượng trở nên lạc quan hơn so với khi mô hình được áp
+dụng trên dữ liệu mới, từ đó làm giảm khả năng tổng quát hóa.
 
-CatBoost khắc phục vấn đề này bằng \textbf{Ordered Boosting}: tại mỗi vòng, dữ
-liệu được xáo trộn ngẫu nhiên theo một hoán vị $\pi$; giả phần dư của mẫu thứ
-$i$ trong hoán vị chỉ được tính từ một mô hình $F_{m-1}^{(i)}$ huấn luyện
-\textbf{riêng} trên các mẫu \textbf{đứng trước} $i$ trong hoán vị đó
-($\{\mathbf{x}_j : \pi(j) < \pi(i)\}$) --- tức mô hình dùng để tính giả phần dư
-của một mẫu chưa từng ``nhìn thấy'' nhãn của chính mẫu đó. Trong thực tế,
-CatBoost duy trì đồng thời nhiều mô hình phụ trợ ứng với nhiều tiền tố của
-hoán vị để việc này khả thi về mặt tính toán, thay vì huấn luyện lại từ đầu
-cho mỗi mẫu.
+Để khắc phục hiện tượng này, CatBoost sử dụng cơ chế
+\textbf{Ordered Boosting}. Trước tiên, dữ liệu được sắp xếp theo một hoán vị
+ngẫu nhiên. Khi tính giả phần dư của một mẫu, mô hình chỉ được phép sử dụng
+thông tin từ các mẫu xuất hiện trước mẫu đó trong hoán vị. Nhờ vậy, dự báo của
+mỗi mẫu luôn được tạo ra bởi một mô hình chưa từng quan sát nhãn của chính mẫu
+đó, giúp giảm hiện tượng prediction shift và hạn chế rò rỉ thông tin trong quá
+trình huấn luyện.
 
 \subsection{Ordered Target Statistics cho đặc trưng phân loại}
 
-Với đặc trưng phân loại có nhiều mức giá trị (ví dụ \code{region} trong dữ
-liệu OULAD), CatBoost không dùng one-hot encoding (tốn kém khi số mức lớn) mà
-mã hoá mỗi mức giá trị bằng một \textbf{thống kê mục tiêu} (target statistic)
---- xấp xỉ giá trị trung bình của nhãn ứng với mức giá trị đó. Để tránh rò rỉ
-thông tin (một dạng leakage tương tự prediction shift), thống kê này cũng được
-tính theo nguyên tắc \textit{ordered}, chỉ dùng các mẫu đứng trước trong hoán
-vị ngẫu nhiên:
+Đối với các đặc trưng phân loại có nhiều mức giá trị, CatBoost biểu diễn mỗi
+mức giá trị bằng một \textbf{thống kê mục tiêu} (target statistic), phản ánh
+mối quan hệ giữa mức giá trị đó và biến mục tiêu. Để tránh rò rỉ thông tin,
+thống kê này cũng được tính theo nguyên tắc \textit{ordered}, nghĩa là chỉ sử
+dụng các mẫu xuất hiện trước trong cùng một hoán vị ngẫu nhiên:
 
 \[
-  \text{TS}(\mathbf{x}_i^{(k)}) = \frac{\displaystyle\sum_{j : \pi(j) < \pi(i),\, x_j^{(k)} = x_i^{(k)}} y_j \; + \; a \cdot P}
-  {\displaystyle\sum_{j : \pi(j) < \pi(i),\, x_j^{(k)} = x_i^{(k)}} 1 \; + \; a},
+  \text{TS}(\mathbf{x}_i^{(k)}) =
+  \frac{\displaystyle
+  \sum_{j:\pi(j)<\pi(i),\,x_j^{(k)}=x_i^{(k)}}y_j
+  + aP}
+  {\displaystyle
+  \sum_{j:\pi(j)<\pi(i),\,x_j^{(k)}=x_i^{(k)}}1
+  + a}.
 \]
 
-trong đó $x_i^{(k)}$ là giá trị của đặc trưng phân loại thứ $k$ tại mẫu $i$,
-$P$ là giá trị tiên nghiệm (thường là tỷ lệ nhãn dương toàn cục) và $a > 0$ là
-trọng số làm trơn (smoothing), giúp tránh ước lượng cực đoan khi một mức giá
-trị chỉ xuất hiện ở rất ít mẫu đứng trước nó trong hoán vị.
+Trong đó, $x_i^{(k)}$ là giá trị của đặc trưng phân loại thứ $k$ tại mẫu $i$,
+$P$ là giá trị tiên nghiệm của biến mục tiêu và $a>0$ là hệ số làm trơn
+(smoothing). Thành phần làm trơn giúp hạn chế các ước lượng cực đoan khi một
+mức giá trị chỉ xuất hiện ở rất ít mẫu.
 
 \subsection{Cây đối xứng (Oblivious Trees)}
 
-CatBoost sử dụng \textbf{cây đối xứng} (oblivious trees) làm bộ học yếu: tại
-mỗi \textbf{tầng} của cây, toàn bộ các nút sử dụng \textbf{cùng một} cặp
-(đặc trưng, ngưỡng) để chia, thay vì mỗi nút được chọn độc lập như cây CART
-thông thường. Nhờ vậy, cây đối xứng có thể được biểu diễn như một
-\textbf{bảng tra cứu} (decision table) với $2^d$ lá ứng với $d$ tầng, cho phép
-dự báo cực nhanh (chỉ cần $d$ phép so sánh, không cần duyệt cây), đồng thời
-đóng vai trò như một cơ chế điều chuẩn tự nhiên, giảm nguy cơ học vẹt so với
-cây bất đối xứng thông thường.
+CatBoost sử dụng \textbf{cây đối xứng} (oblivious trees) làm bộ học yếu. Trong
+loại cây này, tất cả các nút nằm trên cùng một tầng đều sử dụng cùng một đặc
+trưng và cùng một ngưỡng để phân chia dữ liệu. Nhờ cấu trúc đối xứng, đường đi
+từ nút gốc đến một lá chỉ phụ thuộc vào chuỗi kết quả của các phép so sánh tại
+từng tầng của cây.
+
+So với cây quyết định thông thường, cây đối xứng có cấu trúc đơn giản và đồng
+nhất hơn, giúp tăng tốc độ dự báo cũng như giảm chi phí tính toán. Đồng thời,
+việc hạn chế mức độ phức tạp của cây cũng góp phần giảm nguy cơ quá khớp và cải
+thiện khả năng tổng quát hóa của mô hình.
 
 \section{LightGBM}
 
-LightGBM cũng là một hiện thực hoá của GBDT (Mục~\ref{sec:catboost}), nhưng
-theo hướng tối ưu \textbf{tốc độ và bộ nhớ} trên tập dữ liệu lớn, thông qua ba
-cải tiến chính: cách cây tăng trưởng, cách lấy mẫu dữ liệu, và cách nén đặc
-trưng.
+LightGBM là một thuật toán thuộc họ Gradient Boosted Decision Trees (GBDT),
+được thiết kế nhằm nâng cao hiệu quả huấn luyện trên các tập dữ liệu có kích
+thước lớn. So với GBDT truyền thống, LightGBM tập trung tối ưu tốc độ huấn
+luyện và mức sử dụng bộ nhớ thông qua ba cải tiến chính: chiến lược xây dựng
+cây, phương pháp lấy mẫu dữ liệu và kỹ thuật giảm số lượng đặc trưng cần xử lý.
 
 \subsection{Tăng trưởng cây theo lá (Leaf-wise Growth)}
 
-Hầu hết cài đặt GBDT truyền thống (bao gồm cả cây đối xứng của CatBoost) phát
-triển cây theo \textbf{tầng} (level-wise/depth-wise): tại mỗi vòng, \textbf{tất
-cả} các lá ở tầng hiện tại đều được xét để chia trước khi chuyển sang tầng kế
-tiếp, tạo ra cây cân đối. LightGBM thay vào đó phát triển cây theo
-\textbf{lá} (leaf-wise, hay best-first): ở mỗi bước, thuật toán chỉ chia
-\textbf{một} lá --- lá mang lại mức giảm mất mát lớn nhất trong số tất cả các
-lá hiện có --- bất kể lá đó nằm ở tầng nào.
+Phần lớn các thuật toán GBDT xây dựng cây theo chiến lược
+\textbf{level-wise} (hoặc depth-wise), trong đó tất cả các lá ở cùng một tầng
+được mở rộng trước khi chuyển sang tầng tiếp theo. Cách xây dựng này tạo ra các
+cây có cấu trúc tương đối cân bằng.
+
+Ngược lại, LightGBM sử dụng chiến lược \textbf{leaf-wise} (hay
+\textit{best-first}). Ở mỗi bước, thuật toán chỉ mở rộng một lá duy nhất, đó là
+lá mang lại mức giảm hàm mất mát lớn nhất trong số tất cả các lá hiện có, bất
+kể lá đó nằm ở độ sâu nào của cây.
 
 \begin{figure}[H]
   \centering
@@ -559,7 +581,7 @@ lá hiện có --- bất kể lá đó nằm ở tầng nào.
           child { node {} }
         };
     \end{tikzpicture}
-    \caption{Level-wise: chia đều tất cả các lá ở mỗi tầng, cây cân đối.}
+    \caption{Level-wise: mở rộng đồng thời tất cả các lá trên cùng một tầng.}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.47\textwidth}
@@ -578,57 +600,61 @@ lá hiện có --- bất kể lá đó nằm ở tầng nào.
         }
         child { node {} };
     \end{tikzpicture}
-    \caption{Leaf-wise: luôn chia lá giảm mất mát nhiều nhất, cây bất đối
-    xứng.}
+    \caption{Leaf-wise: luôn mở rộng lá mang lại mức giảm mất mát lớn nhất.}
   \end{subfigure}
-  \caption{So sánh chiến lược tăng trưởng cây level-wise (trái) và leaf-wise
-  (phải) với cùng số lá.}
+  \caption{So sánh chiến lược xây dựng cây level-wise và leaf-wise với cùng số
+  lượng lá.}
   \label{fig:growth}
 \end{figure}
 
-Như minh hoạ ở Hình~\ref{fig:growth}, với cùng số lượng lá, chiến lược
-leaf-wise thường đạt mức giảm mất mát lớn hơn level-wise (vì luôn ưu tiên
-``điểm nóng'' của sai số), nhưng đổi lại có thể tạo ra cây \textbf{sâu và lệch}
-hơn --- dễ học vẹt hơn trên tập dữ liệu nhỏ nếu không kiểm soát chặt các siêu
-tham số như \code{num\_leaves}, \code{max\_depth} hay
-\code{min\_child\_samples}.
+Như minh họa ở Hình~\ref{fig:growth}, với cùng số lượng lá, chiến lược
+leaf-wise thường đạt giá trị hàm mất mát thấp hơn do luôn ưu tiên mở rộng lá có
+khả năng cải thiện mô hình nhiều nhất. Tuy nhiên, cách xây dựng này cũng tạo ra
+những cây sâu và mất cân bằng hơn, làm tăng nguy cơ quá khớp trên các tập dữ
+liệu nhỏ. Vì vậy, LightGBM thường kết hợp các siêu tham số như
+\code{num\_leaves}, \code{max\_depth} và \code{min\_child\_samples} để kiểm
+soát độ phức tạp của cây.
 
 \subsection{GOSS --- Gradient-based One-Side Sampling}
 
-Trực giác của GOSS: những mẫu có \textbf{gradient lớn} (mô hình hiện tại dự
-báo sai nhiều) đóng góp nhiều thông tin hơn cho việc tìm điểm chia tốt ở vòng
-tiếp theo, trong khi những mẫu có gradient nhỏ (đã được dự báo tốt) đóng góp
-ít hơn. GOSS khai thác điều này để giảm số mẫu cần xét khi tìm điểm chia:
+Trong Gradient Boosting, các mẫu có giá trị gradient lớn thường là những mẫu
+mà mô hình dự báo chưa tốt, do đó chứa nhiều thông tin hơn cho việc xây dựng
+cây ở vòng boosting tiếp theo. Ngược lại, các mẫu có gradient nhỏ thường đã
+được mô hình dự báo tương đối chính xác và đóng góp ít hơn vào quá trình tìm
+điểm phân chia.
+
+Dựa trên nhận xét này, GOSS (Gradient-based One-Side Sampling) giảm số lượng
+mẫu cần xử lý bằng cách:
 
 \begin{itemize}[leftmargin=*]
-  \item Giữ lại \textbf{toàn bộ} $a\%$ số mẫu có gradient (trị tuyệt đối) lớn
-        nhất.
-  \item Lấy mẫu \textbf{ngẫu nhiên} $b\%$ trong số các mẫu gradient nhỏ còn
-        lại.
-  \item Để không làm chệch ước lượng độ giảm mất mát (vì đã bỏ bớt mẫu gradient
-        nhỏ), gradient của các mẫu được lấy mẫu ngẫu nhiên này được
-        \textbf{nhân bù} với hệ số $\frac{1-a}{b}$ khi tính toán thống kê tại
-        mỗi điểm chia tiềm năng.
+  \item Giữ lại toàn bộ $a\%$ số mẫu có giá trị gradient lớn nhất.
+  \item Lấy mẫu ngẫu nhiên $b\%$ trong nhóm các mẫu còn lại.
+  \item Khi tính toán độ giảm hàm mất mát, các mẫu được lấy ngẫu nhiên sẽ được
+        gán trọng số $\frac{1-a}{b}$ nhằm bù lại ảnh hưởng của các mẫu đã bị
+        loại bỏ.
 \end{itemize}
 
-Nhờ đó, LightGBM có thể tìm điểm chia gần chính xác như khi dùng toàn bộ dữ
-liệu, nhưng chỉ cần xét một tập con nhỏ hơn nhiều --- giảm đáng kể thời gian
-huấn luyện trên tập dữ liệu lớn.
+Nhờ chỉ xử lý một phần dữ liệu nhưng vẫn giữ lại hầu hết các mẫu quan trọng,
+GOSS giúp giảm đáng kể thời gian huấn luyện trong khi chỉ ảnh hưởng rất nhỏ đến
+chất lượng của điểm phân chia được lựa chọn.
 
 \subsection{EFB --- Exclusive Feature Bundling}
 
-Với dữ liệu có nhiều đặc trưng thưa và \textbf{loại trừ lẫn nhau} (mutually
-exclusive --- hiếm khi cùng khác 0, điển hình là các đặc trưng one-hot từ mã
-hoá biến phân loại nhiều mức), EFB gộp nhiều đặc trưng như vậy thành
-\textbf{một} đặc trưng tổng hợp duy nhất, bằng cách gán cho mỗi đặc trưng gốc
-một khoảng giá trị riêng biệt trong đặc trưng gộp. Việc xác định nhóm đặc
-trưng nào có thể gộp với nhau (cho phép một tỷ lệ xung đột nhỏ, có kiểm soát)
-được quy về bài toán \textbf{tô màu đồ thị} (graph coloring) trên đồ thị xung
-đột giữa các đặc trưng, giải gần đúng bằng thuật toán tham lam (greedy). Kết
-quả là số lượng đặc trưng cần xét khi xây dựng histogram cho việc tìm điểm
-chia giảm đáng kể, kéo theo tốc độ huấn luyện nhanh hơn mà hầu như không đánh
-đổi độ chính xác.
+Đối với các tập dữ liệu có số lượng lớn đặc trưng thưa (sparse features),
+nhiều đặc trưng gần như không đồng thời nhận giá trị khác 0, chẳng hạn các đặc
+trưng được tạo ra từ one-hot encoding. LightGBM khai thác đặc điểm này thông
+qua kỹ thuật \textbf{Exclusive Feature Bundling} (EFB).
 
+Ý tưởng của EFB là gộp nhiều đặc trưng gần như loại trừ lẫn nhau thành một đặc
+trưng mới mà vẫn bảo toàn thông tin của từng đặc trưng ban đầu. Để thực hiện
+điều này, mỗi đặc trưng được ánh xạ vào một khoảng giá trị riêng trong đặc
+trưng tổng hợp. Việc xác định những đặc trưng nào có thể gộp chung được mô hình
+hóa thành bài toán tô màu đồ thị (graph coloring) trên đồ thị xung đột giữa các
+đặc trưng và được giải bằng thuật toán tham lam.
+
+Nhờ giảm số lượng đặc trưng cần xem xét khi xây dựng histogram để tìm điểm
+phân chia, EFB giúp rút ngắn thời gian huấn luyện và giảm yêu cầu bộ nhớ, đồng
+thời vẫn duy trì độ chính xác của mô hình trong hầu hết các trường hợp.
 
 % =====================================================================
 %  CHƯƠNG 2 — PHÂN TÍCH KHÁM PHÁ DỮ LIỆU

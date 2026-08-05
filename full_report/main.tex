@@ -2,13 +2,13 @@
 % Biên dịch: xelatex main.tex (chạy 2 lần để cập nhật mục lục & tham chiếu)
 %
 % Báo cáo hoàn chỉnh, gộp từ ba phần đã biên soạn riêng:
-%   docs/algorithms_theory   -> Phần I  (Cơ sở lý thuyết các thuật toán)
-%   docs/eda_report          -> Phần II (Phân tích khám phá dữ liệu)
-%   docs/build_model_report  -> Phần III (Xây dựng và so sánh mô hình)
+%   docs/algorithms_theory   -> Chương 1 (Cơ sở lý thuyết các thuật toán)
+%   docs/eda_report          -> Chương 2 (Phân tích khám phá dữ liệu)
+%   docs/build_model_report  -> Chương 3 (Xây dựng và so sánh mô hình)
 % Hình và bảng được sao chép nguyên trạng từ ba thư mục trên; xem các
 % gen_tables.py / gen_figures.py tương ứng ở đó nếu cần tái tạo.
 \RequirePackage{fix-cm}
-\documentclass[a4paper]{article}
+\documentclass[a4paper]{report}
 
 % ---------- Cỡ chữ 13pt thật sự (lớp report chuẩn chỉ hỗ trợ 10/11/12pt,
 % nên option [13pt] bị bỏ qua; gói fontsize cho phép đặt cỡ tuỳ ý) ----------
@@ -87,9 +87,8 @@
 
   \vspace{0.5cm}
   \rule{\textwidth}{0.4pt}\\[0.55cm]
-  {\LARGE\bfseries PHÂN TÍCH DỮ LIỆU, CƠ SỞ LÝ THUYẾT\\[6pt]
-   VÀ XÂY DỰNG MÔ HÌNH HỌC MÁY\\[6pt]
-   CẢNH BÁO SỚM RỦI RO HỌC TẬP\par}
+  {\Large\bfseries ỨNG DỤNG CÁC MÔ HÌNH HỌC MÁY\\[6pt]
+   TRONG CẢNH BÁO SỚM RỦI RO HỌC TẬP\par}
   \vspace{0.5cm}
   \rule{\textwidth}{0.4pt}
 
@@ -122,7 +121,8 @@
 % =====================================================================
 \pagenumbering{arabic}
 
-\section{Giới thiệu}
+\chapter*{Mở đầu}
+\addcontentsline{toc}{chapter}{Mở đầu}
 
 Báo cáo này trình bày toàn bộ quá trình nghiên cứu xây dựng hệ thống
 \textit{cảnh báo sớm rủi ro học tập} (early academic risk warning), phục vụ
@@ -136,7 +136,7 @@ dữ liệu ghi lại thông tin về các học phần, sinh viên và toàn b�
 họ với Môi trường học tập trực tuyến (Virtual Learning Environment -- VLE) trên
 bảy học phần được lựa chọn.
 
-Toàn bộ nghiên cứu được tổ chức thành ba phần kế tiếp nhau:
+Toàn bộ nghiên cứu được tổ chức thành ba chương kế tiếp nhau:
 
 \begin{enumerate}[leftmargin=*]
   \item \textbf{Cơ sở lý thuyết}: trình bày nguyên lý hoạt động, công thức
@@ -157,9 +157,9 @@ Toàn bộ nghiên cứu được tổ chức thành ba phần kế tiếp nhau:
 \end{enumerate}
 
 % =====================================================================
-%  PHẦN I — CƠ SỞ LÝ THUYẾT CÁC THUẬT TOÁN
+%  CHƯƠNG 1 — CƠ SỞ LÝ THUYẾT CÁC THUẬT TOÁN
 % =====================================================================
-\part{Cơ sở lý thuyết các thuật toán học máy}
+\chapter{Cơ sở lý thuyết các thuật toán học máy}
 \label{part:theory}
 
 \section{Tổng quan bốn thuật toán}
@@ -170,7 +170,7 @@ biến, phù hợp về mặt lý thuyết với các bài toán phân loại nh
 bằng nhãn trên dữ liệu dạng bảng, có cả đặc trưng phân loại lẫn đặc trưng số.
 Sự phù hợp cụ thể của từng thuật toán với đặc điểm dữ liệu thực tế của bài
 toán cảnh báo sớm rủi ro học tập sẽ được đối chiếu và xác nhận qua quá trình
-phân tích khám phá dữ liệu ở Phần~\ref{part:eda}. Bốn thuật toán này đại diện
+phân tích khám phá dữ liệu ở Chương~\ref{part:eda}. Bốn thuật toán này đại diện
 cho ba trường phái tiếp cận khác nhau trong học máy có giám sát:
 
 \begin{itemize}[leftmargin=*]
@@ -186,7 +186,7 @@ cho ba trường phái tiếp cận khác nhau trong học máy có giám sát:
 Với mỗi thuật toán, các mục tiếp theo trình bày: nguyên lý hoạt động, công
 thức toán học cốt lõi, các cơ chế đặc trưng riêng (nếu có), và phân tích ưu
 điểm --- hạn chế trong bối cảnh bài toán cảnh báo sớm. Mục cuối của
-Phần~\ref{part:theory} tổng hợp một bảng so sánh xuyên suốt bốn thuật toán
+Chương~\ref{part:theory} tổng hợp một bảng so sánh xuyên suốt bốn thuật toán
 theo nhiều tiêu chí thực tiễn.
 
 \section{Hồi quy Logistic (Logistic Regression)}
@@ -268,7 +268,7 @@ số \textbf{nghịch đảo} của cường độ điều chuẩn: $C$ càng nh
 buộc càng chặt (trọng số $\mathbf{w}$ bị co về gần 0), giảm phương sai nhưng có
 thể tăng độ chệch (bias); $C$ càng lớn, mô hình càng tự do khớp dữ liệu huấn
 luyện. Đây chính là siêu tham số $C$ được tinh chỉnh bằng Optuna ở
-Phần~\ref{part:model}.
+Chương~\ref{part:model}.
 
 \subsection{Trọng số lớp cho dữ liệu mất cân bằng}
 \label{sec:logreg_weight}
@@ -286,7 +286,7 @@ $w_1 > 1$ cho lớp thiểu số At-risk). Việc tăng $w_1$ khiến mô hình 
 mất mát lớn hơn khi phân loại sai một sinh viên At-risk, thúc đẩy mô hình dịch
 chuyển ranh giới quyết định để bắt được nhiều trường hợp At-risk hơn --- đây
 chính là cơ chế \code{class\_weight} được tinh chỉnh đồng thời với $C$ và tỷ lệ
-SMOTE ở Phần~\ref{part:model}.
+SMOTE ở Chương~\ref{part:model}.
 
 \subsection{Ưu điểm và hạn chế}
 
@@ -789,26 +789,26 @@ giới hạn bởi giả định tuyến tính; Random Forest và hai thuật to
 (CatBoost, LightGBM) đều dựa trên cây quyết định nên tự nhiên nắm bắt được
 quan hệ phi tuyến và tương tác giữa các đặc trưng --- đặc điểm sẽ được đối
 chiếu với dữ liệu thực tế qua quá trình phân tích khám phá ở
-Phần~\ref{part:eda} --- nhưng khác biệt về cơ chế tổng hợp (song song vs.\
+Chương~\ref{part:eda} --- nhưng khác biệt về cơ chế tổng hợp (song song vs.\
 tuần tự) và do đó có đặc tính bias--variance khác nhau. Trong hai thuật toán
 boosting, CatBoost ưu tiên xử lý đặc trưng phân loại và giảm rò rỉ mục tiêu
 một cách nguyên bản, còn LightGBM ưu tiên tốc độ và khả năng mở rộng trên dữ
-liệu lớn. Phần~\ref{part:eda} đối chiếu các đặc điểm dữ liệu thực tế của bài
+liệu lớn. Chương~\ref{part:eda} đối chiếu các đặc điểm dữ liệu thực tế của bài
 toán cảnh báo sớm rủi ro học tập với bốn thuật toán trình bày ở trên; sau đó
-Phần~\ref{part:model} trình bày kết quả huấn luyện và so sánh trực tiếp cả bốn
+Chương~\ref{part:model} trình bày kết quả huấn luyện và so sánh trực tiếp cả bốn
 thuật toán này trên chính dữ liệu đó, đối chiếu những đánh đổi lý thuyết vừa
 nêu trên thực nghiệm.
 
 % =====================================================================
-%  PHẦN II — PHÂN TÍCH KHÁM PHÁ DỮ LIỆU
+%  CHƯƠNG 2 — PHÂN TÍCH KHÁM PHÁ DỮ LIỆU
 % =====================================================================
-\part{Phân tích khám phá dữ liệu (EDA)}
+\chapter{Phân tích khám phá dữ liệu (EDA)}
 \label{part:eda}
 
-Sau khi trình bày cơ sở lý thuyết của bốn thuật toán ở Phần~\ref{part:theory},
+Sau khi trình bày cơ sở lý thuyết của bốn thuật toán ở Chương~\ref{part:theory},
 phần này phân tích khám phá bộ dữ liệu OULAD nhằm xác nhận sự phù hợp của các
 thuật toán đó với đặc điểm dữ liệu thực tế, đồng thời rút ra các định hướng
-tiền xử lý cho bước xây dựng mô hình ở Phần~\ref{part:model}.
+tiền xử lý cho bước xây dựng mô hình ở Chương~\ref{part:model}.
 
 \section{Tổng quan bộ dữ liệu OULAD}
 
@@ -1586,7 +1586,7 @@ phân biệt các nhóm.
 
 Từ quá trình phân tích khám phá dữ liệu, có thể rút ra một số đặc điểm của dữ
 liệu ảnh hưởng trực tiếp đến việc lựa chọn thuật toán --- đối chiếu với bốn
-thuật toán đã trình bày cơ sở lý thuyết ở Phần~\ref{part:theory}:
+thuật toán đã trình bày cơ sở lý thuyết ở Chương~\ref{part:theory}:
 
 \begin{itemize}[leftmargin=*]
   \item Bài toán ở dạng \textbf{phân loại nhị phân và mất cân bằng nhãn}: gộp
@@ -1603,21 +1603,21 @@ thuật toán đã trình bày cơ sở lý thuyết ở Phần~\ref{part:theory
 \end{itemize}
 
 Dựa trên các đặc điểm này, bốn thuật toán đã trình bày cơ sở lý thuyết ở
-Phần~\ref{part:theory} --- \textbf{Logistic Regression}, \textbf{Random
+Chương~\ref{part:theory} --- \textbf{Logistic Regression}, \textbf{Random
 Forest}, \textbf{CatBoost} và \textbf{LightGBM} --- đều phù hợp để đưa vào thử
 nghiệm trong nghiên cứu. Kết quả huấn luyện và so sánh thực nghiệm trên chính
-dữ liệu này được trình bày ở Phần~\ref{part:model}.
+dữ liệu này được trình bày ở Chương~\ref{part:model}.
 
 % =====================================================================
-%  PHẦN III — XÂY DỰNG VÀ SO SÁNH MÔ HÌNH
+%  CHƯƠNG 3 — XÂY DỰNG VÀ SO SÁNH MÔ HÌNH
 % =====================================================================
-\part{Xây dựng và so sánh mô hình}
+\chapter{Xây dựng và so sánh mô hình}
 \label{part:model}
 
 \section{Tiền xử lý dữ liệu}
 
-Kế thừa cơ sở lý thuyết bốn thuật toán ở Phần~\ref{part:theory} và kết quả
-phân tích khám phá dữ liệu ở Phần~\ref{part:eda}, phần này trình bày quá trình
+Kế thừa cơ sở lý thuyết bốn thuật toán ở Chương~\ref{part:theory} và kết quả
+phân tích khám phá dữ liệu ở Chương~\ref{part:eda}, phần này trình bày quá trình
 xây dựng và so sánh mô hình
 học máy cho bài toán cảnh báo sớm rủi ro học tập. Bài toán được xác định lại ở
 dạng \textbf{phân loại nhị phân}: nhận diện sinh viên \textbf{có nguy cơ}
@@ -1651,7 +1651,7 @@ Sau bước điền khuyết, toàn bộ đặc trưng động không còn giá 
 
 \subsection{Xử lý giá trị thiếu ở \code{imd\_band}}
 
-Như đã trình bày ở Mục~\ref{sec:imd} (Phần~\ref{part:eda}), biến \code{imd\_band} (chỉ số
+Như đã trình bày ở Mục~\ref{sec:imd} (Chương~\ref{part:eda}), biến \code{imd\_band} (chỉ số
 thiếu thốn kinh tế theo khu vực) có một dạng thiếu riêng biệt, được mã hoá bằng
 ký hiệu \code{'?'} thay vì giá trị rỗng thông thường. Trước khi điền khuyết,
 cơ chế thiếu được kiểm định thống kê để lựa chọn phương án xử lý phù hợp:
@@ -1699,7 +1699,7 @@ Ba đặc trưng nhân khẩu học còn lại từ dữ liệu gốc --- \code{
 \code{region}, \code{age\_band} --- không được đưa vào ma trận đặc trưng huấn
 luyện. Các đặc trưng nhân khẩu học được giữ lại (\code{highest\_education},
 \code{disability}, \code{imd\_band\_filled}) là những đặc trưng đã cho thấy
-liên hệ rõ ràng với kết quả học tập ở Phần~\ref{part:eda}.
+liên hệ rõ ràng với kết quả học tập ở Chương~\ref{part:eda}.
 
 \subsection{Tập đặc trưng cuối cùng}
 
@@ -1718,7 +1718,7 @@ Sau các bước xử lý trên, ma trận đặc trưng dùng cho huấn luyệ
 \end{itemize}
 
 Việc chia tập huấn luyện và kiểm tra được giữ nguyên theo \textbf{từng sinh
-viên} như đã thiết lập ở Bảng~\ref{tab:split} (Phần~\ref{part:eda}, tỷ lệ
+viên} như đã thiết lập ở Bảng~\ref{tab:split} (Chương~\ref{part:eda}, tỷ lệ
 80:20), đảm bảo
 không xảy ra rò rỉ dữ liệu giữa hai tập.
 
@@ -1735,7 +1735,7 @@ học phần. Do đó, nhãn mục tiêu được chuẩn hoá lại:
 
 Phép gộp nhãn này được áp dụng thống nhất cho toàn bộ dữ liệu dạng panel, tức
 trên mọi bản ghi ở cả tám mốc dự đoán $T \in \{30, 60, \ldots, 240\}$ đã thiết
-kế ở Mục~\ref{sec:panel_design} (Phần~\ref{part:eda}) --- không giới hạn ở một
+kế ở Mục~\ref{sec:panel_design} (Chương~\ref{part:eda}) --- không giới hạn ở một
 mốc thời gian cụ thể nào. Với dữ liệu đã ở dạng nhị phân, câu hỏi tiếp theo là mốc dự
 đoán nào nên được chọn để huấn luyện và đánh giá mô hình; đây là nội dung được
 khảo sát ở phần kế tiếp.
@@ -1745,7 +1745,7 @@ khảo sát ở phần kế tiếp.
 
 Trước khi đi sâu so sánh nhiều thuật toán tại một mốc thời gian cố định, cần
 khảo sát sơ bộ hiệu suất mô hình học máy \textbf{xuyên suốt toàn bộ các mốc dự
-đoán} đã thiết kế ở Mục~\ref{sec:panel_design} (Phần~\ref{part:eda}), nhằm hai
+đoán} đã thiết kế ở Mục~\ref{sec:panel_design} (Chương~\ref{part:eda}), nhằm hai
 mục đích: (i) hiểu xu hướng
 biến động hiệu suất theo thời gian khi sinh viên tích luỹ ngày càng nhiều hành
 vi học tập, và (ii) làm cơ sở lựa chọn một mốc thời gian đại diện, phù hợp cho
@@ -1756,7 +1756,7 @@ các thử nghiệm chuyên sâu ở phần sau.
 Với mỗi mốc dự đoán $T$, một mô hình \textbf{Logistic Regression} được huấn
 luyện riêng, chỉ sử dụng dữ liệu của đúng mốc đó --- đây cũng là thuật toán cơ
 sở, đơn giản và dễ diễn giải nhất trong bốn thuật toán đã trình bày cơ sở lý
-thuyết ở Phần~\ref{part:theory}, phù hợp để khảo sát nhanh xu hướng hiệu suất theo thời gian
+thuyết ở Chương~\ref{part:theory}, phù hợp để khảo sát nhanh xu hướng hiệu suất theo thời gian
 trước khi mở rộng sang các mô hình phức tạp hơn. Quy trình tinh chỉnh áp dụng
 cho từng mô hình tương tự cách tiếp cận sẽ được dùng ở giai đoạn so sánh nhiều
 thuật toán tại Mục~\ref{sec:methodology}: dữ liệu được chuẩn hoá bằng
@@ -1875,7 +1875,7 @@ tiếp \textbf{bốn thuật toán học máy} khác nhau.
 
 \subsection{Các thuật toán sử dụng}
 
-Bốn thuật toán đã trình bày cơ sở lý thuyết ở Phần~\ref{part:theory} ---
+Bốn thuật toán đã trình bày cơ sở lý thuyết ở Chương~\ref{part:theory} ---
 Logistic Regression, Random Forest, CatBoost và LightGBM --- được đưa vào huấn luyện và so sánh
 trực tiếp trên dữ liệu thực tế. Thuật toán \textbf{SVM (kernel RBF)} được loại
 khỏi phạm vi thử nghiệm do độ phức tạp huấn luyện tăng theo bậc hai với số
@@ -1894,7 +1894,7 @@ Hai kỹ thuật được kết hợp đồng thời để xử lý mất cân b
         sai đối với lớp At-risk trong hàm mất mát của mô hình, cũng được tinh
         chỉnh như một siêu tham số --- tương ứng về mặt toán học với hàm mất
         mát có trọng số đã trình bày ở Mục~\ref{sec:logreg_weight}
-        (Phần~\ref{part:theory}) cho riêng trường hợp Logistic Regression.
+        (Chương~\ref{part:theory}) cho riêng trường hợp Logistic Regression.
 \end{itemize}
 
 Để tránh rò rỉ dữ liệu, \textbf{SMOTE chỉ được áp dụng trên từng fold huấn
@@ -1935,7 +1935,7 @@ tra, sử dụng đầy đủ 15 đặc trưng.
   \item \textbf{Random Forest} cho kết quả khá tương đồng với hai mô hình
         boosting, nhưng không vượt trội ở bất kỳ chỉ số nào.
   \item \textbf{Logistic Regression} có hiệu suất thấp nhất ở mọi chỉ số, phù
-        hợp với kỳ vọng đặt ra từ Phần~\ref{part:theory} và Phần~\ref{part:eda}:
+        hợp với kỳ vọng đặt ra từ Chương~\ref{part:theory} và Chương~\ref{part:eda}:
         dữ liệu tồn tại quan hệ phi tuyến và đa cộng tuyến giữa các đặc trưng
         hành vi trực tuyến, là
         những đặc điểm mà mô hình tuyến tính khó nắm bắt đầy đủ.
@@ -2071,7 +2071,7 @@ Hình~\ref{fig:stability} theo dõi sự biến động của cả năm chỉ s�
         trưng (từ 0.7576 ở Full lên 0.8058 ở Top-5).
   \item \textbf{Logistic Regression} là mô hình duy nhất có xu hướng giảm nhẹ
         ở hầu hết chỉ số khi giảm đặc trưng --- phù hợp với đặc tính tuyến
-        tính đã trình bày ở Phần~\ref{part:theory}: mô hình này hưởng lợi từ
+        tính đã trình bày ở Chương~\ref{part:theory}: mô hình này hưởng lợi từ
         việc có nhiều biến hơn để bù đắp cho khả năng nắm bắt tương tác hạn
         chế.
 \end{itemize}
@@ -2248,7 +2248,7 @@ thuyết, xây dựng và so sánh mô hình --- có thể rút ra các kết lu
         có ROC-AUC và precision cao nhất --- hai mô hình boosting này đều vượt
         trội hơn Random Forest và Logistic Regression một cách nhất quán trên
         mọi bộ đặc trưng, đúng như dự đoán từ đặc tính lý thuyết của từng
-        thuật toán ở Phần~\ref{part:theory}.
+        thuật toán ở Chương~\ref{part:theory}.
   \item Hiệu suất mô hình \textbf{ổn định cao} khi giảm số lượng đặc trưng từ
         15 xuống chỉ còn 5 --- thậm chí Random Forest trên bộ Top-5 đạt F1
         At-risk cao nhất toàn thực nghiệm (0.8040). Kết quả này gợi ý một bộ

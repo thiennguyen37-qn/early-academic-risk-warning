@@ -154,9 +154,7 @@ Toàn bộ nghiên cứu được tổ chức thành ba chương kế tiếp nha
         chất lượng của bộ dữ liệu OULAD; xây dựng tập dữ liệu dạng
         \textit{panel} (snapshot theo nhiều mốc thời gian) phù hợp với bài
         toán dự báo sớm; khám phá mối quan hệ giữa các đặc trưng nhân khẩu
-        học, hành vi học tập và kết quả cuối khoá; qua đó xác nhận sự phù hợp
-        của bốn thuật toán đã trình bày ở phần trước với đặc điểm dữ liệu thực
-        tế.
+        học, hành vi học tập và kết quả cuối khoá.
   \item \textbf{Xây dựng và so sánh mô hình}: tiền xử lý dữ liệu, khảo sát sơ
         bộ hiệu suất theo thời gian, huấn luyện và tinh chỉnh bốn thuật toán
         kết hợp kỹ thuật xử lý mất cân bằng nhãn, so sánh hiệu suất, đánh giá
@@ -670,9 +668,8 @@ thời vẫn duy trì độ chính xác của mô hình trong hầu hết các t
 \label{part:eda}
 
 Sau khi trình bày cơ sở lý thuyết của bốn thuật toán ở Chương~\ref{part:theory},
-phần này phân tích khám phá bộ dữ liệu OULAD nhằm xác nhận sự phù hợp của các
-thuật toán đó với đặc điểm dữ liệu thực tế, đồng thời rút ra các định hướng
-tiền xử lý cho bước xây dựng mô hình ở Chương~\ref{part:model}.
+phần này phân tích khám phá bộ dữ liệu OULAD nhằm rút ra các định hướng tiền xử
+lý cho bước xây dựng mô hình ở Chương~\ref{part:model}.
 
 \section{Tổng quan bộ dữ liệu OULAD}
 
@@ -1133,7 +1130,7 @@ nhiêu lần (Hình~\ref{fig:retake}).
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.8\textwidth]{is_retake.png}
+  \includegraphics[width=0.78\textwidth]{is_retake.png}
   \caption{Phân phối biến \code{is\_retake\_the\_course}.}
   \label{fig:retake}
 \end{figure}
@@ -1152,7 +1149,7 @@ hơn nên phải học lại thường xuyên hơn.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.78\textwidth]{retake_disability.png}
+  \includegraphics[width=0.75\textwidth]{retake_disability.png}
   \caption{Tỷ lệ học lại theo tình trạng khuyết tật.}
   \label{fig:retake_dis}
 \end{figure}
@@ -1415,33 +1412,6 @@ phân biệt các nhóm.
   \label{fig:days_early}
 \end{figure}
 
-\section{Xác nhận sự phù hợp của các thuật toán học máy}
-\label{sec:algo_proposal}
-
-Từ quá trình phân tích khám phá dữ liệu, có thể rút ra một số đặc điểm của dữ
-liệu ảnh hưởng trực tiếp đến việc lựa chọn thuật toán --- đối chiếu với bốn
-thuật toán đã trình bày cơ sở lý thuyết ở Chương~\ref{part:theory}:
-
-\begin{itemize}[leftmargin=*]
-  \item Bài toán ở dạng \textbf{phân loại nhị phân và mất cân bằng nhãn}: gộp
-        hai nhóm Fail và Withdrawn thành nhóm \textbf{có nguy cơ} (At-risk),
-        nhóm Pass còn lại; nhóm có nguy cơ chiếm tỷ lệ nhỏ hơn.
-  \item Dữ liệu gồm \textbf{nhiều kiểu đặc trưng}: vừa có biến phân loại (khu
-        vực, trình độ học vấn, \code{imd\_band}\ldots) vừa có biến số (số
-        click, điểm trung bình, số bài nộp\ldots).
-  \item Giữa các đặc trưng tồn tại \textbf{quan hệ phi tuyến và tương tác}, đồng
-        thời một số nhóm đặc trưng có \textbf{đa cộng tuyến} (cụm hoạt động trực
-        tuyến).
-  \item Nhiều đặc trưng \textbf{lệch phải mạnh, có giá trị ngoại lai} và tồn tại
-        \textbf{giá trị thiếu}.
-\end{itemize}
-
-Dựa trên các đặc điểm này, bốn thuật toán đã trình bày cơ sở lý thuyết ở
-Chương~\ref{part:theory} --- \textbf{Logistic Regression}, \textbf{Random
-Forest}, \textbf{CatBoost} và \textbf{LightGBM} --- đều phù hợp để đưa vào thử
-nghiệm trong nghiên cứu. Kết quả huấn luyện và so sánh thực nghiệm trên chính
-dữ liệu này được trình bày ở Chương~\ref{part:model}.
-
 % =====================================================================
 %  CHƯƠNG 3 — XÂY DỰNG VÀ SO SÁNH MÔ HÌNH
 % =====================================================================
@@ -1487,27 +1457,14 @@ Sau bước điền khuyết, toàn bộ đặc trưng động không còn giá 
 
 Như đã trình bày ở Mục~\ref{sec:imd} (Chương~\ref{part:eda}), biến \code{imd\_band} (chỉ số
 thiếu thốn kinh tế theo khu vực) có một dạng thiếu riêng biệt, được mã hoá bằng
-ký hiệu \code{'?'} thay vì giá trị rỗng thông thường. Trước khi điền khuyết,
-cơ chế thiếu được kiểm định thống kê để lựa chọn phương án xử lý phù hợp:
+ký hiệu \code{'?'} thay vì giá trị rỗng thông thường. Một biến chỉ báo
+\code{imd\_missing} được tạo trước khi điền khuyết, để mô hình có thể tận dụng
+chính tín hiệu ``thiếu dữ liệu'' như một đặc trưng dự báo.
 
-\begin{itemize}[leftmargin=*]
-  \item Kiểm định \textbf{Mann--Whitney U} với các biến số
-        (\code{num\_of\_prev\_attempts}, \code{studied\_credits}) đều cho
-        $p < 0.05$ --- bác bỏ giả thuyết thiếu hoàn toàn ngẫu nhiên (MCAR).
-  \item Kiểm định \textbf{Chi-square} với các biến phân loại
-        (\code{region}, \code{gender}, \code{highest\_education},
-        \code{disability}, \code{final\_result}, \code{code\_module}) đều cho
-        $p < 0.05$, trong đó \code{region} có hệ số Cramér's V cao nhất
-        ($V = 0.577$) --- xác nhận cơ chế \textbf{thiếu ngẫu nhiên có điều
-        kiện} (MAR), phụ thuộc mạnh vào vùng địa lý.
-\end{itemize}
-
-Với kết luận MAR, giá trị thiếu được điền theo \textbf{phân phối riêng của
-từng vùng} (ước lượng trên tập huấn luyện), đồng thời một biến chỉ báo
-\code{imd\_missing} được tạo thêm để mô hình có thể tận dụng chính tín hiệu
-``thiếu dữ liệu'' như một đặc trưng dự báo. Sau bước xử lý, biến
-\code{imd\_band\_filled} không còn giá trị thiếu ở cả hai tập huấn luyện và
-kiểm tra.
+Giá trị thiếu được điền theo \textbf{phân phối riêng của từng vùng}
+(\code{region}), ước lượng trên tập huấn luyện rồi áp dụng lại cho tập kiểm
+tra. Sau bước xử lý, biến \code{imd\_band\_filled} không còn giá trị thiếu ở
+cả hai tập huấn luyện và kiểm tra.
 
 \subsection{Mã hoá đặc trưng phân loại}
 

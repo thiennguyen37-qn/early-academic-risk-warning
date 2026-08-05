@@ -167,27 +167,14 @@ Sau bước điền khuyết, toàn bộ đặc trưng động không còn giá 
 
 Như đã trình bày ở giai đoạn phân tích khám phá, biến \code{imd\_band} (chỉ số
 thiếu thốn kinh tế theo khu vực) có một dạng thiếu riêng biệt, được mã hoá bằng
-ký hiệu \code{'?'} thay vì giá trị rỗng thông thường. Trước khi điền khuyết,
-cơ chế thiếu được kiểm định thống kê để lựa chọn phương án xử lý phù hợp:
+ký hiệu \code{'?'} thay vì giá trị rỗng thông thường. Một biến chỉ báo
+\code{imd\_missing} được tạo trước khi điền khuyết, để mô hình có thể tận dụng
+chính tín hiệu ``thiếu dữ liệu'' như một đặc trưng dự báo.
 
-\begin{itemize}[leftmargin=*]
-  \item Kiểm định \textbf{Mann--Whitney U} với các biến số
-        (\code{num\_of\_prev\_attempts}, \code{studied\_credits}) đều cho
-        $p < 0.05$ --- bác bỏ giả thuyết thiếu hoàn toàn ngẫu nhiên (MCAR).
-  \item Kiểm định \textbf{Chi-square} với các biến phân loại
-        (\code{region}, \code{gender}, \code{highest\_education},
-        \code{disability}, \code{final\_result}, \code{code\_module}) đều cho
-        $p < 0.05$, trong đó \code{region} có hệ số Cramér's V cao nhất
-        ($V = 0.577$) --- xác nhận cơ chế \textbf{thiếu ngẫu nhiên có điều
-        kiện} (MAR), phụ thuộc mạnh vào vùng địa lý.
-\end{itemize}
-
-Với kết luận MAR, giá trị thiếu được điền theo \textbf{phân phối riêng của
-từng vùng} (ước lượng trên tập huấn luyện), đồng thời một biến chỉ báo
-\code{imd\_missing} được tạo thêm để mô hình có thể tận dụng chính tín hiệu
-``thiếu dữ liệu'' như một đặc trưng dự báo. Sau bước xử lý, biến
-\code{imd\_band\_filled} không còn giá trị thiếu ở cả hai tập huấn luyện và
-kiểm tra.
+Giá trị thiếu được điền theo \textbf{phân phối riêng của từng vùng}
+(\code{region}), ước lượng trên tập huấn luyện rồi áp dụng lại cho tập kiểm
+tra. Sau bước xử lý, biến \code{imd\_band\_filled} không còn giá trị thiếu ở
+cả hai tập huấn luyện và kiểm tra.
 
 \subsection{Mã hoá đặc trưng phân loại}
 

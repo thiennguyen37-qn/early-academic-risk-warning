@@ -1,0 +1,384 @@
+{
+  "prediction_point": 150,
+  "best_model": "CatBoost",
+  "split": {
+    "train": {
+      "pass": 11067,
+      "at_risk": 6319,
+      "total": 17386
+    },
+    "test": {
+      "pass": 2804,
+      "at_risk": 1559,
+      "total": 4363
+    }
+  },
+  "compare": {
+    "full": {
+      "CatBoost": {
+        "accuracy": 0.8501,
+        "precision": 0.8055,
+        "recall": 0.7652,
+        "f1": 0.7849,
+        "roc_auc": 0.9114
+      },
+      "LightGBM": {
+        "accuracy": 0.8455,
+        "precision": 0.7868,
+        "recall": 0.7787,
+        "f1": 0.7827,
+        "roc_auc": 0.9116
+      },
+      "Random Forest": {
+        "accuracy": 0.8435,
+        "precision": 0.7804,
+        "recall": 0.7819,
+        "f1": 0.7812,
+        "roc_auc": 0.9076
+      },
+      "Logistic Regression": {
+        "accuracy": 0.8263,
+        "precision": 0.7524,
+        "recall": 0.7659,
+        "f1": 0.7591,
+        "roc_auc": 0.8972
+      }
+    },
+    "top10": {
+      "CatBoost": {
+        "accuracy": 0.8501,
+        "precision": 0.7979,
+        "recall": 0.7774,
+        "f1": 0.7875,
+        "roc_auc": 0.9119
+      },
+      "Random Forest": {
+        "accuracy": 0.8492,
+        "precision": 0.8135,
+        "recall": 0.7498,
+        "f1": 0.7804,
+        "roc_auc": 0.9074
+      },
+      "LightGBM": {
+        "accuracy": 0.8398,
+        "precision": 0.7718,
+        "recall": 0.7832,
+        "f1": 0.7775,
+        "roc_auc": 0.9095
+      },
+      "Logistic Regression": {
+        "accuracy": 0.826,
+        "precision": 0.7475,
+        "recall": 0.7749,
+        "f1": 0.7609,
+        "roc_auc": 0.8966
+      }
+    },
+    "top5": {
+      "CatBoost": {
+        "accuracy": 0.8462,
+        "precision": 0.791,
+        "recall": 0.7742,
+        "f1": 0.7825,
+        "roc_auc": 0.9088
+      },
+      "LightGBM": {
+        "accuracy": 0.8499,
+        "precision": 0.8165,
+        "recall": 0.7479,
+        "f1": 0.7807,
+        "roc_auc": 0.9055
+      },
+      "Random Forest": {
+        "accuracy": 0.8428,
+        "precision": 0.7836,
+        "recall": 0.7736,
+        "f1": 0.7786,
+        "roc_auc": 0.9066
+      },
+      "Logistic Regression": {
+        "accuracy": 0.8194,
+        "precision": 0.7332,
+        "recall": 0.7774,
+        "f1": 0.7547,
+        "roc_auc": 0.8954
+      }
+    }
+  },
+  "ranks": {
+    "num_submitted_filled": {
+      "Logistic Regression": 1,
+      "Random Forest": 2,
+      "CatBoost": 1,
+      "LightGBM": 2,
+      "mean_rank": 1.5
+    },
+    "avg_score_filled": {
+      "Logistic Regression": 4,
+      "Random Forest": 1,
+      "CatBoost": 4,
+      "LightGBM": 1,
+      "mean_rank": 2.5
+    },
+    "num_due": {
+      "Logistic Regression": 5,
+      "Random Forest": 7,
+      "CatBoost": 3,
+      "LightGBM": 5,
+      "mean_rank": 5.0
+    },
+    "active_weeks_filled": {
+      "Logistic Regression": 9,
+      "Random Forest": 3,
+      "CatBoost": 5,
+      "LightGBM": 3,
+      "mean_rank": 5.0
+    },
+    "total_clicks_filled": {
+      "Logistic Regression": 2,
+      "Random Forest": 4,
+      "CatBoost": 11,
+      "LightGBM": 6,
+      "mean_rank": 5.75
+    },
+    "avg_days_early_filled": {
+      "Logistic Regression": 8,
+      "Random Forest": 5,
+      "CatBoost": 8,
+      "LightGBM": 3,
+      "mean_rank": 6.0
+    },
+    "highest_education": {
+      "Logistic Regression": 7,
+      "Random Forest": 8,
+      "CatBoost": 2,
+      "LightGBM": 9,
+      "mean_rank": 6.5
+    },
+    "avg_weekly_clicks_filled": {
+      "Logistic Regression": 3,
+      "Random Forest": 6,
+      "CatBoost": 12,
+      "LightGBM": 7,
+      "mean_rank": 7.0
+    },
+    "imd_band_filled": {
+      "Logistic Regression": 11,
+      "Random Forest": 10,
+      "CatBoost": 7,
+      "LightGBM": 8,
+      "mean_rank": 9.0
+    },
+    "num_failed_filled": {
+      "Logistic Regression": 10,
+      "Random Forest": 9,
+      "CatBoost": 9,
+      "LightGBM": 12,
+      "mean_rank": 10.0
+    },
+    "num_of_prev_attempts": {
+      "Logistic Regression": 13,
+      "Random Forest": 12,
+      "CatBoost": 6,
+      "LightGBM": 10,
+      "mean_rank": 10.25
+    },
+    "no_submission_despite_due": {
+      "Logistic Regression": 6,
+      "Random Forest": 13,
+      "CatBoost": 15,
+      "LightGBM": 15,
+      "mean_rank": 12.25
+    },
+    "studied_credits": {
+      "Logistic Regression": 15,
+      "Random Forest": 11,
+      "CatBoost": 13,
+      "LightGBM": 11,
+      "mean_rank": 12.5
+    },
+    "disability": {
+      "Logistic Regression": 14,
+      "Random Forest": 14,
+      "CatBoost": 10,
+      "LightGBM": 14,
+      "mean_rank": 13.0
+    },
+    "imd_missing": {
+      "Logistic Regression": 12,
+      "Random Forest": 15,
+      "CatBoost": 14,
+      "LightGBM": 13,
+      "mean_rank": 13.5
+    }
+  },
+  "tuning": {
+    "Full (15)|Logistic Regression": {
+      "cv_f1": 0.7767,
+      "smote_ratio": 0.55,
+      "w_at_risk": 1.05,
+      "model_params": {
+        "C": 59.9188237231439
+      }
+    },
+    "Full (15)|Random Forest": {
+      "cv_f1": 0.7836,
+      "smote_ratio": 0.56,
+      "w_at_risk": 1.7,
+      "model_params": {
+        "n_estimators": 310,
+        "max_depth": 18,
+        "min_samples_leaf": 4,
+        "max_features": "log2"
+      }
+    },
+    "Full (15)|CatBoost": {
+      "cv_f1": 0.7899,
+      "smote_ratio": 0.63,
+      "w_at_risk": 1.27,
+      "model_params": {
+        "iterations": 581,
+        "depth": 6,
+        "learning_rate": 0.035402410667717196,
+        "l2_leaf_reg": 2.552273056824294
+      }
+    },
+    "Full (15)|LightGBM": {
+      "cv_f1": 0.7894,
+      "smote_ratio": 0.17,
+      "w_at_risk": 1.55,
+      "model_params": {
+        "n_estimators": 243,
+        "num_leaves": 29,
+        "learning_rate": 0.05022837125570502,
+        "max_depth": 4,
+        "min_child_samples": 85,
+        "reg_lambda": 0.00040768726839877413
+      }
+    },
+    "Top-10|Logistic Regression": {
+      "cv_f1": 0.7768,
+      "smote_ratio": 0.62,
+      "w_at_risk": 1.11,
+      "model_params": {
+        "C": 3.253280606655773
+      }
+    },
+    "Top-10|Random Forest": {
+      "cv_f1": 0.7819,
+      "smote_ratio": 0.48,
+      "w_at_risk": 1.04,
+      "model_params": {
+        "n_estimators": 254,
+        "max_depth": 16,
+        "min_samples_leaf": 20,
+        "max_features": "sqrt"
+      }
+    },
+    "Top-10|CatBoost": {
+      "cv_f1": 0.7903,
+      "smote_ratio": 0.57,
+      "w_at_risk": 1.33,
+      "model_params": {
+        "iterations": 382,
+        "depth": 7,
+        "learning_rate": 0.019721610970574007,
+        "l2_leaf_reg": 3.2676417657817622
+      }
+    },
+    "Top-10|LightGBM": {
+      "cv_f1": 0.7887,
+      "smote_ratio": 0.21,
+      "w_at_risk": 1.63,
+      "model_params": {
+        "n_estimators": 341,
+        "num_leaves": 32,
+        "learning_rate": 0.07097783577505475,
+        "max_depth": 4,
+        "min_child_samples": 88,
+        "reg_lambda": 0.001679211574608569
+      }
+    },
+    "Top-5|Logistic Regression": {
+      "cv_f1": 0.7741,
+      "smote_ratio": 0.67,
+      "w_at_risk": 1.12,
+      "model_params": {
+        "C": 13.245385875532149
+      }
+    },
+    "Top-5|Random Forest": {
+      "cv_f1": 0.7882,
+      "smote_ratio": 0.5,
+      "w_at_risk": 1.27,
+      "model_params": {
+        "n_estimators": 254,
+        "max_depth": 15,
+        "min_samples_leaf": 20,
+        "max_features": "sqrt"
+      }
+    },
+    "Top-5|CatBoost": {
+      "cv_f1": 0.7894,
+      "smote_ratio": 0.57,
+      "w_at_risk": 1.33,
+      "model_params": {
+        "iterations": 382,
+        "depth": 7,
+        "learning_rate": 0.019721610970574007,
+        "l2_leaf_reg": 3.2676417657817622
+      }
+    },
+    "Top-5|LightGBM": {
+      "cv_f1": 0.7867,
+      "smote_ratio": 0.34,
+      "w_at_risk": 1.11,
+      "model_params": {
+        "n_estimators": 398,
+        "num_leaves": 49,
+        "learning_rate": 0.029957051489589014,
+        "max_depth": 7,
+        "min_child_samples": 95,
+        "reg_lambda": 0.0059967730681172865
+      }
+    }
+  },
+  "feature_sets": {
+    "top10": [
+      "num_submitted_filled",
+      "avg_score_filled",
+      "num_due",
+      "active_weeks_filled",
+      "total_clicks_filled",
+      "avg_days_early_filled",
+      "highest_education",
+      "avg_weekly_clicks_filled",
+      "imd_band_filled",
+      "num_failed_filled"
+    ],
+    "top5": [
+      "num_submitted_filled",
+      "avg_score_filled",
+      "num_due",
+      "active_weeks_filled",
+      "total_clicks_filled"
+    ],
+    "full": [
+      "highest_education",
+      "disability",
+      "num_of_prev_attempts",
+      "studied_credits",
+      "total_clicks_filled",
+      "active_weeks_filled",
+      "avg_weekly_clicks_filled",
+      "num_due",
+      "num_submitted_filled",
+      "avg_score_filled",
+      "num_failed_filled",
+      "avg_days_early_filled",
+      "no_submission_despite_due",
+      "imd_band_filled",
+      "imd_missing"
+    ]
+  }
+}

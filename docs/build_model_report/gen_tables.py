@@ -1,39 +1,30 @@
 # -*- coding: utf-8 -*-
 """Sinh các bảng .tex (so sánh model, thứ hạng đặc trưng, siêu tham số) từ kết quả
-thực nghiệm đã ghi nhận. Chạy: python gen_tables.py
+thực nghiệm. Các bảng chuyên sâu tại mốc 150 ngày đọc trực tiếp từ
+`results_t150.json` do notebook `testing_other_models_2_label.ipynb` xuất ra,
+nên không có số liệu nào bị chép tay. Chạy: python gen_tables.py
 """
+import json
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parent
+REPORT = OUT.parent.parent / "full_report"          # bản báo cáo tổng hợp
+RESULTS = json.loads((REPORT / "results_t150.json").read_text(encoding="utf-8"))
 
 MODELS = ["Logistic Regression", "Random Forest", "CatBoost", "LightGBM"]
+METRIC_KEYS = ["accuracy", "precision", "recall", "f1", "roc_auc"]
 
 # --- Bảng so sánh model theo từng bộ đặc trưng: accuracy, precision, recall, f1, roc_auc ---
 COMPARE = {
-    "full": {
-        "Logistic Regression": (0.8451, 0.7533, 0.7987, 0.7754, 0.9163),
-        "Random Forest":       (0.8681, 0.8251, 0.7690, 0.7960, 0.9248),
-        "CatBoost":            (0.8728, 0.8464, 0.7576, 0.7996, 0.9304),
-        "LightGBM":            (0.8686, 0.8076, 0.7973, 0.8024, 0.9292),
-    },
-    "top10": {
-        "Logistic Regression": (0.8536, 0.7873, 0.7711, 0.7791, 0.9157),
-        "Random Forest":       (0.8631, 0.7966, 0.7938, 0.7952, 0.9260),
-        "CatBoost":            (0.8614, 0.7762, 0.8235, 0.7992, 0.9303),
-        "LightGBM":            (0.8655, 0.7972, 0.8023, 0.7997, 0.9304),
-    },
-    "top5": {
-        "Logistic Regression": (0.8529, 0.7876, 0.7675, 0.7775, 0.9148),
-        "Random Forest":       (0.8700, 0.8116, 0.7966, 0.8040, 0.9279),
-        "CatBoost":            (0.8667, 0.7979, 0.8058, 0.8018, 0.9302),
-        "LightGBM":            (0.8626, 0.7950, 0.7945, 0.7948, 0.9286),
-    },
+    key: {m: tuple(RESULTS["compare"][key][m][k] for k in METRIC_KEYS) for m in MODELS}
+    for key in ("full", "top10", "top5")
 }
 METRIC_HEADERS = ["Accuracy", "Precision", "Recall", "F1", "ROC-AUC"]
 
 CAPTIONS = {
-    "full":  (r"So sánh các mô hình trên bộ 15 đặc trưng đầy đủ (T=180). "
-              r"Chỉ số Precision/Recall/F1 tính riêng cho lớp \textbf{At-risk}.",
+    "full":  (r"So sánh các mô hình trên bộ 15 đặc trưng đầy đủ tại mốc 150 "
+              r"ngày. Chỉ số Precision/Recall/F1 tính riêng cho lớp "
+              r"\textbf{At-risk}.",
               "tab:compare_full"),
     "top10": (r"So sánh các mô hình sau khi rút gọn về 10 đặc trưng quan trọng "
               r"nhất (Top-10).", "tab:compare_top10"),
@@ -84,21 +75,10 @@ for key in ("full", "top10", "top5"):
 
 # --- Bảng thứ hạng đặc trưng (1 = quan trọng nhất) ---
 RANKS = [
-    ("num\\_submitted\\_filled",      1,  1,  1,  3,  1.50),
-    ("avg\\_score\\_filled",          5,  2,  4,  1,  3.00),
-    ("num\\_due",                     4,  7,  3,  7,  5.25),
-    ("total\\_clicks\\_filled",       2,  4, 10,  6,  5.50),
-    ("active\\_weeks\\_filled",       9,  3,  6,  4,  5.50),
-    ("highest\\_education",           7,  8,  2,  9,  6.50),
-    ("avg\\_days\\_early\\_filled",  11,  6,  8,  2,  6.75),
-    ("avg\\_weekly\\_clicks\\_filled",3,  9, 11,  5,  7.00),
-    ("num\\_failed\\_filled",         8,  5,  7, 12,  8.00),
-    ("imd\\_band\\_filled",          10, 11,  9,  8,  9.50),
-    ("num\\_of\\_prev\\_attempts",   13, 12,  5, 11, 10.25),
-    ("no\\_submission\\_despite\\_due",6,10, 15, 15, 11.50),
-    ("studied\\_credits",            15, 13, 13, 10, 12.75),
-    ("disability",                   14, 14, 12, 14, 13.50),
-    ("imd\\_missing",                12, 15, 14, 13, 13.50),
+    (name.replace("_", "\\_"),
+     r["Logistic Regression"], r["Random Forest"], r["CatBoost"], r["LightGBM"],
+     r["mean_rank"])
+    for name, r in RESULTS["ranks"].items()
 ]
 
 rank_rows = []
@@ -130,24 +110,13 @@ rank_table = "\n".join([
 
 # --- Bảng siêu tham số tốt nhất (SMOTE ratio + class_weight At-risk) theo từng bộ đặc trưng ---
 BEST_PARAMS = {
-    "Full (15)": {
-        "Logistic Regression": (0.7918, 0.90, 1.01),
-        "Random Forest":       (0.7986, 0.51, 1.10),
-        "CatBoost":            (0.8074, 0.62, 1.04),
-        "LightGBM":            (0.8043, 0.10, 1.46),
-    },
-    "Top-10": {
-        "Logistic Regression": (0.7927, 0.55, 1.05),
-        "Random Forest":       (0.8008, 0.50, 1.27),
-        "CatBoost":            (0.8060, 0.47, 1.79),
-        "LightGBM":            (0.8042, 0.18, 1.58),
-    },
-    "Top-5": {
-        "Logistic Regression": (0.7887, 0.51, 1.03),
-        "Random Forest":       (0.8021, 0.66, 1.03),
-        "CatBoost":            (0.8069, 0.57, 1.33),
-        "LightGBM":            (0.8043, 0.10, 1.46),
-    },
+    fset: {
+        m: (RESULTS["tuning"][f"{fset}|{m}"]["cv_f1"],
+            RESULTS["tuning"][f"{fset}|{m}"]["smote_ratio"],
+            RESULTS["tuning"][f"{fset}|{m}"]["w_at_risk"])
+        for m in MODELS
+    }
+    for fset in ("Full (15)", "Top-10", "Top-5")
 }
 
 param_rows = []
@@ -184,25 +153,34 @@ param_table = "\n".join([
 ])
 (OUT / "table_best_params.tex").write_text(param_table, encoding="utf-8")
 
-# --- Bảng phân phối nhãn tại T=180 (train/test) ---
+# --- Bảng phân phối nhãn tại T=150 (train/test) ---
+def _split_row(label, d):
+    n = d["total"]
+    return (r"    %s & %s (%.1f\%%) & %s (%.1f\%%) & %s \\"
+            % (label,
+               f"{d['pass']:,}".replace(",", "{,}"),    d["pass"] / n * 100,
+               f"{d['at_risk']:,}".replace(",", "{,}"), d["at_risk"] / n * 100,
+               f"{n:,}".replace(",", "{,}")))
+
+
 split_table = "\n".join([
     r"\begin{table}[H]",
     r"  \centering",
-    r"  \caption{Quy mô và phân phối nhãn nhị phân tại mốc dự đoán $T=180$, sau "
+    r"  \caption{Quy mô và phân phối nhãn nhị phân tại mốc dự đoán 150 ngày, sau "
     r"khi gộp Fail và Withdrawn thành At-risk.}",
-    r"  \label{tab:split_t180}",
+    r"  \label{tab:split_t150}",
     r"  \begin{tabular}{lrrr}",
     r"    \toprule",
     r"    \textbf{Tập} & \textbf{Pass} & \textbf{At-risk} & \textbf{Tổng} \\",
     r"    \midrule",
-    r"    Train & 11{,}067 (65.9\%) & 5{,}719 (34.1\%) & 16{,}786 \\",
-    r"    Test  & 2{,}804 (66.5\%)  & 1{,}411 (33.5\%)  & 4{,}215  \\",
+    _split_row("Train", RESULTS["split"]["train"]),
+    _split_row("Test ", RESULTS["split"]["test"]),
     r"    \bottomrule",
     r"  \end{tabular}",
     r"\end{table}",
     "",
 ])
-(OUT / "table_split_t180.tex").write_text(split_table, encoding="utf-8")
+(OUT / "table_split_t150.tex").write_text(split_table, encoding="utf-8")
 
 # --- Bảng kết quả sơ bộ theo từng mốc dự đoán (một mô hình Logistic Regression
 #     riêng cho mỗi mốc T, trước khi thu hẹp phạm vi về T=180 để so sánh nhiều
@@ -284,6 +262,14 @@ snapshot_param_table = "\n".join([
 ])
 (OUT / "table_snapshot_params.tex").write_text(snapshot_param_table, encoding="utf-8")
 
-print("Wrote table_compare_{full,top10,top5}.tex, table_feature_rank.tex, "
-      "table_best_params.tex, table_split_t180.tex, table_snapshot_results.tex, "
-      "table_snapshot_params.tex")
+GENERATED = [
+    "table_compare_full.tex", "table_compare_top10.tex", "table_compare_top5.tex",
+    "table_feature_rank.tex", "table_best_params.tex", "table_split_t150.tex",
+    "table_snapshot_results.tex", "table_snapshot_params.tex",
+]
+
+# Đồng bộ sang bản báo cáo tổng hợp
+for fname in GENERATED:
+    (REPORT / fname).write_text((OUT / fname).read_text(encoding="utf-8"), encoding="utf-8")
+
+print("Wrote + synced to full_report/: " + ", ".join(GENERATED))

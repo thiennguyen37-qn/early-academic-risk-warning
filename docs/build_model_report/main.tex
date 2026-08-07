@@ -336,30 +336,32 @@ toán này, cũng sẽ được quan sát lại khi so sánh với ba thuật to
 Bảng~\ref{tab:best_params}.
 
 \subsection{Lựa chọn mốc dự đoán cho phân tích chuyên sâu}
-\label{sec:choose_t180}
+\label{sec:choose_t150}
 
 Kết quả khảo sát cho thấy một sự đánh đổi rõ ràng giữa \textbf{độ tin cậy của
 dự báo} và \textbf{thời gian còn lại để can thiệp}: các mốc càng muộn cho hiệu
 suất càng cao, nhưng đồng thời càng gần thời điểm kết thúc khoá học, làm giảm
 giá trị thực tiễn của một cảnh báo sớm. Với khoá học OULAD kéo dài khoảng
-240--270 ngày, hai mốc cho F1 cao nhất ($T=210$ và $T=240$, lần lượt 0.7935 và
-0.8035) chỉ còn lại khoảng 10--20\% thời lượng khoá học --- quá muộn để nhà
+240--270 ngày, hai mốc cho F1 cao nhất --- 210 và 240 ngày, lần lượt 0.7935 và
+0.8035 --- chỉ còn lại khoảng 10--20\% thời lượng khoá học, quá muộn để nhà
 trường triển khai các biện pháp hỗ trợ có ý nghĩa.
 
-Mốc \textbf{$T=180$ ngày} được chọn làm đại diện cho các thử nghiệm chuyên sâu
-ở phần còn lại của báo cáo, vì đạt được điểm cân bằng hợp lý nhất: hiệu suất
-đã ở mức khá cao (accuracy 0.8451, F1 At-risk 0.7754 --- chỉ thấp hơn khoảng
-0.02 so với mốc $T=210$ liền sau), trong khi vẫn còn khoảng 60--90 ngày
-(25--35\% thời lượng khoá học) để nhà trường can thiệp trước khi khoá học kết
-thúc.
+Mốc \textbf{150 ngày} được chọn làm đại diện cho các thử nghiệm chuyên sâu ở
+phần còn lại của báo cáo, vì đạt được điểm cân bằng hợp lý nhất giữa hai yêu
+cầu trên. Về hiệu suất, mốc này đã cho kết quả khá cao (accuracy 0.8263, F1
+At-risk 0.7591) và chỉ thấp hơn khoảng 0.016 so với mốc 180 ngày liền sau ---
+một khoảng cách nhỏ so với lợi ích thu được về mặt thời gian. Về khả năng can
+thiệp, cảnh báo phát ra ở ngày thứ 150 vẫn còn khoảng 90--120 ngày, tương
+đương 37--50\% thời lượng khoá học, đủ để nhà trường tổ chức các hoạt động hỗ
+trợ có chiều sâu thay vì chỉ nhắc nhở gấp rút ở giai đoạn cuối.
 
-Bảng~\ref{tab:split_t180} tóm tắt quy mô và phân phối nhãn tại mốc $T=180$ sau
-khi gộp nhãn, được dùng thống nhất cho toàn bộ các thử nghiệm từ Mục~
-\ref{sec:methodology} trở đi.
+Bảng~\ref{tab:split_t150} tóm tắt quy mô và phân phối nhãn tại mốc 150 ngày
+sau khi gộp nhãn, được dùng thống nhất cho toàn bộ các thử nghiệm từ
+Mục~\ref{sec:methodology} trở đi.
 
-\input{table_split_t180}
+\input{table_split_t150}
 
-Tỷ lệ At-risk chiếm khoảng \textbf{1/3} tổng số sinh viên ở cả hai tập, tương
+Tỷ lệ At-risk chiếm khoảng \textbf{36\%} tổng số sinh viên ở cả hai tập, tương
 đồng giữa train và test --- xác nhận việc chia dữ liệu theo sinh viên không
 gây lệch phân phối nhãn. Đây vẫn là một bài toán \textbf{mất cân bằng nhãn vừa
 phải}, cần được xử lý ở bước huấn luyện mô hình.
@@ -367,8 +369,8 @@ phải}, cần được xử lý ở bước huấn luyện mô hình.
 \section{Phương pháp xây dựng mô hình}
 \label{sec:methodology}
 
-Kế thừa kết luận ở Mục~\ref{sec:choose_t180}, các thử nghiệm từ đây trở đi tập
-trung vào mốc $T=180$, mở rộng từ một mô hình cơ sở duy nhất (đã dùng để khảo
+Kế thừa kết luận ở Mục~\ref{sec:choose_t150}, các thử nghiệm từ đây trở đi tập
+trung vào mốc 150 ngày, mở rộng từ một mô hình cơ sở duy nhất (đã dùng để khảo
 sát xu hướng theo thời gian ở Mục~\ref{sec:snapshot_survey}) sang so sánh trực
 tiếp \textbf{bốn thuật toán học máy} khác nhau.
 
@@ -378,7 +380,7 @@ Bốn thuật toán được đề xuất từ giai đoạn EDA --- Logistic Reg
 Forest, CatBoost và LightGBM --- được đưa vào huấn luyện và so sánh trực tiếp.
 Thuật toán \textbf{SVM (kernel RBF)} được loại khỏi phạm vi thử nghiệm do độ
 phức tạp huấn luyện tăng theo bậc hai với số lượng mẫu, không khả thi với quy
-mô dữ liệu ở mốc $T=180$ (hơn 16 nghìn bản ghi huấn luyện) trong khuôn khổ tài
+mô dữ liệu ở mốc 150 ngày (hơn 17 nghìn bản ghi huấn luyện) trong khuôn khổ tài
 nguyên tính toán của nghiên cứu.
 
 \subsection{Xử lý mất cân bằng nhãn}
@@ -422,15 +424,16 @@ tra, sử dụng đầy đủ 15 đặc trưng.
 \input{table_compare_full}
 
 \begin{itemize}[leftmargin=*]
-  \item \textbf{CatBoost} đạt accuracy (0.8728) và precision At-risk (0.8464)
-        cao nhất, đồng thời có ROC-AUC cao nhất (0.9304) --- mô hình phân biệt
-        tốt nhất giữa hai lớp trên toàn dải ngưỡng.
-  \item \textbf{LightGBM} đạt F1 At-risk cao nhất (0.8024), nhờ cân bằng tốt
-        giữa precision (0.8076) và recall (0.7973) --- ít bỏ sót sinh viên có
-        nguy cơ hơn CatBoost (recall 0.7576) trong khi độ chính xác dự báo vẫn
-        ở mức cao.
-  \item \textbf{Random Forest} cho kết quả khá tương đồng với hai mô hình
-        boosting, nhưng không vượt trội ở bất kỳ chỉ số nào.
+  \item \textbf{CatBoost} dẫn đầu ở ba chỉ số: accuracy (0.8501), precision
+        At-risk (0.8055) và F1 At-risk (0.7849) --- mô hình cho cảnh báo đáng
+        tin cậy nhất, đồng thời cân bằng tốt nhất giữa precision và recall.
+  \item \textbf{LightGBM} đạt ROC-AUC cao nhất (0.9116), nhưng chênh lệch so
+        với CatBoost (0.9114) là không đáng kể; F1 At-risk của mô hình này
+        (0.7827) cũng chỉ thấp hơn CatBoost khoảng 0.002.
+  \item \textbf{Random Forest} có recall At-risk cao nhất (0.7819), tức bỏ sót
+        ít sinh viên có nguy cơ nhất, nhưng đánh đổi bằng precision thấp hơn
+        CatBoost. Nhìn chung ba mô hình cây cho kết quả rất sát nhau (F1 nằm
+        trong khoảng hẹp 0.7812--0.7849), không mô hình nào vượt trội hẳn.
   \item \textbf{Logistic Regression} có hiệu suất thấp nhất ở mọi chỉ số, phù
         hợp với kỳ vọng đặt ra từ giai đoạn EDA: dữ liệu tồn tại quan hệ phi
         tuyến và đa cộng tuyến giữa các đặc trưng hành vi trực tuyến, là những
@@ -465,7 +468,7 @@ thể hiện ở Hình~\ref{fig:cm_full}.
     \caption{LightGBM}
   \end{subfigure}
   \caption{Ma trận nhầm lẫn trên tập kiểm tra --- bộ đặc trưng đầy đủ
-  (T=180).}
+  , tại mốc 150 ngày.}
   \label{fig:cm_full}
 \end{figure}
 
@@ -489,7 +492,7 @@ giữa các mô hình.
   \centering
   \includegraphics[width=\textwidth]{feature_importance_native.png}
   \caption{Độ quan trọng đặc trưng (theo định nghĩa riêng của từng mô hình) tại
-  T=180.}
+  mốc 150 ngày.}
   \label{fig:feat_imp}
 \end{figure}
 
@@ -501,15 +504,18 @@ kết quả, sắp xếp tăng dần theo hạng trung bình.
 
 \begin{itemize}[leftmargin=*]
   \item \textbf{Nhóm dẫn đầu} --- \code{num\_submitted\_filled} (số bài đã
-        nộp) đứng hạng 1 ở cả ba mô hình cây và hạng 3 ở Logistic Regression,
-        khẳng định đây là tín hiệu dự báo mạnh và nhất quán nhất. Theo sau là
-        \code{avg\_score\_filled} (điểm trung bình) và \code{num\_due} (số bài
-        đến hạn) --- cả ba đều là đặc trưng \textbf{động}, phản ánh trực tiếp
+        nộp) đứng hạng 1 ở Logistic Regression và CatBoost, hạng 2 ở Random
+        Forest và LightGBM (hạng trung bình 1.50), khẳng định đây là tín hiệu
+        dự báo mạnh và nhất quán nhất. Theo sau là \code{avg\_score\_filled}
+        (điểm trung bình, hạng trung bình 2.50 --- dẫn đầu ở Random Forest và
+        LightGBM), rồi đến \code{num\_due} (số bài đến hạn) và
+        \code{active\_weeks\_filled} (số tuần hoạt động) cùng ở hạng trung
+        bình 5.00. Cả bốn đều là đặc trưng \textbf{động}, phản ánh trực tiếp
         mức độ tham gia và kết quả học tập tích luỹ.
-  \item \textbf{Nhóm giữa} gồm các đặc trưng tương tác VLE
-        (\code{total\_clicks\_filled}, \code{active\_weeks\_filled}) và
-        \code{highest\_education} --- đóng góp bổ sung nhưng không mang tính
-        quyết định.
+  \item \textbf{Nhóm giữa} gồm các đặc trưng tương tác VLE còn lại
+        (\code{total\_clicks\_filled}, \code{avg\_weekly\_clicks\_filled}),
+        \code{avg\_days\_early\_filled} và \code{highest\_education} --- đóng
+        góp bổ sung nhưng không mang tính quyết định.
   \item \textbf{Nhóm cuối} --- \code{studied\_credits}, \code{disability},
         \code{imd\_missing} có hạng trung bình cao nhất (ít quan trọng nhất),
         cho thấy các đặc trưng tĩnh mang tính nhân khẩu học có vai trò dự báo
@@ -538,7 +544,7 @@ trưng $\times$ mô hình) trên cùng một lưới để tiện đối chiếu
   \centering
   \includegraphics[width=\textwidth]{cm_grid_topn.png}
   \caption{Ma trận nhầm lẫn của bốn mô hình trên hai bộ đặc trưng rút gọn
-  Top-10 và Top-5 (T=180).}
+  Top-10 và Top-5, tại mốc 150 ngày.}
   \label{fig:cm_grid}
 \end{figure}
 
@@ -549,7 +555,7 @@ Hình~\ref{fig:stability} theo dõi sự biến động của cả năm chỉ s�
   \centering
   \includegraphics[width=0.95\textwidth]{stability_featureset.png}
   \caption{Biến động các chỉ số hiệu suất khi giảm số lượng đặc trưng:
-  Full(15) $\to$ Top-10 $\to$ Top-5 (T=180).}
+  Full(15) $\to$ Top-10 $\to$ Top-5, tại mốc 150 ngày.}
   \label{fig:stability}
 \end{figure}
 
@@ -558,14 +564,16 @@ Hình~\ref{fig:stability} theo dõi sự biến động của cả năm chỉ s�
         --- không có chỉ số nào sụt giảm đáng kể khi giảm từ 15 xuống chỉ còn
         5 đặc trưng. Điều này khẳng định thêm kết luận ở Mục~5: phần lớn sức
         mạnh dự báo tập trung ở một nhóm nhỏ đặc trưng hành vi động.
-  \item Đáng chú ý, \textbf{Random Forest ở bộ Top-5 đạt F1 At-risk cao nhất
-        trong toàn bộ thực nghiệm} (0.8040), nhỉnh hơn cả LightGBM ở bộ đặc
-        trưng đầy đủ (0.8024). CatBoost cũng cải thiện nhẹ recall khi giảm đặc
-        trưng (từ 0.7576 ở Full lên 0.8058 ở Top-5).
-  \item \textbf{Logistic Regression} là mô hình duy nhất có xu hướng giảm nhẹ
-        ở hầu hết chỉ số khi giảm đặc trưng --- phù hợp với đặc tính tuyến
-        tính: mô hình này hưởng lợi từ việc có nhiều biến hơn để bù đắp cho
-        khả năng nắm bắt tương tác hạn chế.
+  \item Đáng chú ý, \textbf{CatBoost ở bộ Top-10 đạt F1 At-risk cao nhất trong
+        toàn bộ thực nghiệm} (0.7875), nhỉnh hơn chính nó ở bộ đặc trưng đầy
+        đủ (0.7849). Mô hình này cũng cải thiện recall khi giảm đặc trưng (từ
+        0.7652 ở Full lên 0.7774 ở Top-10) --- tức việc loại bỏ các đặc trưng
+        nhiễu giúp bắt được nhiều sinh viên có nguy cơ hơn.
+  \item \textbf{Logistic Regression} là mô hình duy nhất suy giảm rõ ở
+        accuracy và precision khi cắt bớt đặc trưng (accuracy 0.8263 $\to$
+        0.8194; precision 0.7524 $\to$ 0.7332 khi đi từ Full xuống Top-5) ---
+        phù hợp với đặc tính tuyến tính: mô hình này hưởng lợi từ việc có
+        nhiều biến hơn để bù đắp cho khả năng nắm bắt tương tác hạn chế.
 \end{itemize}
 
 Hình~\ref{fig:f1_bar} so sánh trực tiếp F1 At-risk giữa Top-10 và Top-5 cho
@@ -588,16 +596,19 @@ mất cân bằng nhãn mà Optuna lựa chọn cho từng mô hình, ở cả b
 \input{table_best_params}
 
 Xu hướng chung: các mô hình cây (Random Forest, CatBoost, LightGBM) có trọng
-số At-risk tối ưu dao động rộng (1.03--1.79) tuỳ mô hình và bộ đặc trưng, trong
-khi Logistic Regression luôn hội tụ về trọng số gần 1.0 và tỷ lệ SMOTE tương
-đối cao (0.51--0.90x) --- mô hình tuyến tính dựa nhiều hơn vào việc tạo thêm
-mẫu tổng hợp thay vì điều chỉnh trọng số lớp để xử lý mất cân bằng.
+số At-risk tối ưu dao động rộng (1.04--1.70) tuỳ mô hình và bộ đặc trưng, trong
+khi Logistic Regression luôn hội tụ về trọng số gần 1.0 (1.05--1.12) và tỷ lệ
+SMOTE tương đối cao (0.55--0.67x) --- mô hình tuyến tính dựa nhiều hơn vào việc
+tạo thêm mẫu tổng hợp thay vì điều chỉnh trọng số lớp để xử lý mất cân bằng. Ở
+chiều ngược lại, LightGBM là mô hình cần ít mẫu tổng hợp nhất (tỷ lệ SMOTE chỉ
+0.17--0.34x) nhưng lại dùng trọng số lớp cao hơn, cho thấy mỗi thuật toán có
+cách riêng để bù đắp cho sự mất cân bằng nhãn.
 
 \section{Diễn giải mô hình bằng SHAP}
 
 Để hiểu sâu hơn cơ chế ra quyết định của mô hình, phương pháp \textbf{SHAP}
 (SHapley Additive exPlanations) được áp dụng cho mô hình có F1 At-risk cao
-nhất trên bộ đặc trưng đầy đủ --- \textbf{LightGBM} --- trên cả ba bộ đặc
+nhất trên bộ đặc trưng đầy đủ --- \textbf{CatBoost} --- trên cả ba bộ đặc
 trưng (Full, Top-10, Top-5) để đối chiếu mức độ nhất quán của các diễn giải
 khi số lượng đặc trưng thay đổi.
 
@@ -621,7 +632,7 @@ bình.
     \includegraphics[width=\textwidth]{shap_bar_full.png}
     \caption{Mean $|$SHAP$|$}
   \end{subfigure}
-  \caption{Diễn giải SHAP của LightGBM trên bộ đặc trưng đầy đủ (15 đặc
+  \caption{Diễn giải SHAP của CatBoost trên bộ đặc trưng đầy đủ (15 đặc
   trưng).}
   \label{fig:shap_full}
 \end{figure}
@@ -653,7 +664,7 @@ với hai bộ đặc trưng rút gọn.
     \includegraphics[width=\textwidth]{shap_bar_top10.png}
     \caption{Mean $|$SHAP$|$}
   \end{subfigure}
-  \caption{Diễn giải SHAP của LightGBM trên bộ đặc trưng Top-10.}
+  \caption{Diễn giải SHAP của CatBoost trên bộ đặc trưng Top-10.}
   \label{fig:shap_top10}
 \end{figure}
 
@@ -670,7 +681,7 @@ với hai bộ đặc trưng rút gọn.
     \includegraphics[width=\textwidth]{shap_bar_top5.png}
     \caption{Mean $|$SHAP$|$}
   \end{subfigure}
-  \caption{Diễn giải SHAP của LightGBM trên bộ đặc trưng Top-5.}
+  \caption{Diễn giải SHAP của CatBoost trên bộ đặc trưng Top-5.}
   \label{fig:shap_top5}
 \end{figure}
 
@@ -683,7 +694,7 @@ thấy các đặc trưng bị loại bỏ đóng góp thông tin trùng lặp h
 
 Để minh hoạ cách mô hình đưa ra quyết định ở cấp độ từng cá nhân, Hình~
 \ref{fig:waterfall} trình bày biểu đồ waterfall của hai sinh viên đại diện,
-sử dụng mô hình LightGBM trên bộ đặc trưng đầy đủ: một trường hợp bị đẩy mạnh
+sử dụng mô hình CatBoost trên bộ đặc trưng đầy đủ: một trường hợp bị đẩy mạnh
 về phía At-risk và một trường hợp bị đẩy mạnh về phía Pass.
 
 \begin{figure}[H]
@@ -705,16 +716,20 @@ về phía At-risk và một trường hợp bị đẩy mạnh về phía Pass.
 
 \begin{itemize}[leftmargin=*]
   \item \textbf{Trường hợp At-risk:} sinh viên chưa nộp bài nào
-        (\code{num\_submitted\_filled} $= 0$) trong khi đã có 11 bài đến hạn
-        (\code{num\_due} $= 11$) --- hai yếu tố này đóng góp lần lượt $+3.05$
-        và $+1.31$ vào điểm số dự báo, đẩy tổng điểm lên $7.71$ (rất cao so
-        với giá trị nền $-0.447$), tương ứng xác suất At-risk gần như tuyệt
-        đối.
+        (\code{num\_submitted\_filled} $= 0$, kéo theo \code{avg\_score\_filled}
+        $= -1$ --- giá trị đánh dấu chưa có điểm) trong khi đã có 9 bài đến hạn
+        (\code{num\_due} $= 9$). Hai yếu tố này đóng góp lần lượt $+2.60$ và
+        $+3.01$ vào điểm số dự báo; cộng thêm số tuần hoạt động thấp
+        (\code{active\_weeks\_filled} $= 6$, đóng góp $+1.24$), tổng điểm bị
+        đẩy lên $8.84$ --- rất cao so với giá trị nền $0.92$, tương ứng xác
+        suất At-risk gần như tuyệt đối.
   \item \textbf{Trường hợp Pass:} sinh viên có điểm trung bình cao
-        (\code{avg\_score\_filled} $= 94.68$) và số tuần hoạt động nhiều
-        (\code{active\_weeks\_filled} $= 28$), mỗi yếu tố kéo điểm số dự báo
-        giảm gần 1 đơn vị, tổng hợp lại cho điểm số rất thấp ($-5.92$) ---
-        tương ứng xác suất Pass gần như tuyệt đối.
+        (\code{avg\_score\_filled} $= 95.33$, kéo điểm số giảm $1.97$) và số
+        tuần hoạt động nhiều (\code{active\_weeks\_filled} $= 25$, giảm
+        $1.17$), cộng thêm lượt truy cập rất lớn
+        (\code{total\_clicks\_filled} $= 9\,115$, giảm $0.67$) --- tổng hợp
+        lại cho điểm số rất thấp ($-5.18$), tương ứng xác suất Pass gần như
+        tuyệt đối.
 \end{itemize}
 
 Hai ví dụ trên cho thấy mô hình đưa ra quyết định dựa trên những tín hiệu phù
@@ -729,22 +744,23 @@ chính sau:
 
 \begin{itemize}[leftmargin=*]
   \item Việc gộp nhãn Fail và Withdrawn thành nhóm At-risk và giới hạn dữ liệu
-        về mốc dự đoán $T=180$ đưa bài toán về dạng phân loại nhị phân, mất
-        cân bằng nhãn ở mức vừa phải (khoảng 1 At-risk trên 2 Pass) --- được
+        về mốc dự đoán 150 ngày đưa bài toán về dạng phân loại nhị phân, mất
+        cân bằng nhãn ở mức vừa phải (At-risk chiếm khoảng 36\%) --- được
         xử lý hiệu quả bằng cách kết hợp SMOTE và trọng số lớp, đồng thời tinh
         chỉnh cả hai kỹ thuật này cùng với siêu tham số của từng mô hình thông
         qua Optuna.
-  \item Trong số bốn thuật toán thử nghiệm, \textbf{LightGBM} đạt F1 At-risk
-        cao nhất trên bộ đặc trưng đầy đủ (0.8024), trong khi \textbf{CatBoost}
-        có ROC-AUC và precision cao nhất --- hai mô hình boosting này đều vượt
-        trội hơn Random Forest và Logistic Regression một cách nhất quán trên
-        mọi bộ đặc trưng.
+  \item Trong số bốn thuật toán thử nghiệm, \textbf{CatBoost} đạt F1 At-risk
+        cao nhất trên bộ đặc trưng đầy đủ (0.7849), đồng thời dẫn đầu cả về
+        accuracy và precision; LightGBM bám sát ngay phía sau và giữ ROC-AUC
+        cao nhất. Hai mô hình boosting này vượt trội hơn Logistic Regression
+        một cách nhất quán trên mọi bộ đặc trưng, dù khoảng cách với Random
+        Forest là không lớn.
   \item Hiệu suất mô hình \textbf{ổn định cao} khi giảm số lượng đặc trưng từ
-        15 xuống chỉ còn 5 --- thậm chí Random Forest trên bộ Top-5 đạt F1
-        At-risk cao nhất toàn thực nghiệm (0.8040). Kết quả này gợi ý một bộ
+        15 xuống chỉ còn 5 --- thậm chí CatBoost trên bộ Top-10 đạt F1
+        At-risk cao nhất toàn thực nghiệm (0.7875). Kết quả này gợi ý một bộ
         \textbf{5 đặc trưng} (\code{num\_submitted\_filled},
-        \code{avg\_score\_filled}, \code{num\_due}, \code{total\_clicks\_filled},
-        \code{active\_weeks\_filled}) --- toàn bộ đều là đặc trưng hành vi học
+        \code{avg\_score\_filled}, \code{num\_due}, \code{active\_weeks\_filled},
+        \code{total\_clicks\_filled}) --- toàn bộ đều là đặc trưng hành vi học
         tập, không yêu cầu thông tin nhân khẩu học --- là đủ để xây dựng một hệ
         thống cảnh báo sớm gọn nhẹ, dễ triển khai và duy trì.
   \item Phân tích SHAP xác nhận các dự báo của mô hình dựa trên những tín hiệu
@@ -754,7 +770,7 @@ chính sau:
 \end{itemize}
 
 \textbf{Hạn chế và hướng phát triển.} Nghiên cứu hiện chỉ đánh giá tại một mốc
-thời gian duy nhất ($T=180$); một hướng mở rộng tự nhiên là huấn luyện và so
+thời gian duy nhất --- 150 ngày; một hướng mở rộng tự nhiên là huấn luyện và so
 sánh mô hình tại \textbf{nhiều mốc dự đoán} khác nhau để xác định thời điểm
 cảnh báo sớm nhất mà mô hình vẫn đạt độ tin cậy chấp nhận được, đồng thời theo
 dõi cách các dự báo về cùng một sinh viên thay đổi theo thời gian. Bên cạnh

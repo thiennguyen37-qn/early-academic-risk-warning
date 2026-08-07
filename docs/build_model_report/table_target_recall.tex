@@ -1,0 +1,18 @@
+\begin{table}[H]
+  \centering
+  \caption{Ngưỡng cần dùng để đạt các mức recall mục tiêu, và cái giá phải trả. Cột ``Bắt thêm'' và ``Nhầm thêm'' so với ngưỡng mặc định 0.5; cột cuối là số cảnh báo nhầm phát sinh trên mỗi sinh viên At-risk bắt thêm được.}
+  \label{tab:target_recall}
+  \small
+  \setlength{\tabcolsep}{5pt}
+  \begin{tabular}{rrrrrrrr}
+    \toprule
+    \textbf{Recall} & \textbf{Ngưỡng} & \textbf{Recall} & \textbf{Precision} & \textbf{Bắt} & \textbf{Nhầm} & \textbf{Còn} & \textbf{Nhầm/} \\
+    \textbf{mục tiêu} & & \textbf{thực tế} & & \textbf{thêm} & \textbf{thêm} & \textbf{bỏ sót} & \textbf{1 ca} \\
+    \midrule
+    80\% & 0.425 & 0.8005 & 0.7656 & $+$55 & $+$94 & 311 & 1.7 \\
+    85\% & 0.335 & 0.8525 & 0.7024 & $+$136 & $+$275 & 230 & 2.0 \\
+    90\% & 0.230 & 0.9012 & 0.6109 & $+$212 & $+$607 & 154 & 2.9 \\
+    95\% & 0.145 & 0.9513 & 0.5350 & $+$290 & $+$1001 & 76 & 3.5 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

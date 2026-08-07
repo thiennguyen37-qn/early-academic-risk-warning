@@ -1,0 +1,16 @@
+\begin{table}[H]
+  \centering
+  \caption{Ảnh hưởng của ngưỡng phân loại lên kết quả dự báo của CatBoost tại mốc 150 ngày. Tập kiểm tra có 1{,}559 sinh viên At-risk thực tế; hàng in đậm là ngưỡng mặc định.}
+  \label{tab:threshold}
+  \small
+  \begin{tabular}{rrrrrrr}
+    \toprule
+    \textbf{Ngưỡng} & \textbf{Recall} & \textbf{Precision} & \textbf{F1} & \textbf{Bắt được} & \textbf{Bỏ sót} & \textbf{Cảnh báo nhầm} \\
+    \midrule
+    \textbf{0.50} & 0.7652 & 0.8055 & 0.7849 & 1193 & 366 & 288 \\
+    0.40 & 0.8095 & 0.7490 & 0.7781 & 1262 & 297 & 423 \\
+    0.30 & 0.8647 & 0.6710 & 0.7556 & 1348 & 211 & 661 \\
+    0.20 & 0.9179 & 0.5884 & 0.7171 & 1431 & 128 & 1001 \\
+    \bottomrule
+  \end{tabular}
+\end{table}

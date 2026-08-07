@@ -70,8 +70,53 @@ def make_compare_table(key):
     return "\n".join(lines)
 
 
-for key in ("full", "top10", "top5"):
-    (OUT / f"table_compare_{key}.tex").write_text(make_compare_table(key), encoding="utf-8")
+(OUT / "table_compare_full.tex").write_text(make_compare_table("full"), encoding="utf-8")
+
+# --- Bảng rút gọn đặc trưng: chỉ CatBoost, so sánh Full / Top-10 / Top-5 ---
+FEATURE_SETS = [
+    ("Full (15)", "full"),
+    ("Top-10",    "top10"),
+    ("Top-5",     "top5"),
+]
+FOCUS_MODEL = RESULTS["best_model"]          # CatBoost
+
+fs_vals = {
+    label: tuple(RESULTS["compare"][key][FOCUS_MODEL][k] for k in METRIC_KEYS)
+    for label, key in FEATURE_SETS
+}
+fs_col_max = [max(c) for c in zip(*fs_vals.values())]
+
+fs_rows = []
+for label, _ in FEATURE_SETS:
+    cells = [
+        (r"\textbf{%s}" % f"{v:.4f}") if v == vmax else f"{v:.4f}"
+        for v, vmax in zip(fs_vals[label], fs_col_max)
+    ]
+    n_feat = len(RESULTS["feature_sets"]["full" if label.startswith("Full")
+                                         else ("top10" if label == "Top-10" else "top5")])
+    fs_rows.append(r"    \textbf{%s} & %d & %s \\" % (label, n_feat, " & ".join(cells)))
+
+feature_set_table = "\n".join([
+    r"\begin{table}[H]",
+    r"  \centering",
+    r"  \caption{Hiệu suất của %s --- mô hình tốt nhất ở bước so sánh thuật "
+    r"toán --- trên ba bộ đặc trưng tại mốc 150 ngày. Chỉ số "
+    r"Precision/Recall/F1 tính riêng cho lớp \textbf{At-risk}.}" % FOCUS_MODEL,
+    r"  \label{tab:compare_featuresets}",
+    r"  \small",
+    r"  \setlength{\tabcolsep}{5pt}",
+    r"  \begin{tabular}{lrrrrrr}",
+    r"    \toprule",
+    r"    \textbf{Bộ đặc trưng} & \textbf{Số đặc trưng} & "
+    + " & ".join(r"\textbf{%s}" % h for h in METRIC_HEADERS) + r" \\",
+    r"    \midrule",
+    "\n".join(fs_rows),
+    r"    \bottomrule",
+    r"  \end{tabular}",
+    r"\end{table}",
+    "",
+])
+(OUT / "table_compare_featuresets.tex").write_text(feature_set_table, encoding="utf-8")
 
 # --- Bảng thứ hạng đặc trưng (1 = quan trọng nhất) ---
 RANKS = [
@@ -108,50 +153,9 @@ rank_table = "\n".join([
 ])
 (OUT / "table_feature_rank.tex").write_text(rank_table, encoding="utf-8")
 
-# --- Bảng siêu tham số tốt nhất (SMOTE ratio + class_weight At-risk) theo từng bộ đặc trưng ---
-BEST_PARAMS = {
-    fset: {
-        m: (RESULTS["tuning"][f"{fset}|{m}"]["cv_f1"],
-            RESULTS["tuning"][f"{fset}|{m}"]["smote_ratio"],
-            RESULTS["tuning"][f"{fset}|{m}"]["w_at_risk"])
-        for m in MODELS
-    }
-    for fset in ("Full (15)", "Top-10", "Top-5")
-}
-
-param_rows = []
-for fset in ("Full (15)", "Top-10", "Top-5"):
-    for i, name in enumerate(MODELS):
-        cv_f1, ratio, w = BEST_PARAMS[fset][name]
-        fset_cell = (r"\multirow{4}{*}{%s}" % fset) if i == 0 else ""
-        param_rows.append(
-            r"    %s & \textbf{%s} & %.4f & +%.2fx & %.2f \\" % (fset_cell, name, cv_f1, ratio, w)
-        )
-    param_rows.append(r"    \midrule")
-param_rows = param_rows[:-1]  # bỏ \midrule thừa ở cuối
-
-param_table = "\n".join([
-    r"\begin{table}[H]",
-    r"  \centering",
-    r"  \caption{Siêu tham số tối ưu liên quan đến xử lý mất cân bằng nhãn --- "
-    r"tỷ lệ oversampling SMOTE và trọng số lớp At-risk --- được Optuna lựa chọn "
-    r"cho từng mô hình và từng bộ đặc trưng, cùng F1 At-risk trung bình qua "
-    r"3-fold cross-validation.}",
-    r"  \label{tab:best_params}",
-    r"  \small",
-    r"  \resizebox{\textwidth}{!}{%",
-    r"  \begin{tabular}{llrrr}",
-    r"    \toprule",
-    r"    \textbf{Bộ đặc trưng} & \textbf{Model} & \textbf{F1 At-risk (CV)} & "
-    r"\textbf{Tỷ lệ SMOTE} & \textbf{Trọng số At-risk} \\",
-    r"    \midrule",
-    "\n".join(param_rows),
-    r"    \bottomrule",
-    r"  \end{tabular}}",
-    r"\end{table}",
-    "",
-])
-(OUT / "table_best_params.tex").write_text(param_table, encoding="utf-8")
+# Bảng siêu tham số tối ưu theo từng bộ đặc trưng đã được gỡ khỏi báo cáo:
+# phần rút gọn đặc trưng chỉ tập trung vào hiệu suất của CatBoost, không đi sâu
+# vào siêu tham số. Số liệu vẫn còn trong results_t150.json nếu cần dựng lại.
 
 # --- Bảng phân phối nhãn tại T=150 (train/test) ---
 def _split_row(label, d):
@@ -262,11 +266,119 @@ snapshot_param_table = "\n".join([
 ])
 (OUT / "table_snapshot_params.tex").write_text(snapshot_param_table, encoding="utf-8")
 
+# --- Bảng hiệu chỉnh ngưỡng + bootstrap (từ notebook threshold_bootstrap.ipynb) ---
+THR_PATH = REPORT / "results_threshold_t150.json"
+THR_TABLES = []
+
+if THR_PATH.exists():
+    THR = json.loads(THR_PATH.read_text(encoding="utf-8"))
+
+    # (a) Các chỉ số tại một số mức ngưỡng
+    thr_rows = []
+    for r in THR["threshold_table"]:
+        mark = r"\textbf{%.2f}" % r["threshold"] if r["threshold"] == THR["baseline_threshold"] \
+               else "%.2f" % r["threshold"]
+        thr_rows.append(
+            r"    %s & %.4f & %.4f & %.4f & %d & %d & %d \\"
+            % (mark, r["recall"], r["precision"], r["f1"], r["TP"], r["FN"], r["FP"])
+        )
+    thr_table = "\n".join([
+        r"\begin{table}[H]",
+        r"  \centering",
+        r"  \caption{Ảnh hưởng của ngưỡng phân loại lên kết quả dự báo của %s "
+        r"tại mốc 150 ngày. Tập kiểm tra có %s sinh viên At-risk thực tế; hàng "
+        r"in đậm là ngưỡng mặc định.}"
+        % (THR["model"], f"{THR['n_at_risk_test']:,}".replace(",", "{,}")),
+        r"  \label{tab:threshold}",
+        r"  \small",
+        r"  \begin{tabular}{rrrrrrr}",
+        r"    \toprule",
+        r"    \textbf{Ngưỡng} & \textbf{Recall} & \textbf{Precision} & \textbf{F1} "
+        r"& \textbf{Bắt được} & \textbf{Bỏ sót} & \textbf{Cảnh báo nhầm} \\",
+        r"    \midrule",
+        "\n".join(thr_rows),
+        r"    \bottomrule",
+        r"  \end{tabular}",
+        r"\end{table}",
+        "",
+    ])
+    (OUT / "table_threshold.tex").write_text(thr_table, encoding="utf-8")
+    THR_TABLES.append("table_threshold.tex")
+
+    # (b) Ngưỡng cần dùng để đạt recall mục tiêu
+    tgt_rows = [
+        r"    %.0f\%% & %.3f & %.4f & %.4f & $+$%d & $+$%d & %d & %s \\"
+        % (r["target"] * 100, r["threshold"], r["recall"], r["precision"],
+           r["extra_TP"], r["extra_FP"], r["FN"],
+           ("%.1f" % r["cost"]) if r["cost"] is not None else "---")
+        for r in THR["target_recall"]
+    ]
+    tgt_table = "\n".join([
+        r"\begin{table}[H]",
+        r"  \centering",
+        r"  \caption{Ngưỡng cần dùng để đạt các mức recall mục tiêu, và cái giá "
+        r"phải trả. Cột ``Bắt thêm'' và ``Nhầm thêm'' so với ngưỡng mặc định "
+        r"0.5; cột cuối là số cảnh báo nhầm phát sinh trên mỗi sinh viên "
+        r"At-risk bắt thêm được.}",
+        r"  \label{tab:target_recall}",
+        r"  \small",
+        r"  \setlength{\tabcolsep}{5pt}",
+        r"  \begin{tabular}{rrrrrrrr}",
+        r"    \toprule",
+        r"    \textbf{Recall} & \textbf{Ngưỡng} & \textbf{Recall} & "
+        r"\textbf{Precision} & \textbf{Bắt} & \textbf{Nhầm} & \textbf{Còn} & "
+        r"\textbf{Nhầm/} \\",
+        r"    \textbf{mục tiêu} & & \textbf{thực tế} & & \textbf{thêm} & "
+        r"\textbf{thêm} & \textbf{bỏ sót} & \textbf{1 ca} \\",
+        r"    \midrule",
+        "\n".join(tgt_rows),
+        r"    \bottomrule",
+        r"  \end{tabular}",
+        r"\end{table}",
+        "",
+    ])
+    (OUT / "table_target_recall.tex").write_text(tgt_table, encoding="utf-8")
+    THR_TABLES.append("table_target_recall.tex")
+
+    # (c) Khoảng tin cậy bootstrap
+    CI_LABEL = {"accuracy": "Accuracy", "precision": "Precision (At-risk)",
+                "recall": "Recall (At-risk)", "f1": "F1 (At-risk)",
+                "roc_auc": "ROC-AUC"}
+    ci_rows = [
+        r"    %s & %.4f & $[%.4f;\ %.4f]$ & %.4f & %.4f \\"
+        % (CI_LABEL[r["metric"]], r["point"], r["ci_low"], r["ci_high"],
+           r["width"], r["se"])
+        for r in THR["bootstrap_ci"]
+    ]
+    ci_table = "\n".join([
+        r"\begin{table}[H]",
+        r"  \centering",
+        r"  \caption{Khoảng tin cậy 95\%% của các chỉ số đánh giá, ước lượng "
+        r"bằng bootstrap trên tập kiểm tra ($B = %s$ lần lấy mẫu có hoàn lại) "
+        r"tại ngưỡng mặc định 0.5.}" % f"{THR['n_boot']:,}".replace(",", "{,}"),
+        r"  \label{tab:bootstrap_ci}",
+        r"  \small",
+        r"  \begin{tabular}{lrrrr}",
+        r"    \toprule",
+        r"    \textbf{Chỉ số} & \textbf{Ước lượng điểm} & \textbf{KTC 95\%} & "
+        r"\textbf{Độ rộng} & \textbf{Sai số chuẩn} \\",
+        r"    \midrule",
+        "\n".join(ci_rows),
+        r"    \bottomrule",
+        r"  \end{tabular}",
+        r"\end{table}",
+        "",
+    ])
+    (OUT / "table_bootstrap_ci.tex").write_text(ci_table, encoding="utf-8")
+    THR_TABLES.append("table_bootstrap_ci.tex")
+else:
+    print(f"[!] Chưa có {THR_PATH.name} — bỏ qua bảng ngưỡng/bootstrap.")
+
 GENERATED = [
-    "table_compare_full.tex", "table_compare_top10.tex", "table_compare_top5.tex",
-    "table_feature_rank.tex", "table_best_params.tex", "table_split_t150.tex",
+    "table_compare_full.tex", "table_compare_featuresets.tex",
+    "table_feature_rank.tex", "table_split_t150.tex",
     "table_snapshot_results.tex", "table_snapshot_params.tex",
-]
+] + THR_TABLES
 
 # Đồng bộ sang bản báo cáo tổng hợp
 for fname in GENERATED:

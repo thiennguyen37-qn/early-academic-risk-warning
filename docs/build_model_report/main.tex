@@ -332,8 +332,7 @@ mốc thời gian, trong khi tỷ lệ SMOTE dao động ở mức khá cao và 
 hướng rõ rệt (0.42--0.90x). Nói cách khác, với Logistic Regression, việc bổ
 sung mẫu tổng hợp qua SMOTE đóng vai trò chủ đạo trong xử lý mất cân bằng
 nhãn, hơn là điều chỉnh trọng số lớp --- đây là đặc điểm nhất quán của thuật
-toán này, cũng sẽ được quan sát lại khi so sánh với ba thuật toán còn lại ở
-Bảng~\ref{tab:best_params}.
+toán này xuyên suốt mọi mốc thời gian khảo sát.
 
 \subsection{Lựa chọn mốc dự đoán cho phân tích chuyên sâu}
 \label{sec:choose_t150}
@@ -531,78 +530,179 @@ suất mô hình có \textbf{ổn định} hay không khi giảm số lượng �
 vào --- một yếu tố quan trọng khi triển khai hệ thống cảnh báo thực tế, nơi
 việc thu thập và duy trì ít đặc trưng hơn giúp đơn giản hoá quy trình vận hành.
 
-Bảng~\ref{tab:compare_top10} và Bảng~\ref{tab:compare_top5} trình bày kết quả
-tương ứng với hai bộ đặc trưng rút gọn.
+Phân tích ở phần này chỉ tập trung vào \textbf{CatBoost}, mô hình đạt hiệu suất
+tốt nhất ở bước so sánh thuật toán. Việc thu hẹp về một mô hình duy nhất giúp
+câu hỏi trở nên rõ ràng: \textit{với mô hình sẽ được đưa vào triển khai, có thể
+cắt bớt bao nhiêu đặc trưng mà hiệu suất vẫn giữ nguyên?}
+Bảng~\ref{tab:compare_featuresets} đặt cạnh nhau kết quả của CatBoost trên cả
+ba bộ đặc trưng.
 
-\input{table_compare_top10}
-\input{table_compare_top5}
+\input{table_compare_featuresets}
 
-Hình~\ref{fig:cm_grid} tổng hợp ma trận nhầm lẫn của toàn bộ 8 tổ hợp (bộ đặc
-trưng $\times$ mô hình) trên cùng một lưới để tiện đối chiếu.
+\begin{itemize}[leftmargin=*]
+  \item Hiệu suất \textbf{gần như không đổi} qua cả ba bộ đặc trưng: F1
+        At-risk chỉ dao động trong khoảng $0.7825$--$0.7875$, tức biên độ
+        vỏn vẹn $0.005$; accuracy cũng chỉ chênh $0.004$. Điều này khẳng định
+        kết luận ở phần độ quan trọng đặc trưng: phần lớn sức mạnh dự báo tập
+        trung ở một nhóm nhỏ đặc trưng hành vi động.
+  \item Đáng chú ý, bộ \textbf{Top-10 còn nhỉnh hơn cả bộ đầy đủ} ở ba trên
+        năm chỉ số --- F1 ($0.7875$ so với $0.7849$), recall ($0.7774$ so với
+        $0.7652$) và ROC-AUC ($0.9119$ so với $0.9114$) --- trong khi dùng ít
+        hơn một phần ba số đặc trưng. Việc loại bỏ năm đặc trưng kém quan
+        trọng nhất không những không gây thiệt hại mà còn giúp mô hình bắt
+        được nhiều sinh viên có nguy cơ hơn, dấu hiệu cho thấy nhóm đặc trưng
+        bị loại chủ yếu đóng vai trò gây nhiễu.
+  \item Khi cắt tiếp xuống \textbf{Top-5}, hiệu suất mới bắt đầu giảm nhẹ
+        nhưng vẫn ở mức không đáng kể: F1 thấp hơn bộ đầy đủ đúng $0.0024$ và
+        thấp hơn Top-10 $0.0050$. Đổi lại, số đặc trưng cần thu thập giảm từ
+        15 xuống 5.
+  \item Xu hướng chung khi giảm đặc trưng là \textbf{precision giảm, recall
+        tăng}: precision đi từ $0.8055$ (Full) xuống $0.7910$ (Top-5) trong
+        khi recall nhích từ $0.7652$ lên $0.7742$. Với bài toán cảnh báo sớm,
+        đây là hướng đánh đổi có lợi, vì bỏ sót một sinh viên cần hỗ trợ tốn
+        kém hơn một cảnh báo nhầm.
+\end{itemize}
+
+Tổng hợp lại, \textbf{bộ Top-5 là lựa chọn hợp lý cho triển khai thực tế}: chỉ
+cần năm đặc trưng --- \code{num\_submitted\_filled}, \code{avg\_score\_filled},
+\code{num\_due}, \code{active\_weeks\_filled}, \code{total\_clicks\_filled},
+toàn bộ đều là hành vi học tập và không yêu cầu thông tin nhân khẩu học --- mà
+vẫn giữ được gần như trọn vẹn hiệu suất của mô hình dùng đủ 15 đặc trưng. Nếu
+ưu tiên hiệu suất cao nhất và chấp nhận thu thập nhiều dữ liệu hơn thì Top-10
+là phương án tốt nhất.
+
+\section{Hiệu chỉnh ngưỡng và độ tin cậy của kết quả}
+\label{sec:threshold_bootstrap}
+
+Hai phân tích trong phần này bổ sung cho các kết quả đã trình bày, đều thực
+hiện trên \textbf{CatBoost với bộ 15 đặc trưng đầy đủ} --- cấu hình đã cho hiệu
+suất tốt nhất ở bước so sánh thuật toán. Phân tích thứ nhất trả lời câu hỏi
+vận hành: có thể bắt thêm bao nhiêu sinh viên có nguy cơ nếu chấp nhận thêm
+cảnh báo nhầm. Phân tích thứ hai trả lời câu hỏi phương pháp: các con số hiệu
+suất trong báo cáo đáng tin đến mức nào.
+
+\subsection{Hiệu chỉnh ngưỡng phân loại}
+
+Mọi kết quả từ đầu chương đến giờ đều dùng \textbf{ngưỡng mặc định 0.5}: sinh
+viên bị gán nhãn At-risk khi xác suất dự báo vượt quá 0.5. Ngưỡng này tối đa
+hoá F1 --- thực tế F1 đạt đỉnh tại 0.53, gần như trùng với mặc định --- nhưng
+F1 coi precision và recall quan trọng ngang nhau, điều không đúng với bài toán
+cảnh báo sớm. Bỏ sót một sinh viên đang trượt dốc khiến em đó mất cơ hội được
+hỗ trợ, trong khi một cảnh báo nhầm chỉ tốn thêm chút thời gian của cố vấn học
+tập để rà soát. Hai loại sai lầm này rõ ràng \textbf{không cùng chi phí}.
+
+Hình~\ref{fig:threshold_sweep} theo dõi ba chỉ số khi ngưỡng thay đổi từ 0.05
+đến 0.95.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{cm_grid_topn.png}
-  \caption{Ma trận nhầm lẫn của bốn mô hình trên hai bộ đặc trưng rút gọn
-  Top-10 và Top-5, tại mốc 150 ngày.}
-  \label{fig:cm_grid}
+  \includegraphics[width=0.92\textwidth]{threshold_sweep.png}
+  \caption{Precision, recall và F1 của lớp At-risk theo ngưỡng phân loại.}
+  \label{fig:threshold_sweep}
 \end{figure}
 
-Hình~\ref{fig:stability} theo dõi sự biến động của cả năm chỉ số khi số lượng
-đặc trưng giảm dần từ 15 xuống 10 rồi 5.
+Điểm quan trọng nhất ở hình này là \textbf{F1 gần như đi ngang} trong cả một
+dải ngưỡng rộng, khoảng 0.35--0.60, trong khi precision và recall đổi chỗ cho
+nhau rất mạnh. Nói cách khác, có thể dịch ngưỡng xuống khá nhiều mà chất lượng
+tổng thể của mô hình gần như không suy giảm, đổi lại cán cân lệch hẳn về phía
+bắt được nhiều sinh viên có nguy cơ hơn.
+
+Bảng~\ref{tab:threshold} và Hình~\ref{fig:cm_threshold} lượng hoá điều đó bằng
+số sinh viên cụ thể.
+
+\input{table_threshold}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\textwidth]{stability_featureset.png}
-  \caption{Biến động các chỉ số hiệu suất khi giảm số lượng đặc trưng:
-  Full(15) $\to$ Top-10 $\to$ Top-5, tại mốc 150 ngày.}
-  \label{fig:stability}
+  \includegraphics[width=\textwidth]{cm_by_threshold.png}
+  \caption{Ma trận nhầm lẫn trên tập kiểm tra tại bốn mức ngưỡng.}
+  \label{fig:cm_threshold}
+\end{figure}
+
+Đi từ ngưỡng 0.5 xuống 0.4, số sinh viên có nguy cơ bị bỏ sót giảm từ 366
+xuống 297 --- tức \textbf{cứu thêm được 69 em} --- trong khi F1 chỉ giảm
+$0.0068$ (từ $0.7849$ xuống $0.7781$). Cái giá là 135 cảnh báo nhầm phát sinh
+thêm. Nếu tiếp tục hạ xuống 0.2 thì chỉ còn bỏ sót 128 em, nhưng số cảnh báo
+nhầm tăng vọt lên 1.001, tức danh sách cảnh báo phình to đến mức gần một nửa
+là báo động giả (precision chỉ còn $0.5884$).
+
+Bảng~\ref{tab:target_recall} tiếp cận theo chiều ngược lại: đặt ra mức recall
+mong muốn rồi tính ngưỡng cần dùng và cái giá phải trả.
+
+\input{table_target_recall}
+
+Cột cuối cùng --- số cảnh báo nhầm phát sinh trên mỗi sinh viên bắt thêm được
+--- cho thấy \textbf{quy luật lợi ích cận biên giảm dần} rất rõ: chặng đầu tiên
+chỉ tốn khoảng 2 cảnh báo nhầm cho mỗi em bắt thêm, nhưng khi đẩy recall lên
+95\% thì con số này tăng lên 3{,}45, và nếu hạ ngưỡng xuống dưới 0.2 thì mỗi
+em bắt thêm phải trả giá bằng gần 8 cảnh báo nhầm.
+
+\textbf{Khuyến nghị.} Vùng ngưỡng \textbf{0.40--0.43} là điểm cân bằng hợp lý
+nhất: recall đạt khoảng 80\%, precision vẫn giữ trên $0.75$ (tức ba trong bốn
+cảnh báo là chính xác), F1 gần như không đổi so với ngưỡng mặc định, và chi phí
+đánh đổi ở mức thấp nhất trong toàn dải. Tuy vậy, lựa chọn cuối cùng nên phụ
+thuộc vào \textbf{năng lực hỗ trợ thực tế} của nhà trường: nếu đội ngũ cố vấn
+đủ sức theo sát khoảng 2.000 sinh viên mỗi kỳ thì có thể hạ sâu hơn để tăng
+recall; nếu nguồn lực eo hẹp, giữ ngưỡng cao giúp danh sách cảnh báo ngắn và
+chính xác hơn.
+
+Một lưu ý về phương pháp: ngưỡng ở đây được khảo sát \textbf{trực tiếp trên tập
+kiểm tra}, nên các con số mang tính minh hoạ cho sự đánh đổi hơn là một ngưỡng
+đã được kiểm định độc lập. Khi triển khai thực tế, ngưỡng nên được chọn bằng
+kiểm định chéo trên tập huấn luyện rồi mới xác nhận lại một lần trên tập kiểm
+tra.
+
+\subsection{Khoảng tin cậy bootstrap của các chỉ số}
+
+Mọi chỉ số trong báo cáo đều là \textbf{ước lượng điểm} tính trên một tập kiểm
+tra hữu hạn gồm 4.363 bản ghi. Nếu thu thập một tập kiểm tra khác, các con số
+này chắc chắn sẽ khác đi đôi chút. Câu hỏi đặt ra là: khác đi bao nhiêu?
+
+Phương pháp \textbf{bootstrap} trả lời câu hỏi đó mà không cần thêm dữ liệu
+mới: lấy mẫu lại chính tập kiểm tra \textbf{có hoàn lại}, giữ nguyên kích
+thước, lặp lại $B = 2.000$ lần; mỗi lần tính lại toàn bộ chỉ số. Phân phối của
+2.000 giá trị thu được xấp xỉ phân phối lấy mẫu của chỉ số, từ đó lấy phân vị
+2{,}5\% và 97{,}5\% làm khoảng tin cậy 95\%.
+
+\input{table_bootstrap_ci}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{bootstrap_ci.png}
+  \caption{Phân phối bootstrap của năm chỉ số đánh giá; đường liền là ước
+  lượng điểm, hai đường đứt là biên khoảng tin cậy 95\%.}
+  \label{fig:bootstrap}
 \end{figure}
 
 \begin{itemize}[leftmargin=*]
-  \item Hiệu suất của cả bốn mô hình \textbf{rất ổn định} qua ba bộ đặc trưng
-        --- không có chỉ số nào sụt giảm đáng kể khi giảm từ 15 xuống chỉ còn
-        5 đặc trưng. Điều này khẳng định thêm kết luận ở Mục~5: phần lớn sức
-        mạnh dự báo tập trung ở một nhóm nhỏ đặc trưng hành vi động.
-  \item Đáng chú ý, \textbf{CatBoost ở bộ Top-10 đạt F1 At-risk cao nhất trong
-        toàn bộ thực nghiệm} (0.7875), nhỉnh hơn chính nó ở bộ đặc trưng đầy
-        đủ (0.7849). Mô hình này cũng cải thiện recall khi giảm đặc trưng (từ
-        0.7652 ở Full lên 0.7774 ở Top-10) --- tức việc loại bỏ các đặc trưng
-        nhiễu giúp bắt được nhiều sinh viên có nguy cơ hơn.
-  \item \textbf{Logistic Regression} là mô hình duy nhất suy giảm rõ ở
-        accuracy và precision khi cắt bớt đặc trưng (accuracy 0.8263 $\to$
-        0.8194; precision 0.7524 $\to$ 0.7332 khi đi từ Full xuống Top-5) ---
-        phù hợp với đặc tính tuyến tính: mô hình này hưởng lợi từ việc có
-        nhiều biến hơn để bù đắp cho khả năng nắm bắt tương tác hạn chế.
+  \item Trung bình bootstrap trùng khớp với ước lượng điểm tới bốn chữ số thập
+        phân ở cả năm chỉ số --- dấu hiệu cho thấy các ước lượng \textbf{không
+        bị chệch}.
+  \item \textbf{Accuracy} và \textbf{ROC-AUC} là hai chỉ số ổn định nhất (độ
+        rộng khoảng tin cậy lần lượt $0.0211$ và $0.0184$), vì được tính trên
+        toàn bộ 4.363 bản ghi.
+  \item \textbf{Precision} và \textbf{recall} của lớp At-risk dao động mạnh
+        gấp đôi (độ rộng $0.0407$ và $0.0421$), điều dễ hiểu vì chỉ dựa trên
+        nhóm thiểu số 1.559 sinh viên At-risk.
 \end{itemize}
 
-Hình~\ref{fig:f1_bar} so sánh trực tiếp F1 At-risk giữa Top-10 và Top-5 cho
-từng mô hình.
+Hệ quả quan trọng nhất của phân tích này liên quan đến việc \textbf{xếp hạng
+các mô hình} ở bước so sánh thuật toán. Khoảng tin cậy của F1 trải từ
+$0.7692$ đến $0.8012$, tức rộng $0.032$ --- trong khi khoảng cách F1 giữa ba
+mô hình cây chỉ là $0.0022$ đến $0.0037$. Chênh lệch giữa chúng \textbf{nhỏ
+hơn nhiều so với sai số lấy mẫu}, nên kết luận ``CatBoost tốt hơn LightGBM và
+Random Forest'' không đứng vững về mặt thống kê: ba mô hình này nên được xem
+là \textbf{tương đương}, và việc CatBoost dẫn đầu có thể chỉ là ngẫu nhiên của
+riêng tập kiểm tra này. Ngược lại, khoảng cách giữa Logistic Regression
+($0.7591$) và nhóm mô hình cây lớn hơn hẳn độ rộng khoảng tin cậy, nên kết
+luận mô hình tuyến tính thực sự yếu hơn là đáng tin cậy.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\textwidth]{f1_top10_vs_top5.png}
-  \caption{So sánh F1 At-risk giữa bộ Top-10 và Top-5 theo từng mô hình.}
-  \label{fig:f1_bar}
-\end{figure}
-
-Chênh lệch F1 giữa hai bộ đặc trưng rút gọn đều nhỏ hơn 0.01 ở mọi mô hình,
-củng cố nhận định rằng \textbf{bộ Top-5 là lựa chọn hợp lý cho triển khai thực
-tế}, cân bằng tốt giữa hiệu suất và chi phí thu thập/duy trì đặc trưng.
-
-Cuối cùng, Bảng~\ref{tab:best_params} tổng hợp siêu tham số liên quan đến xử lý
-mất cân bằng nhãn mà Optuna lựa chọn cho từng mô hình, ở cả ba bộ đặc trưng.
-
-\input{table_best_params}
-
-Xu hướng chung: các mô hình cây (Random Forest, CatBoost, LightGBM) có trọng
-số At-risk tối ưu dao động rộng (1.04--1.70) tuỳ mô hình và bộ đặc trưng, trong
-khi Logistic Regression luôn hội tụ về trọng số gần 1.0 (1.05--1.12) và tỷ lệ
-SMOTE tương đối cao (0.55--0.67x) --- mô hình tuyến tính dựa nhiều hơn vào việc
-tạo thêm mẫu tổng hợp thay vì điều chỉnh trọng số lớp để xử lý mất cân bằng. Ở
-chiều ngược lại, LightGBM là mô hình cần ít mẫu tổng hợp nhất (tỷ lệ SMOTE chỉ
-0.17--0.34x) nhưng lại dùng trọng số lớp cao hơn, cho thấy mỗi thuật toán có
-cách riêng để bù đắp cho sự mất cân bằng nhãn.
+Nhận xét này không làm mất giá trị của việc chọn CatBoost để triển khai --- vẫn
+cần chọn ra một mô hình, và CatBoost là lựa chọn hợp lý --- nhưng nó cảnh báo
+rằng không nên diễn giải quá mức các chênh lệch nhỏ ở chữ số thập phân thứ ba.
+Muốn khẳng định một mô hình thực sự vượt trội, cần đánh giá trên nhiều tập
+kiểm tra độc lập hoặc dùng kiểm định thống kê trên chênh lệch giữa từng cặp mô
+hình.
 
 \section{Diễn giải mô hình bằng SHAP}
 
@@ -687,7 +787,7 @@ với hai bộ đặc trưng rút gọn.
 
 Thứ tự và chiều ảnh hưởng của các đặc trưng còn lại hầu như \textbf{không đổi}
 khi loại bỏ dần các đặc trưng ít quan trọng --- một bằng chứng bổ sung cho
-tính ổn định của mô hình đã quan sát ở Hình~\ref{fig:stability}, đồng thời cho
+tính ổn định đã quan sát ở Bảng~\ref{tab:compare_featuresets}, đồng thời cho
 thấy các đặc trưng bị loại bỏ đóng góp thông tin trùng lặp hoặc không đáng kể.
 
 \subsection{Diễn giải cục bộ: hai trường hợp minh hoạ}

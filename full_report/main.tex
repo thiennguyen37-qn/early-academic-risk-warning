@@ -182,8 +182,11 @@ cho ba hướng tiếp cận tiêu biểu trong học máy có giám sát:
 \end{itemize}
 
 Đối với mỗi thuật toán, các mục tiếp theo sẽ trình bày nguyên lý hoạt động,
-các công thức toán học cốt lõi, những cơ chế đặc trưng, cùng với phân
-tích ưu điểm và hạn chế trong bối cảnh bài toán cảnh báo sớm rủi ro học tập.
+các công thức toán học cốt lõi, những cơ chế đặc trưng, cùng với phân tích ưu
+điểm và hạn chế trong bối cảnh bài toán cảnh báo sớm rủi ro học tập. Ngoài ra,
+chương này cũng trình bày hai phương pháp hỗ trợ quan trọng cho thực nghiệm:
+Bayesian Optimization dùng để tinh chỉnh siêu tham số và SHAP dùng để diễn
+giải mô hình.
 
 \section{Hồi quy Logistic (Logistic Regression)}
 
@@ -660,6 +663,159 @@ hóa thành bài toán tô màu đồ thị (graph coloring) trên đồ thị x
 Nhờ giảm số lượng đặc trưng cần xem xét khi xây dựng histogram để tìm điểm
 phân chia, EFB giúp rút ngắn thời gian huấn luyện và giảm yêu cầu bộ nhớ, đồng
 thời vẫn duy trì độ chính xác của mô hình trong hầu hết các trường hợp.
+
+\section{Tối ưu Bayesian (Bayesian Optimization)}
+\label{sec:bayes_opt}
+
+Trong các mô hình học máy, hiệu suất dự báo phụ thuộc đáng kể vào lựa chọn
+\textbf{siêu tham số} (hyperparameters), chẳng hạn hệ số điều chuẩn của
+Logistic Regression, số cây và độ sâu của Random Forest, learning rate của
+CatBoost hoặc số lá của LightGBM. Khác với tham số mô hình được học trực tiếp
+từ dữ liệu, siêu tham số phải được xác định trước hoặc lựa chọn thông qua một
+quy trình tìm kiếm bên ngoài. Nếu thử toàn bộ lưới giá trị (grid search), chi
+phí tính toán tăng rất nhanh khi số siêu tham số lớn; nếu lấy mẫu ngẫu nhiên
+(random search), nhiều lần thử có thể rơi vào các vùng kém triển vọng của
+không gian tìm kiếm.
+
+\textbf{Bayesian Optimization} là một phương pháp tối ưu hộp đen
+(black-box optimization), phù hợp khi hàm mục tiêu tốn kém để đánh giá và
+không có dạng đạo hàm tường minh. Trong bối cảnh tinh chỉnh mô hình, hàm mục
+tiêu thường là một chỉ số đánh giá trên validation hoặc cross-validation, ví
+dụ F1-score của lớp At-risk. Mỗi lần đánh giá một bộ siêu tham số cần huấn
+luyện và kiểm định mô hình, do đó số lượt thử nghiệm nên được sử dụng một cách
+tiết kiệm.
+
+Giả sử $\lambda$ là một cấu hình siêu tham số cần tối ưu và $f$ là hàm mục tiêu
+cần cực đại, bài toán có thể viết dưới dạng:
+
+\[
+  \lambda^{*}
+  =
+  \arg\max_{\lambda\in\Lambda} f(\lambda).
+\]
+
+Bayesian Optimization không chọn các điểm thử nghiệm một cách độc lập. Thay
+vào đó, phương pháp này xây dựng một mô hình xác suất thay thế
+(\textit{surrogate model}) để xấp xỉ quan hệ giữa siêu tham số và giá trị hàm
+mục tiêu dựa trên các lần thử trước đó. Tại mỗi vòng lặp, một \textbf{hàm thu
+nhận} (acquisition function) được sử dụng để quyết định điểm thử tiếp theo,
+cân bằng giữa hai mục tiêu:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Khai thác} (exploitation): thử các vùng đã có dấu hiệu cho kết
+        quả tốt.
+  \item \textbf{Khám phá} (exploration): thử các vùng còn nhiều bất định, có
+        khả năng chứa nghiệm tốt hơn.
+\end{itemize}
+
+Một lựa chọn phổ biến cho hàm thu nhận là \textit{Expected Improvement} (EI),
+đo kỳ vọng cải thiện so với giá trị tốt nhất hiện có $f_{\text{best}}$:
+
+\[
+  \mathrm{EI}(\lambda)
+  =
+  \mathbb{E}
+  \left[
+    \max\big(f(\lambda) - f_{\text{best}}, 0\big)
+  \right].
+\]
+
+Điểm có EI cao vừa có giá trị dự báo kỳ vọng tốt, vừa có độ bất định đủ lớn để
+đáng được thử thêm. Nhờ cơ chế này, Bayesian Optimization thường tìm được cấu
+hình tốt với ít lượt đánh giá hơn so với grid search, đặc biệt khi không gian
+siêu tham số có nhiều chiều hoặc chứa cả biến liên tục, rời rạc và phân loại.
+
+Trong thực nghiệm, nghiên cứu sử dụng \textbf{Optuna} với thuật toán lấy mẫu
+\textbf{TPE} (Tree-structured Parzen Estimator), một biến thể của Bayesian
+Optimization. TPE mô hình hoá phân phối của các siêu tham số trong hai nhóm:
+nhóm cho kết quả tốt và nhóm còn lại. Nếu quy bài toán về tối thiểu hoá một
+đại lượng mất mát $y$, TPE không mô hình trực tiếp
+$p(y \mid \lambda)$ mà ước lượng hai mật độ
+$p(\lambda\mid y < y^{*})$ và
+$p(\lambda\mid y \ge y^{*})$, trong đó $y^{*}$ là một ngưỡng phân
+vị của các giá trị đã quan sát. Các cấu hình mới được ưu tiên chọn khi chúng
+có khả năng cao thuộc nhóm tốt và khả năng thấp thuộc nhóm kém.
+
+Ưu điểm chính của Bayesian Optimization là tận dụng thông tin từ lịch sử thử
+nghiệm để định hướng quá trình tìm kiếm, nhờ đó tiết kiệm chi phí huấn luyện.
+Tuy nhiên, kết quả vẫn phụ thuộc vào miền tìm kiếm ban đầu, số lượt thử nghiệm
+và độ ổn định của chỉ số đánh giá. Vì vậy, trong các bài toán có dữ liệu mất
+cân bằng, hàm mục tiêu cần được lựa chọn phù hợp với mục tiêu vận hành; trong
+báo cáo này, F1-score của lớp At-risk được sử dụng để cân bằng giữa precision
+và recall.
+
+\section{Diễn giải mô hình bằng SHAP}
+\label{sec:shap_theory}
+
+Các mô hình phi tuyến như Random Forest, CatBoost và LightGBM thường đạt hiệu
+suất cao nhưng khó diễn giải hơn mô hình tuyến tính. Trong bài toán cảnh báo
+sớm rủi ro học tập, khả năng diễn giải có vai trò quan trọng: nhà trường không
+chỉ cần biết sinh viên nào có nguy cơ, mà còn cần hiểu những yếu tố nào đang
+đóng góp vào dự báo để thiết kế can thiệp phù hợp. \textbf{SHAP} (SHapley
+Additive exPlanations) là một phương pháp diễn giải mô hình dựa trên lý thuyết
+giá trị Shapley trong lý thuyết trò chơi, cho phép phân bổ đóng góp của từng
+đặc trưng vào dự báo của một mẫu cụ thể.
+
+Với một mô hình dự báo $f$ và một quan sát $\mathbf{x}$, SHAP biểu diễn dự báo
+dưới dạng mô hình cộng tính:
+
+\[
+  f(\mathbf{x}) = \phi_0 + \sum_{j=1}^{p}\phi_j,
+\]
+
+trong đó $\phi_0$ là giá trị nền, thường tương ứng với dự báo trung bình của
+mô hình trên tập tham chiếu, và $\phi_j$ là đóng góp của đặc trưng thứ $j$ đối
+với dự báo của mẫu đang xét. Nếu $\phi_j > 0$, đặc trưng đó đẩy dự báo theo
+hướng làm tăng đầu ra của mô hình; nếu $\phi_j < 0$, đặc trưng đó kéo dự báo
+theo hướng ngược lại. Với bài toán phân loại nhị phân, đầu ra này có thể là
+log-odds hoặc xác suất tuỳ cách triển khai.
+
+Giá trị Shapley của đặc trưng $j$ được định nghĩa là đóng góp biên trung bình
+của đặc trưng đó trên mọi tập con đặc trưng có thể có:
+
+\[
+  \phi_j
+  =
+  \sum_{S \subseteq F \setminus \{j\}}
+  \frac{|S|!(p-|S|-1)!}{p!}
+  \left[
+    f_{S\cup\{j\}}(\mathbf{x}_{S\cup\{j\}})
+    -
+    f_S(\mathbf{x}_S)
+  \right],
+\]
+
+trong đó $F$ là tập tất cả đặc trưng, $S$ là một tập con không chứa đặc trưng
+$j$, và biểu thức trong ngoặc vuông là mức thay đổi dự báo khi thêm đặc trưng
+$j$ vào tập $S$. Trọng số
+$\frac{|S|!(p-|S|-1)!}{p!}$ bảo đảm mọi thứ tự thêm đặc trưng được xét một cách
+công bằng.
+
+SHAP có ba tính chất quan trọng:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Tính cộng tính}: tổng các đóng góp SHAP cộng với giá trị nền
+        bằng đúng dự báo của mô hình.
+  \item \textbf{Tính nhất quán}: nếu một mô hình làm cho đóng góp biên của một
+        đặc trưng tăng lên, giá trị SHAP của đặc trưng đó không được giảm.
+  \item \textbf{Tính cục bộ}: mỗi dự báo riêng lẻ có thể được phân rã thành
+        đóng góp của từng đặc trưng, giúp giải thích quyết định ở cấp độ từng
+        sinh viên.
+\end{itemize}
+
+Trong thực tế, tính trực tiếp công thức Shapley là không khả thi khi số đặc
+trưng lớn, vì cần xét $2^p$ tập con. Đối với các mô hình cây, thuật toán
+\textbf{TreeSHAP} khai thác cấu trúc cây để tính chính xác giá trị SHAP với chi
+phí thấp hơn nhiều. Đây là lý do SHAP đặc biệt phù hợp với các mô hình dựa
+trên cây như CatBoost và LightGBM.
+
+Kết quả SHAP có thể được sử dụng ở hai cấp độ. Ở cấp độ toàn cục, trung bình
+$|\phi_j|$ trên nhiều mẫu cho biết đặc trưng nào có ảnh hưởng lớn nhất đến mô
+hình. Ở cấp độ cục bộ, biểu đồ waterfall hoặc force plot cho thấy từng đặc
+trưng đẩy dự báo của một sinh viên cụ thể về phía At-risk hay Pass. Nhờ đó,
+SHAP không chỉ hỗ trợ đánh giá độ quan trọng của đặc trưng mà còn giúp kiểm
+tra liệu mô hình có dựa trên các tín hiệu phù hợp với trực giác sư phạm hay
+không.
 
 % =====================================================================
 %  CHƯƠNG 2 — PHÂN TÍCH KHÁM PHÁ DỮ LIỆU
@@ -1420,21 +1576,21 @@ phân biệt các nhóm.
 
 \section{Tiền xử lý dữ liệu}
 
-Dựa trên cơ sở lý thuyết đã trình bày ở Chương~\ref{part:theory} và kết quả
-phân tích khám phá dữ liệu ở Chương~\ref{part:eda}, phần này trình bày quy
-trình tiền xử lý dữ liệu và xây dựng tập đặc trưng phục vụ bài toán cảnh báo
-sớm rủi ro học tập. Bài toán được chuẩn hóa về dạng \textbf{phân loại nhị
-phân}, trong đó nhóm \textbf{có nguy cơ} (At-risk) được tạo bằng cách gộp hai
-nhóm sinh viên \textbf{trượt môn} (Fail) và \textbf{bỏ học} (Withdrawn), đối
-lập với nhóm \textbf{hoàn thành học phần} (Pass). Việc dự báo được thực hiện
-dựa trên các đặc trưng nhân khẩu học và hành vi học tập được tích lũy đến từng
-mốc thời gian quan sát trong khóa học.
+Dựa trên cơ sở lý thuyết ở Chương~\ref{part:theory} và các kết quả phân tích
+khám phá dữ liệu ở Chương~\ref{part:eda}, chương này trình bày quy trình tiền
+xử lý dữ liệu, xây dựng đặc trưng, huấn luyện và đánh giá mô hình cho bài toán
+cảnh báo sớm rủi ro học tập. Bài toán được chuẩn hóa thành \textbf{phân loại
+nhị phân}: nhóm \textbf{có nguy cơ} (At-risk) được hình thành bằng cách gộp
+hai kết cục \textbf{trượt môn} (Fail) và \textbf{bỏ học} (Withdrawn), đối lập
+với nhóm \textbf{hoàn thành học phần} (Pass). Dự báo được thực hiện dựa trên
+các đặc trưng nhân khẩu học và hành vi học tập tích lũy đến từng mốc quan sát
+trong khóa học.
 
 \textbf{Điền giá trị thiếu ở các đặc trưng động.} Các đặc trưng phản ánh hành
-vi học tập tích lũy (tương tác với hệ thống học trực tuyến và kết quả các bài
-đánh giá) xuất hiện giá trị thiếu đối với những sinh viên chưa phát sinh hoạt
-động hoặc chưa nộp bài tính đến thời điểm quan sát. Việc điền khuyết được thực
-hiện theo đặc điểm của từng nhóm đặc trưng như sau:
+vi học tập tích lũy, gồm tương tác với hệ thống học trực tuyến và kết quả bài
+đánh giá, có thể bị thiếu khi sinh viên chưa phát sinh hoạt động hoặc chưa nộp
+bài tại thời điểm quan sát. Vì ý nghĩa của giá trị thiếu khác nhau giữa các
+nhóm biến, quá trình điền khuyết được thực hiện theo từng trường hợp:
 
 \begin{itemize}[leftmargin=*]
   \item \textbf{Đặc trưng tương tác VLE}
@@ -1442,11 +1598,10 @@ hiện theo đặc điểm của từng nhóm đặc trưng như sau:
         \code{active\_weeks},
         \code{avg\_weekly\_clicks}) và \textbf{đặc trưng bài đánh giá}
         (\code{num\_submitted},
-        \code{num\_failed}) được điền bằng giá trị 0, vì giá trị thiếu trong
-        trường hợp này phản ánh việc sinh viên chưa phát sinh bất kỳ hoạt động
-        nào.
+        \code{num\_failed}) được điền bằng 0, vì giá trị thiếu trong trường
+        hợp này biểu thị việc sinh viên chưa phát sinh hoạt động tương ứng.
   \item \code{avg\_score} được điền bằng giá trị \textbf{-1}, nằm ngoài miền
-        điểm hợp lệ $[0,100]$, nhằm phân biệt với trường hợp sinh viên đã nộp
+        điểm hợp lệ $[0,100]$, để phân biệt với trường hợp sinh viên đã nộp
         bài nhưng đạt 0 điểm.
   \item \code{avg\_days\_early} được điền bằng 0. Việc sinh viên chưa nộp bài
         dù đã đến hạn đã được phản ánh bởi biến nhị phân
@@ -1454,25 +1609,25 @@ hiện theo đặc điểm của từng nhóm đặc trưng như sau:
         thông tin.
 \end{itemize}
 
-Sau bước điền khuyết, toàn bộ các đặc trưng động không còn giá trị thiếu. Bên
-cạnh đó, dữ liệu nhân khẩu học cũng tồn tại một dạng thiếu đặc biệt cần được xử
-lý riêng.
+Sau bước điền khuyết, toàn bộ đặc trưng động không còn giá trị thiếu. Tuy
+nhiên, dữ liệu nhân khẩu học vẫn có một dạng thiếu đặc biệt cần được xử lý
+riêng.
 
-\textbf{Xử lý giá trị thiếu của \code{imd\_band}.} Như đã trình bày ở
+\textbf{Xử lý giá trị thiếu của \code{imd\_band}.} Như đã nêu ở
 Mục~\ref{sec:imd} (Chương~\ref{part:eda}), biến \code{imd\_band} (chỉ số thiếu
 thốn kinh tế theo khu vực) sử dụng ký hiệu \code{'?'} để biểu diễn giá trị
-thiếu thay vì giá trị rỗng thông thường. Trước khi điền khuyết, một biến chỉ
-báo \code{imd\_missing} được tạo nhằm lưu lại thông tin về trạng thái thiếu dữ
-liệu, giúp mô hình có thể khai thác đặc điểm này như một tín hiệu dự báo.
+thiếu thay vì giá trị rỗng thông thường. Trước khi điền khuyết, biến chỉ báo
+\code{imd\_missing} được tạo để lưu lại trạng thái thiếu dữ liệu, qua đó cho
+phép mô hình khai thác bản thân hiện tượng thiếu như một tín hiệu dự báo.
 
-Các giá trị thiếu của \code{imd\_band} được điền theo phân phối của từng vùng
-(\code{region}), được ước lượng trên tập huấn luyện và áp dụng thống nhất cho
-tập kiểm tra. Sau bước xử lý, biến \code{imd\_band\_filled} không còn giá trị
-thiếu ở cả hai tập dữ liệu.
+Giá trị thiếu của \code{imd\_band} được điền theo phân phối của từng vùng
+(\code{region}). Phân phối này được ước lượng trên tập huấn luyện và áp dụng
+thống nhất cho tập kiểm tra nhằm tránh rò rỉ thông tin. Sau xử lý, biến
+\code{imd\_band\_filled} không còn giá trị thiếu ở cả hai tập dữ liệu.
 
-\textbf{Mã hóa đặc trưng phân loại.} Sau khi hoàn tất quá trình điền khuyết,
-các đặc trưng phân loại được chuyển về dạng số theo bản chất của từng biến. Chi
-tiết phương án mã hóa được trình bày trong Bảng~\ref{tab:encoding}.
+\textbf{Mã hóa đặc trưng phân loại.} Sau khi hoàn tất điền khuyết, các đặc
+trưng phân loại được chuyển sang dạng số theo bản chất đo lường của từng biến.
+Phương án mã hóa cụ thể được trình bày trong Bảng~\ref{tab:encoding}.
 
 \begin{table}[H]
   \centering
@@ -1489,15 +1644,14 @@ tiết phương án mã hóa được trình bày trong Bảng~\ref{tab:encoding
   \end{tabular}
 \end{table}
 
-Ba đặc trưng nhân khẩu học còn lại trong dữ liệu gốc gồm
-\code{gender}, \code{region} và \code{age\_band} không được đưa vào tập đặc
-trưng huấn luyện. Ngược lại, các đặc trưng
-\code{highest\_education}, \code{disability} và
-\code{imd\_band\_filled} được giữ lại do đã cho thấy mối liên hệ rõ ràng với
+Ba đặc trưng nhân khẩu học còn lại trong dữ liệu gốc gồm \code{gender},
+\code{region} và \code{age\_band} không được đưa vào tập đặc trưng huấn luyện.
+Ngược lại, \code{highest\_education}, \code{disability} và
+\code{imd\_band\_filled} được giữ lại vì đã thể hiện mối liên hệ rõ ràng với
 kết quả học tập trong Chương~\ref{part:eda}.
 
-\textbf{Tập đặc trưng cuối cùng.} Sau các bước tiền xử lý, tập dữ liệu dùng để
-huấn luyện mô hình bao gồm \textbf{15 đặc trưng}, được chia thành hai nhóm:
+\textbf{Tập đặc trưng cuối cùng.} Sau tiền xử lý, tập dữ liệu dùng để huấn
+luyện mô hình gồm \textbf{15 đặc trưng}, chia thành hai nhóm:
 
 \begin{itemize}[leftmargin=*]
   \item \textbf{Đặc trưng tĩnh (6):}
@@ -1519,71 +1673,70 @@ huấn luyện mô hình bao gồm \textbf{15 đặc trưng}, được chia thà
         \code{no\_submission\_despite\_due}.
 \end{itemize}
 
-Việc chia dữ liệu thành tập huấn luyện và tập kiểm tra được giữ nguyên theo
-từng sinh viên như đã trình bày ở Bảng~\ref{tab:split}
-(Chương~\ref{part:eda}) với tỷ lệ 80:20, nhằm đảm bảo không xảy ra rò rỉ dữ
-liệu giữa hai tập.
+Dữ liệu được chia thành tập huấn luyện và tập kiểm tra theo từng sinh viên,
+giữ nguyên thiết kế đã trình bày ở Bảng~\ref{tab:split}
+(Chương~\ref{part:eda}) với tỷ lệ 80:20. Cách chia này bảo đảm các bản ghi của
+cùng một sinh viên không xuất hiện đồng thời ở cả hai tập.
 
-\textbf{Chuẩn hóa bài toán về phân loại nhị phân.} Với mục tiêu xây dựng hệ
-thống cảnh báo sớm, ranh giới cần quan tâm là giữa nhóm sinh viên hoàn thành và
-không hoàn thành học phần, thay vì phân biệt riêng giữa hai nhóm Fail và
-Withdrawn. Do đó, nhãn mục tiêu được xác định lại như sau:
+\textbf{Chuẩn hóa bài toán về phân loại nhị phân.} Với mục tiêu cảnh báo sớm,
+ranh giới quan trọng nhất là giữa nhóm sinh viên hoàn thành và không hoàn
+thành học phần, thay vì tách riêng hai kết cục Fail và Withdrawn. Vì vậy, nhãn
+mục tiêu được xác định lại như sau:
 
 \[
   \text{At-risk (1)} = \text{Fail} \cup \text{Withdrawn}, \qquad
   \text{Pass (0)} = \text{Pass}.
 \]
 
-Phép gộp nhãn này được áp dụng thống nhất trên toàn bộ dữ liệu dạng panel, tức
-đối với tất cả các bản ghi tại tám mốc dự đoán
+Phép gộp nhãn được áp dụng thống nhất trên toàn bộ dữ liệu dạng panel, tức với
+tất cả bản ghi tại tám mốc dự đoán
 $T \in \{30,60,\ldots,240\}$ được xây dựng ở
-Mục~\ref{sec:panel_design} (Chương~\ref{part:eda}). Sau khi hoàn tất quá trình
-tiền xử lý và chuẩn hóa nhãn, dữ liệu đã sẵn sàng cho giai đoạn huấn luyện và
-đánh giá các mô hình học máy, được trình bày trong các mục tiếp theo.
+Mục~\ref{sec:panel_design} (Chương~\ref{part:eda}). Sau khi hoàn tất tiền xử
+lý và chuẩn hóa nhãn, dữ liệu được sử dụng cho giai đoạn huấn luyện, so sánh
+và diễn giải các mô hình học máy ở các mục tiếp theo.
 
 \section{Khảo sát sơ bộ theo các mốc dự đoán}
 \label{sec:snapshot_survey}
 
-Trước khi đi sâu so sánh nhiều thuật toán tại một mốc thời gian cố định, cần
-khảo sát sơ bộ hiệu suất mô hình học máy \textbf{xuyên suốt toàn bộ các mốc dự
-đoán} đã thiết kế ở Mục~\ref{sec:panel_design} (Chương~\ref{part:eda}), nhằm hai
-mục đích: (i) hiểu xu hướng
-biến động hiệu suất theo thời gian khi sinh viên tích luỹ ngày càng nhiều hành
-vi học tập, và (ii) làm cơ sở lựa chọn một mốc thời gian đại diện, phù hợp cho
-các thử nghiệm chuyên sâu ở phần sau.
+Trước khi so sánh nhiều thuật toán tại một mốc thời gian cố định, cần khảo sát
+sơ bộ hiệu suất mô hình \textbf{trên toàn bộ các mốc dự đoán} đã thiết kế ở
+Mục~\ref{sec:panel_design} (Chương~\ref{part:eda}). Phân tích này nhằm hai mục
+đích: (i) đánh giá xu hướng thay đổi hiệu suất khi sinh viên tích luỹ thêm dữ
+liệu hành vi theo thời gian, và (ii) lựa chọn một mốc đại diện cho các thử
+nghiệm chuyên sâu ở phần sau.
 
 \subsection{Thiết lập thử nghiệm}
 
 Với mỗi mốc dự đoán $T$, một mô hình \textbf{Logistic Regression} được huấn
-luyện riêng, chỉ sử dụng dữ liệu của đúng mốc đó --- đây cũng là thuật toán cơ
-sở, đơn giản và dễ diễn giải nhất trong bốn thuật toán đã trình bày cơ sở lý
-thuyết ở Chương~\ref{part:theory}, phù hợp để khảo sát nhanh xu hướng hiệu suất theo thời gian
-trước khi mở rộng sang các mô hình phức tạp hơn. Quy trình tinh chỉnh áp dụng
-cho từng mô hình tương tự cách tiếp cận sẽ được dùng ở giai đoạn so sánh nhiều
-thuật toán tại Mục~\ref{sec:methodology}: dữ liệu được chuẩn hoá bằng
-\code{StandardScaler} (fit trên train-fold, tránh rò rỉ dữ liệu), siêu tham số
-điều chuẩn $C$ của mô hình (Mục~\ref{sec:logreg_reg}), tỷ lệ oversampling
-SMOTE và trọng số lớp At-risk được tinh chỉnh đồng thời bằng Optuna (30 lượt
-thử nghiệm, kiểm định chéo phân tầng 3-fold), sau đó huấn luyện lại trên toàn
-bộ tập huấn luyện của mốc đó và đánh giá trên tập kiểm tra giữ nguyên.
+luyện riêng trên dữ liệu của đúng mốc đó. Đây là thuật toán cơ sở, đơn giản và
+dễ diễn giải nhất trong bốn thuật toán đã trình bày ở Chương~\ref{part:theory},
+phù hợp để khảo sát nhanh xu hướng hiệu suất theo thời gian trước khi mở rộng
+sang các mô hình phức tạp hơn. Quy trình tinh chỉnh cho từng mốc tương tự cách
+tiếp cận ở giai đoạn so sánh thuật toán tại Mục~\ref{sec:methodology}: dữ liệu
+được chuẩn hoá bằng \code{StandardScaler} (fit trên train-fold để tránh rò rỉ
+dữ liệu), còn siêu tham số điều chuẩn $C$ của mô hình
+(Mục~\ref{sec:logreg_reg}), tỷ lệ oversampling SMOTE và trọng số lớp At-risk
+được tinh chỉnh đồng thời bằng Optuna với 30 lượt thử nghiệm và kiểm định chéo
+phân tầng 3-fold. Sau đó, mô hình được huấn luyện lại trên toàn bộ tập huấn
+luyện của mốc tương ứng và đánh giá trên tập kiểm tra giữ nguyên.
 
-Một lưu ý về mặt phương pháp: ở lần thử đầu tiên, hàm mục tiêu tối ưu là
-\textit{recall thuần} của lớp At-risk, nhưng cách làm này khiến mô hình suy
-biến về việc dự đoán \textbf{toàn bộ} sinh viên đều là At-risk (recall đạt gần
-tuyệt đối nhưng precision rất thấp, không có giá trị thực tiễn). Hàm mục tiêu
-sau đó được đổi sang \textbf{F1-score của lớp At-risk} để buộc mô hình cân
-bằng giữa precision và recall --- đây là hàm mục tiêu được giữ nguyên xuyên
-suốt các thử nghiệm còn lại của báo cáo.
+Về mặt phương pháp, thử nghiệm ban đầu sử dụng \textit{recall thuần} của lớp
+At-risk làm hàm mục tiêu. Tuy nhiên, lựa chọn này khiến mô hình suy biến về
+phương án dự đoán \textbf{toàn bộ} sinh viên là At-risk: recall gần tuyệt đối
+nhưng precision rất thấp, do đó không có giá trị vận hành. Vì vậy, hàm mục
+tiêu được chuyển sang \textbf{F1-score của lớp At-risk}, buộc mô hình cân bằng
+giữa precision và recall. Hàm mục tiêu này được giữ nguyên trong toàn bộ các
+thử nghiệm còn lại của báo cáo.
 
 \subsection{Kết quả theo thời gian}
 
 Bảng~\ref{tab:snapshot_results} tổng hợp hiệu suất trên tập kiểm tra của tám
-mô hình, mỗi mô hình ứng với một mốc dự đoán.
+mô hình Logistic Regression, tương ứng với tám mốc dự đoán.
 
 \input{table_snapshot_results}
 
-Hình~\ref{fig:trend_snapshot} trực quan hoá xu hướng của bốn chỉ số theo mốc
-thời gian.
+Hình~\ref{fig:trend_snapshot} trực quan hoá xu hướng của bốn chỉ số theo thời
+gian.
 
 \begin{figure}[H]
   \centering
@@ -1594,25 +1747,24 @@ thời gian.
 \end{figure}
 
 \begin{itemize}[leftmargin=*]
-  \item \textbf{Accuracy} và \textbf{precision At-risk} tăng \textbf{đơn điệu
-        tuyệt đối} theo thời gian --- không có mốc nào sụt giảm so với mốc
-        liền trước (accuracy từ 0.6488 ở $T=30$ lên 0.8796 ở $T=240$; precision
-        từ 0.5750 lên 0.8269) --- phù hợp với trực giác: sinh viên càng tích
-        luỹ nhiều hành vi học tập, tín hiệu dự báo càng rõ ràng và đáng tin cậy
-        hơn.
+  \item \textbf{Accuracy} và \textbf{precision At-risk} tăng \textbf{đơn điệu}
+        theo thời gian, không có mốc nào giảm so với mốc liền trước. Accuracy
+        tăng từ 0.6488 ở $T=30$ lên 0.8796 ở $T=240$, trong khi precision tăng
+        từ 0.5750 lên 0.8269. Kết quả này phù hợp với trực giác: sinh viên càng
+        tích luỹ nhiều hành vi học tập, tín hiệu dự báo càng rõ ràng và đáng
+        tin cậy.
   \item \textbf{Recall At-risk} lại dao động trong một biên độ hẹp
         (0.7555--0.8013) mà không theo xu hướng rõ ràng, thậm chí đạt giá trị
-        cao nhất ngay ở mốc sớm nhất $T=30$ (0.8013) --- khi độ chính xác tổng
-        thể còn rất thấp (accuracy 0.6488, precision 0.5750). Điều này cho
-        thấy ở giai đoạn đầu khoá, khi tín hiệu hành vi còn thưa thớt, ranh
-        giới tuyến tính của Logistic Regression có xu hướng dự báo At-risk khá
-        rộng rãi --- bắt được phần lớn sinh viên có nguy cơ nhưng đánh đổi
-        bằng rất nhiều cảnh báo nhầm.
+        cao nhất ngay ở mốc sớm nhất $T=30$ (0.8013), khi độ chính xác tổng thể
+        còn thấp (accuracy 0.6488, precision 0.5750). Điều này cho thấy ở giai
+        đoạn đầu khoá, khi tín hiệu hành vi còn thưa thớt, ranh giới tuyến tính
+        của Logistic Regression có xu hướng dự báo At-risk tương đối rộng:
+        mô hình phát hiện được phần lớn sinh viên có nguy cơ nhưng phải đánh
+        đổi bằng nhiều cảnh báo nhầm.
   \item \textbf{F1 At-risk} --- chỉ số tổng hợp được dùng làm mục tiêu tối ưu
-        --- vì vậy cũng tăng đơn điệu tuyệt đối theo thời gian, từ 0.6695
-        ($T=30$) lên 0.8035 ($T=240$), nhưng động lực tăng chủ yếu đến từ
-        \textbf{precision} chứ không phải recall, vốn gần như đi ngang xuyên
-        suốt khoá học.
+        --- cũng tăng đều theo thời gian, từ 0.6695 ($T=30$) lên 0.8035
+        ($T=240$). Tuy nhiên, mức tăng này chủ yếu đến từ \textbf{precision},
+        trong khi recall gần như ổn định xuyên suốt khoá học.
 \end{itemize}
 
 Ma trận nhầm lẫn của bốn mốc tiêu biểu --- 30, 90, 180 và 240 ngày --- được thể
@@ -1632,31 +1784,31 @@ mà Optuna lựa chọn theo từng mốc thời gian.
 \input{table_snapshot_params}
 
 Trọng số At-risk tối ưu hầu như luôn hội tụ gần giá trị 1 (1.01--1.33) ở mọi
-mốc thời gian, trong khi tỷ lệ SMOTE dao động ở mức khá cao và không theo xu
-hướng rõ rệt (0.42--0.90x). Nói cách khác, với Logistic Regression, việc bổ
-sung mẫu tổng hợp qua SMOTE đóng vai trò chủ đạo trong xử lý mất cân bằng
-nhãn, hơn là điều chỉnh trọng số lớp --- đây là đặc điểm nhất quán của thuật
-toán này xuyên suốt mọi mốc thời gian khảo sát.
+mốc thời gian, trong khi tỷ lệ SMOTE dao động ở mức khá cao và không có xu
+hướng rõ rệt (0.42--0.90x). Nói cách khác, đối với Logistic Regression, việc
+bổ sung mẫu tổng hợp bằng SMOTE đóng vai trò chủ đạo hơn so với điều chỉnh
+trọng số lớp trong xử lý mất cân bằng nhãn. Đây là đặc điểm nhất quán của mô
+hình này trên các mốc thời gian khảo sát.
 
 \subsection{Lựa chọn mốc dự đoán cho phân tích chuyên sâu}
 \label{sec:choose_t150}
 
-Kết quả khảo sát cho thấy một sự đánh đổi rõ ràng giữa \textbf{độ tin cậy của
-dự báo} và \textbf{thời gian còn lại để can thiệp}: các mốc càng muộn cho hiệu
-suất càng cao, nhưng đồng thời càng gần thời điểm kết thúc khoá học, làm giảm
-giá trị thực tiễn của một cảnh báo sớm. Với khoá học OULAD kéo dài khoảng
-240--270 ngày, hai mốc cho F1 cao nhất --- 210 và 240 ngày, lần lượt 0.7935 và
-0.8035 --- chỉ còn lại khoảng 10--20\% thời lượng khoá học, quá muộn để nhà
-trường triển khai các biện pháp hỗ trợ có ý nghĩa.
+Kết quả khảo sát cho thấy sự đánh đổi rõ ràng giữa \textbf{độ tin cậy của dự
+báo} và \textbf{thời gian còn lại để can thiệp}: mốc dự đoán càng muộn thì
+hiệu suất càng cao, nhưng cảnh báo cũng càng gần thời điểm kết thúc khoá học,
+làm giảm giá trị thực tiễn của hệ thống. Với các khoá học OULAD kéo dài khoảng
+240--270 ngày, hai mốc có F1 cao nhất --- 210 và 240 ngày, lần lượt 0.7935 và
+0.8035 --- chỉ còn khoảng 10--20\% thời lượng khoá học. Đây là thời điểm quá
+muộn để nhà trường triển khai các biện pháp hỗ trợ có ý nghĩa.
 
 Mốc \textbf{150 ngày} được chọn làm đại diện cho các thử nghiệm chuyên sâu ở
-phần còn lại của báo cáo, vì đạt được điểm cân bằng hợp lý nhất giữa hai yêu
-cầu trên. Về hiệu suất, mốc này đã cho kết quả khá cao (accuracy 0.8263, F1
-At-risk 0.7591) và chỉ thấp hơn khoảng 0.016 so với mốc 180 ngày liền sau ---
-một khoảng cách nhỏ so với lợi ích thu được về mặt thời gian. Về khả năng can
-thiệp, cảnh báo phát ra ở ngày thứ 150 vẫn còn khoảng 90--120 ngày, tương
-đương 37--50\% thời lượng khoá học, đủ để nhà trường tổ chức các hoạt động hỗ
-trợ có chiều sâu thay vì chỉ nhắc nhở gấp rút ở giai đoạn cuối.
+phần còn lại của báo cáo vì đạt cân bằng hợp lý giữa hai yêu cầu trên. Về hiệu
+suất, mốc này cho kết quả tương đối cao (accuracy 0.8263, F1 At-risk 0.7591)
+và chỉ thấp hơn khoảng 0.016 so với mốc 180 ngày liền sau, một khoảng cách nhỏ
+so với lợi ích thu được về thời gian. Về khả năng can thiệp, cảnh báo tại ngày
+thứ 150 vẫn còn khoảng 90--120 ngày, tương đương 37--50\% thời lượng khoá học,
+đủ để nhà trường tổ chức các hoạt động hỗ trợ có chiều sâu thay vì chỉ nhắc
+nhở gấp rút ở giai đoạn cuối.
 
 Bảng~\ref{tab:split_t150} tóm tắt quy mô và phân phối nhãn tại mốc 150 ngày
 sau khi gộp nhãn, được dùng thống nhất cho toàn bộ các thử nghiệm từ
@@ -1664,87 +1816,90 @@ Mục~\ref{sec:methodology} trở đi.
 
 \input{table_split_t150}
 
-Tỷ lệ At-risk chiếm khoảng \textbf{36\%} tổng số sinh viên ở cả hai tập, tương
-đồng giữa train và test --- xác nhận việc chia dữ liệu theo sinh viên không
-gây lệch phân phối nhãn. Đây vẫn là một bài toán \textbf{mất cân bằng nhãn vừa
-phải}, cần được xử lý ở bước huấn luyện mô hình.
+Tỷ lệ At-risk chiếm khoảng \textbf{36\%} tổng số sinh viên ở cả hai tập và gần
+như tương đồng giữa train và test. Điều này xác nhận rằng cách chia dữ liệu
+theo sinh viên không gây lệch phân phối nhãn. Tuy vậy, bài toán vẫn có
+\textbf{mất cân bằng nhãn ở mức vừa phải} và cần được xử lý trong quá trình
+huấn luyện mô hình.
 
 \section{Phương pháp xây dựng mô hình}
 \label{sec:methodology}
 
-Kế thừa kết luận ở Mục~\ref{sec:choose_t150}, các thử nghiệm từ đây trở đi tập
-trung vào mốc 150 ngày, mở rộng từ một mô hình cơ sở duy nhất (đã dùng để khảo
-sát xu hướng theo thời gian ở Mục~\ref{sec:snapshot_survey}) sang so sánh trực
-tiếp \textbf{bốn thuật toán học máy} khác nhau.
+Từ kết luận ở Mục~\ref{sec:choose_t150}, các thử nghiệm tiếp theo tập trung
+vào mốc 150 ngày. Phân tích được mở rộng từ mô hình cơ sở Logistic Regression,
+đã dùng để khảo sát xu hướng theo thời gian ở Mục~\ref{sec:snapshot_survey},
+sang so sánh trực tiếp \textbf{bốn thuật toán học máy} khác nhau.
 
 \subsection{Các thuật toán sử dụng}
 
-Bốn thuật toán đã trình bày cơ sở lý thuyết ở Chương~\ref{part:theory} ---
-Logistic Regression, Random Forest, CatBoost và LightGBM --- được đưa vào huấn luyện và so sánh
-trực tiếp trên dữ liệu thực tế. Thuật toán \textbf{SVM (kernel RBF)} được loại
-khỏi phạm vi thử nghiệm do độ phức tạp huấn luyện tăng theo bậc hai với số
-lượng mẫu, không khả thi với quy mô dữ liệu ở mốc 150 ngày (hơn 17 nghìn bản
-ghi huấn luyện) trong khuôn khổ tài nguyên tính toán của nghiên cứu.
+Bốn thuật toán đã trình bày ở Chương~\ref{part:theory} --- Logistic Regression,
+Random Forest, CatBoost và LightGBM --- được huấn luyện và so sánh trực tiếp
+trên dữ liệu thực nghiệm. Thuật toán \textbf{SVM (kernel RBF)} không được đưa
+vào phạm vi thử nghiệm vì độ phức tạp huấn luyện tăng theo bậc hai với số
+lượng mẫu, không phù hợp với quy mô dữ liệu tại mốc 150 ngày (hơn 17 nghìn bản
+ghi huấn luyện) trong điều kiện tài nguyên tính toán của nghiên cứu.
 
 \subsection{Xử lý mất cân bằng nhãn}
 
-Hai kỹ thuật được kết hợp đồng thời để xử lý mất cân bằng nhãn:
+Hai kỹ thuật được kết hợp để xử lý mất cân bằng nhãn:
 
 \begin{itemize}[leftmargin=*]
   \item \textbf{SMOTE} (Synthetic Minority Over-sampling Technique): sinh thêm
-        mẫu tổng hợp cho lớp At-risk, với tỷ lệ oversampling là một siêu tham
-        số được tinh chỉnh riêng cho từng mô hình.
+        mẫu tổng hợp cho lớp At-risk. Tỷ lệ oversampling được xem là một siêu
+        tham số và được tinh chỉnh riêng cho từng mô hình.
   \item \textbf{Trọng số lớp} (\code{class\_weight}): tăng chi phí phân loại
-        sai đối với lớp At-risk trong hàm mất mát của mô hình, cũng được tinh
-        chỉnh như một siêu tham số --- tương ứng về mặt toán học với hàm mất
-        mát có trọng số đã trình bày ở Mục~\ref{sec:logreg_weight}
-        (Chương~\ref{part:theory}) cho riêng trường hợp Logistic Regression.
+        sai đối với lớp At-risk trong hàm mất mát của mô hình. Đại lượng này
+        cũng được tinh chỉnh như một siêu tham số và tương ứng về mặt toán học
+        với hàm mất mát có trọng số đã trình bày ở
+        Mục~\ref{sec:logreg_weight} (Chương~\ref{part:theory}) đối với
+        Logistic Regression.
 \end{itemize}
 
 Để tránh rò rỉ dữ liệu, \textbf{SMOTE chỉ được áp dụng trên từng fold huấn
-luyện} trong quá trình kiểm định chéo, không áp dụng lên fold kiểm định. Tương
-tự, với Logistic Regression --- mô hình duy nhất cần chuẩn hoá dữ liệu số
-(\code{StandardScaler}) --- bước chuẩn hoá cũng chỉ được ước lượng (fit) trên
-fold huấn luyện.
+luyện} trong kiểm định chéo, không áp dụng lên fold kiểm định. Tương tự, với
+Logistic Regression --- mô hình duy nhất cần chuẩn hoá dữ liệu số
+(\code{StandardScaler}) --- tham số chuẩn hoá cũng chỉ được ước lượng (fit)
+trên fold huấn luyện.
 
 \subsection{Thiết lập thực nghiệm}
 
 Với mỗi mô hình, siêu tham số của thuật toán được tinh chỉnh \textbf{đồng thời}
-với tỷ lệ SMOTE và trọng số lớp At-risk, thông qua khung tối ưu Bayesian
+với tỷ lệ SMOTE và trọng số lớp At-risk bằng khung tối ưu Bayesian
 \textbf{Optuna} (thuật toán lấy mẫu TPE), với 30 lượt thử nghiệm cho mỗi mô
-hình. Hàm mục tiêu được tối ưu là \textbf{F1-score của lớp At-risk}, đánh giá
-qua kiểm định chéo phân tầng 3-fold (StratifiedKFold) nhằm giữ nguyên tỷ lệ
-lớp ở mỗi fold. Sau khi xác định bộ siêu tham số tốt nhất, mô hình được huấn
-luyện lại trên toàn bộ tập huấn luyện và đánh giá lần cuối trên tập kiểm tra
-giữ nguyên (holdout), độc lập hoàn toàn với quá trình tinh chỉnh.
+hình, theo nguyên lý đã trình bày ở Mục~\ref{sec:bayes_opt}. Hàm mục tiêu là
+\textbf{F1-score của lớp At-risk}, được đánh giá bằng kiểm định chéo phân tầng
+3-fold (StratifiedKFold) để giữ nguyên tỷ lệ lớp ở mỗi fold. Sau khi xác định
+bộ siêu tham số tốt nhất, mô hình được huấn luyện lại trên toàn bộ tập huấn
+luyện và đánh giá lần cuối trên tập kiểm tra giữ nguyên (holdout), độc lập với
+quá trình tinh chỉnh.
 
-Các chỉ số đánh giá trên tập kiểm tra gồm: accuracy, precision, recall, F1
+Các chỉ số đánh giá trên tập kiểm tra gồm accuracy, precision, recall, F1
 (tính riêng cho lớp At-risk) và ROC-AUC.
 
 \section{Kết quả trên bộ đặc trưng đầy đủ}
 \label{sec:compare_full}
 
 Bảng~\ref{tab:compare_full} tổng hợp hiệu suất của bốn mô hình trên tập kiểm
-tra, sử dụng đầy đủ 15 đặc trưng.
+tra khi sử dụng đầy đủ 15 đặc trưng.
 
 \input{table_compare_full}
 
 \begin{itemize}[leftmargin=*]
   \item \textbf{CatBoost} dẫn đầu ở ba chỉ số: accuracy (0.8501), precision
-        At-risk (0.8055) và F1 At-risk (0.7849) --- mô hình cho cảnh báo đáng
-        tin cậy nhất, đồng thời cân bằng tốt nhất giữa precision và recall.
+        At-risk (0.8055) và F1 At-risk (0.7849). Mô hình này tạo ra cảnh báo
+        đáng tin cậy nhất và đạt cân bằng tốt nhất giữa precision và recall.
   \item \textbf{LightGBM} đạt ROC-AUC cao nhất (0.9116), nhưng chênh lệch so
         với CatBoost (0.9114) là không đáng kể; F1 At-risk của mô hình này
-        (0.7827) cũng chỉ thấp hơn CatBoost khoảng 0.002.
+        (0.7827) cũng chỉ thấp hơn CatBoost khoảng 0.002 điểm.
   \item \textbf{Random Forest} có recall At-risk cao nhất (0.7819), tức bỏ sót
-        ít sinh viên có nguy cơ nhất, nhưng đánh đổi bằng precision thấp hơn
-        CatBoost. Nhìn chung ba mô hình cây cho kết quả rất sát nhau (F1 nằm
-        trong khoảng hẹp 0.7812--0.7849), không mô hình nào vượt trội hẳn.
+        ít sinh viên có nguy cơ nhất, nhưng phải đánh đổi bằng precision thấp
+        hơn CatBoost. Nhìn chung, ba mô hình cây cho kết quả rất sát nhau với
+        F1 nằm trong khoảng hẹp 0.7812--0.7849; không mô hình nào vượt trội rõ
+        rệt.
   \item \textbf{Logistic Regression} có hiệu suất thấp nhất ở mọi chỉ số, phù
-        hợp với kỳ vọng đặt ra từ Chương~\ref{part:theory} và Chương~\ref{part:eda}:
-        dữ liệu tồn tại quan hệ phi tuyến và đa cộng tuyến giữa các đặc trưng
-        hành vi trực tuyến, là
-        những đặc điểm mà mô hình tuyến tính khó nắm bắt đầy đủ.
+        hợp với kỳ vọng từ Chương~\ref{part:theory} và Chương~\ref{part:eda}:
+        dữ liệu có quan hệ phi tuyến và đa cộng tuyến giữa các đặc trưng hành
+        vi trực tuyến, những đặc điểm mà mô hình tuyến tính khó nắm bắt đầy đủ.
 \end{itemize}
 
 Ma trận nhầm lẫn (confusion matrix) của từng mô hình trên tập kiểm tra được
@@ -1779,22 +1934,22 @@ thể hiện ở Hình~\ref{fig:cm_full}.
   \label{fig:cm_full}
 \end{figure}
 
-Nhìn chung, phần lớn sai số của cả bốn mô hình đều nằm ở việc \textbf{bỏ sót
-sinh viên At-risk} (dự báo Pass trong khi thực tế At-risk) nhiều hơn là cảnh
+Nhìn chung, phần lớn sai số của cả bốn mô hình nằm ở việc \textbf{bỏ sót sinh
+viên At-risk} (dự báo Pass trong khi thực tế At-risk), nhiều hơn so với cảnh
 báo nhầm (dự báo At-risk trong khi thực tế Pass). Đây là điểm cần lưu ý khi
-triển khai thực tế: có thể cân nhắc hạ ngưỡng phân loại để tăng recall, chấp
-nhận đánh đổi thêm một số cảnh báo nhầm nhằm giảm thiểu rủi ro bỏ sót sinh
-viên cần hỗ trợ.
+triển khai: có thể hạ ngưỡng phân loại để tăng recall, chấp nhận thêm một số
+cảnh báo nhầm nhằm giảm rủi ro bỏ sót sinh viên cần hỗ trợ.
 
 \section{Độ quan trọng của đặc trưng}
 \label{sec:feat_importance}
 
 Hình~\ref{fig:feat_imp} thể hiện độ quan trọng đặc trưng theo định nghĩa riêng
-của từng thuật toán (hệ số hồi quy tuyệt đối với Logistic Regression, độ giảm
-tạp chất Gini với Random Forest --- theo công thức ở Mục~\ref{sec:rf_importance}
---- PredictionValuesChange với CatBoost, và số lần được dùng để phân tách với
-LightGBM) --- các giá trị này \textbf{không cùng đơn vị} nên chỉ so sánh được
-thứ hạng, không so sánh trực tiếp độ lớn giữa các mô hình.
+của từng thuật toán: hệ số hồi quy tuyệt đối với Logistic Regression, độ giảm
+tạp chất Gini với Random Forest (theo công thức ở
+Mục~\ref{sec:rf_importance}), PredictionValuesChange với CatBoost, và số lần
+được dùng để phân tách với LightGBM. Do các giá trị này \textbf{không cùng đơn
+vị}, chỉ nên so sánh thứ hạng đặc trưng, không so sánh trực tiếp độ lớn giữa
+các mô hình.
 
 \begin{figure}[H]
   \centering
@@ -1804,9 +1959,9 @@ thứ hạng, không so sánh trực tiếp độ lớn giữa các mô hình.
   \label{fig:feat_imp}
 \end{figure}
 
-Để tổng hợp một thứ hạng chung, mỗi đặc trưng được xếp hạng riêng trong từng
-mô hình rồi lấy trung bình cộng bốn hạng. Bảng~\ref{tab:feature_rank} trình bày
-kết quả, sắp xếp tăng dần theo hạng trung bình.
+Để xây dựng một thứ hạng chung, mỗi đặc trưng được xếp hạng riêng trong từng
+mô hình, sau đó lấy trung bình cộng bốn hạng. Bảng~\ref{tab:feature_rank}
+trình bày kết quả, sắp xếp tăng dần theo hạng trung bình.
 
 \input{table_feature_rank}
 
@@ -1819,7 +1974,7 @@ kết quả, sắp xếp tăng dần theo hạng trung bình.
         LightGBM), rồi đến \code{num\_due} (số bài đến hạn) và
         \code{active\_weeks\_filled} (số tuần hoạt động) cùng ở hạng trung
         bình 5.00. Cả bốn đều là đặc trưng \textbf{động}, phản ánh trực tiếp
-        mức độ tham gia và kết quả học tập tích luỹ.
+        mức độ tham gia và kết quả học tập tích luỹ của sinh viên.
   \item \textbf{Nhóm giữa} gồm các đặc trưng tương tác VLE còn lại
         (\code{total\_clicks\_filled}, \code{avg\_weekly\_clicks\_filled}),
         \code{avg\_days\_early\_filled} và \code{highest\_education} --- đóng
@@ -1827,79 +1982,79 @@ kết quả, sắp xếp tăng dần theo hạng trung bình.
   \item \textbf{Nhóm cuối} --- \code{studied\_credits}, \code{disability},
         \code{imd\_missing} có hạng trung bình cao nhất (ít quan trọng nhất),
         cho thấy các đặc trưng tĩnh mang tính nhân khẩu học có vai trò dự báo
-        khiêm tốn hơn nhiều so với các đặc trưng hành vi động.
+        khiêm tốn hơn đáng kể so với các đặc trưng hành vi động.
 \end{itemize}
 
 \section{Rút gọn đặc trưng: Top-10 và Top-5}
 
 Dựa trên thứ hạng ở Bảng~\ref{tab:feature_rank}, mười đặc trưng quan trọng
-nhất (Top-10) và năm đặc trưng quan trọng nhất (Top-5) được chọn ra để huấn
-luyện lại theo đúng quy trình tinh chỉnh đã mô tả ở Mục~\ref{sec:methodology},
-nhằm kiểm tra hiệu suất mô hình có \textbf{ổn định} hay không khi giảm số
-lượng đặc trưng đầu vào --- một yếu tố quan trọng khi triển khai hệ thống cảnh
-báo thực tế, nơi việc thu thập và duy trì ít đặc trưng hơn giúp đơn giản hoá
-quy trình vận hành.
+nhất (Top-10) và năm đặc trưng quan trọng nhất (Top-5) được chọn để huấn luyện
+lại theo đúng quy trình tinh chỉnh đã mô tả ở Mục~\ref{sec:methodology}. Mục
+tiêu là kiểm tra liệu hiệu suất mô hình có \textbf{ổn định} khi giảm số lượng
+đặc trưng đầu vào hay không. Đây là yếu tố quan trọng trong triển khai thực tế,
+vì một hệ thống cảnh báo sử dụng ít đặc trưng hơn sẽ đơn giản hơn trong thu
+thập dữ liệu, vận hành và bảo trì.
 
-Phân tích ở phần này chỉ tập trung vào \textbf{CatBoost}, mô hình đạt hiệu suất
-tốt nhất ở bước so sánh thuật toán (Mục~\ref{sec:compare_full}). Việc thu hẹp
-về một mô hình duy nhất giúp câu hỏi trở nên rõ ràng: \textit{với mô hình sẽ
-được đưa vào triển khai, có thể cắt bớt bao nhiêu đặc trưng mà hiệu suất vẫn
-giữ nguyên?} Bảng~\ref{tab:compare_featuresets} đặt cạnh nhau kết quả của
-CatBoost trên cả ba bộ đặc trưng.
+Phân tích ở phần này tập trung vào \textbf{CatBoost}, mô hình đạt hiệu suất
+tốt nhất trong bước so sánh thuật toán (Mục~\ref{sec:compare_full}). Việc thu
+hẹp về một mô hình duy nhất giúp câu hỏi đánh giá trở nên cụ thể hơn:
+\textit{với mô hình dự kiến triển khai, có thể giảm bao nhiêu đặc trưng mà
+hiệu suất vẫn gần như được duy trì?} Bảng~\ref{tab:compare_featuresets} đặt
+cạnh nhau kết quả của CatBoost trên ba bộ đặc trưng.
 
 \input{table_compare_featuresets}
 
 \begin{itemize}[leftmargin=*]
-  \item Hiệu suất \textbf{gần như không đổi} qua cả ba bộ đặc trưng: F1
-        At-risk chỉ dao động trong khoảng $0.7825$--$0.7875$, tức biên độ
-        vỏn vẹn $0.005$; accuracy cũng chỉ chênh $0.004$. Điều này khẳng định
-        kết luận ở Mục~\ref{sec:feat_importance}: phần lớn sức mạnh dự báo tập
+  \item Hiệu suất \textbf{gần như không đổi} trên cả ba bộ đặc trưng: F1
+        At-risk chỉ dao động trong khoảng $0.7825$--$0.7875$, với biên độ
+        $0.005$; accuracy cũng chỉ chênh $0.004$. Kết quả này củng cố nhận
+        định ở Mục~\ref{sec:feat_importance}: phần lớn sức mạnh dự báo tập
         trung ở một nhóm nhỏ đặc trưng hành vi động.
-  \item Đáng chú ý, bộ \textbf{Top-10 còn nhỉnh hơn cả bộ đầy đủ} ở ba trên
-        năm chỉ số --- F1 ($0.7875$ so với $0.7849$), recall ($0.7774$ so với
-        $0.7652$) và ROC-AUC ($0.9119$ so với $0.9114$) --- trong khi dùng ít
+  \item Đáng chú ý, bộ \textbf{Top-10 đạt kết quả cao hơn bộ đầy đủ} ở ba trên
+        năm chỉ số: F1 ($0.7875$ so với $0.7849$), recall ($0.7774$ so với
+        $0.7652$) và ROC-AUC ($0.9119$ so với $0.9114$), trong khi sử dụng ít
         hơn một phần ba số đặc trưng. Việc loại bỏ năm đặc trưng kém quan
-        trọng nhất không những không gây thiệt hại mà còn giúp mô hình bắt
-        được nhiều sinh viên có nguy cơ hơn, dấu hiệu cho thấy nhóm đặc trưng
-        bị loại chủ yếu đóng vai trò gây nhiễu.
-  \item Khi cắt tiếp xuống \textbf{Top-5}, hiệu suất mới bắt đầu giảm nhẹ
+        trọng nhất không những không làm giảm hiệu suất mà còn giúp mô hình
+        phát hiện thêm sinh viên có nguy cơ. Điều này gợi ý rằng nhóm đặc
+        trưng bị loại chủ yếu đóng góp nhiễu hoặc thông tin dư thừa.
+  \item Khi tiếp tục rút gọn xuống \textbf{Top-5}, hiệu suất bắt đầu giảm nhẹ
         nhưng vẫn ở mức không đáng kể: F1 thấp hơn bộ đầy đủ đúng $0.0024$ và
         thấp hơn Top-10 $0.0050$. Đổi lại, số đặc trưng cần thu thập giảm từ
         15 xuống 5.
   \item Xu hướng chung khi giảm đặc trưng là \textbf{precision giảm, recall
-        tăng}: precision đi từ $0.8055$ (Full) xuống $0.7910$ (Top-5) trong
-        khi recall nhích từ $0.7652$ lên $0.7742$. Với bài toán cảnh báo sớm,
-        đây là hướng đánh đổi có lợi, vì bỏ sót một sinh viên cần hỗ trợ tốn
-        kém hơn một cảnh báo nhầm.
+        tăng}: precision giảm từ $0.8055$ (Full) xuống $0.7910$ (Top-5), trong
+        khi recall tăng nhẹ từ $0.7652$ lên $0.7742$. Với bài toán cảnh báo
+        sớm, đây là hướng đánh đổi có lợi, vì bỏ sót một sinh viên cần hỗ trợ
+        thường gây hậu quả lớn hơn một cảnh báo nhầm.
 \end{itemize}
 
-Tổng hợp lại, \textbf{bộ Top-5 là lựa chọn hợp lý cho triển khai thực tế}: chỉ
-cần năm đặc trưng --- \code{num\_submitted\_filled}, \code{avg\_score\_filled},
-\code{num\_due}, \code{active\_weeks\_filled}, \code{total\_clicks\_filled},
-toàn bộ đều là hành vi học tập và không yêu cầu thông tin nhân khẩu học --- mà
-vẫn giữ được gần như trọn vẹn hiệu suất của mô hình dùng đủ 15 đặc trưng. Nếu
-ưu tiên hiệu suất cao nhất và chấp nhận thu thập nhiều dữ liệu hơn thì Top-10
-là phương án tốt nhất.
+Tổng hợp lại, \textbf{bộ Top-5 là lựa chọn hợp lý cho triển khai thực tế}. Bộ
+này chỉ cần năm đặc trưng --- \code{num\_submitted\_filled},
+\code{avg\_score\_filled}, \code{num\_due}, \code{active\_weeks\_filled},
+\code{total\_clicks\_filled} --- toàn bộ đều là hành vi học tập và không yêu
+cầu thông tin nhân khẩu học, nhưng vẫn giữ gần như trọn vẹn hiệu suất của mô
+hình dùng đủ 15 đặc trưng. Nếu ưu tiên hiệu suất cao nhất và chấp nhận thu
+thập nhiều dữ liệu hơn, Top-10 là phương án phù hợp hơn.
 
 \section{Hiệu chỉnh ngưỡng và độ tin cậy của kết quả}
 \label{sec:threshold_bootstrap}
 
-Hai phân tích trong phần này bổ sung cho các kết quả đã trình bày, đều thực
-hiện trên \textbf{CatBoost với bộ 15 đặc trưng đầy đủ} --- cấu hình đã cho hiệu
-suất tốt nhất ở Mục~\ref{sec:compare_full}. Phân tích thứ nhất trả lời câu hỏi
-vận hành: có thể bắt thêm bao nhiêu sinh viên có nguy cơ nếu chấp nhận thêm
-cảnh báo nhầm. Phân tích thứ hai trả lời câu hỏi phương pháp: các con số hiệu
-suất trong báo cáo đáng tin đến mức nào.
+Hai phân tích trong phần này bổ sung cho các kết quả đã trình bày và đều được
+thực hiện trên \textbf{CatBoost với bộ 15 đặc trưng đầy đủ}, cấu hình đạt hiệu
+suất tốt nhất ở Mục~\ref{sec:compare_full}. Phân tích thứ nhất xem xét câu hỏi
+vận hành: có thể phát hiện thêm bao nhiêu sinh viên có nguy cơ nếu chấp nhận
+thêm cảnh báo nhầm. Phân tích thứ hai đánh giá độ tin cậy của các chỉ số hiệu
+suất thông qua khoảng tin cậy bootstrap.
 
 \subsection{Hiệu chỉnh ngưỡng phân loại}
 
-Mọi kết quả từ đầu chương đến giờ đều dùng \textbf{ngưỡng mặc định 0.5}: sinh
-viên bị gán nhãn At-risk khi xác suất dự báo vượt quá 0.5. Ngưỡng này tối đa
-hoá F1 --- thực tế F1 đạt đỉnh tại 0.53, gần như trùng với mặc định --- nhưng
-F1 coi precision và recall quan trọng ngang nhau, điều không đúng với bài toán
-cảnh báo sớm. Bỏ sót một sinh viên đang trượt dốc khiến em đó mất cơ hội được
-hỗ trợ, trong khi một cảnh báo nhầm chỉ tốn thêm chút thời gian của cố vấn học
-tập để rà soát. Hai loại sai lầm này rõ ràng \textbf{không cùng chi phí}.
+Các kết quả từ đầu chương đến thời điểm này đều sử dụng \textbf{ngưỡng mặc
+định 0.5}: sinh viên được gán nhãn At-risk khi xác suất dự báo vượt quá 0.5.
+Ngưỡng này gần với điểm tối đa hoá F1 (F1 đạt đỉnh tại 0.53), nhưng F1 mặc
+định xem precision và recall có tầm quan trọng ngang nhau. Giả định này chưa
+phù hợp hoàn toàn với bài toán cảnh báo sớm, vì bỏ sót một sinh viên đang gặp
+rủi ro thường nghiêm trọng hơn việc tạo ra một cảnh báo nhầm cần cố vấn học
+tập rà soát. Do đó, hai loại sai lầm này \textbf{không có cùng chi phí}.
 
 Hình~\ref{fig:threshold_sweep} theo dõi ba chỉ số khi ngưỡng thay đổi từ 0.05
 đến 0.95.
@@ -1911,14 +2066,14 @@ Hình~\ref{fig:threshold_sweep} theo dõi ba chỉ số khi ngưỡng thay đổ
   \label{fig:threshold_sweep}
 \end{figure}
 
-Điểm quan trọng nhất ở hình này là \textbf{F1 gần như đi ngang} trong cả một
-dải ngưỡng rộng, khoảng 0.35--0.60, trong khi precision và recall đổi chỗ cho
-nhau rất mạnh. Nói cách khác, có thể dịch ngưỡng xuống khá nhiều mà chất lượng
-tổng thể của mô hình gần như không suy giảm, đổi lại cán cân lệch hẳn về phía
-bắt được nhiều sinh viên có nguy cơ hơn.
+Điểm đáng chú ý nhất là \textbf{F1 gần như ổn định} trong một dải ngưỡng rộng,
+khoảng 0.35--0.60, trong khi precision và recall thay đổi theo hai hướng
+ngược nhau. Nói cách khác, có thể giảm ngưỡng phân loại mà chất lượng tổng hợp
+của mô hình gần như không suy giảm, đổi lại hệ thống ưu tiên phát hiện nhiều
+sinh viên có nguy cơ hơn.
 
-Bảng~\ref{tab:threshold} và Hình~\ref{fig:cm_threshold} lượng hoá điều đó bằng
-số sinh viên cụ thể.
+Bảng~\ref{tab:threshold} và Hình~\ref{fig:cm_threshold} lượng hoá sự đánh đổi
+này bằng số sinh viên cụ thể.
 
 \input{table_threshold}
 
@@ -1929,50 +2084,52 @@ số sinh viên cụ thể.
   \label{fig:cm_threshold}
 \end{figure}
 
-Đi từ ngưỡng 0.5 xuống 0.4, số sinh viên có nguy cơ bị bỏ sót giảm từ 366
-xuống 297 --- tức \textbf{cứu thêm được 69 em} --- trong khi F1 chỉ giảm
-$0.0068$ (từ $0.7849$ xuống $0.7781$). Cái giá là 135 cảnh báo nhầm phát sinh
-thêm. Nếu tiếp tục hạ xuống 0.2 thì chỉ còn bỏ sót 128 em, nhưng số cảnh báo
-nhầm tăng vọt lên 1.001, tức danh sách cảnh báo phình to đến mức gần một nửa
-là báo động giả (precision chỉ còn $0.5884$).
+Khi giảm ngưỡng từ 0.5 xuống 0.4, số sinh viên At-risk bị bỏ sót giảm từ 366
+xuống 297, tức \textbf{phát hiện thêm 69 sinh viên có nguy cơ}, trong khi F1
+chỉ giảm $0.0068$ (từ $0.7849$ xuống $0.7781$). Đổi lại, hệ thống phát sinh
+thêm 135 cảnh báo nhầm. Nếu tiếp tục hạ ngưỡng xuống 0.2, số sinh viên bị bỏ
+sót chỉ còn 128, nhưng số cảnh báo nhầm tăng lên 1.001; khi đó danh sách cảnh
+báo trở nên quá rộng và precision chỉ còn $0.5884$.
 
 Bảng~\ref{tab:target_recall} tiếp cận theo chiều ngược lại: đặt ra mức recall
 mong muốn rồi tính ngưỡng cần dùng và cái giá phải trả.
 
 \input{table_target_recall}
 
-Cột cuối cùng --- số cảnh báo nhầm phát sinh trên mỗi sinh viên bắt thêm được
---- cho thấy \textbf{quy luật lợi ích cận biên giảm dần} rất rõ: chặng đầu tiên
-chỉ tốn khoảng 2 cảnh báo nhầm cho mỗi em bắt thêm, nhưng khi đẩy recall lên
-95\% thì con số này tăng lên 3{,}45, và nếu hạ ngưỡng xuống dưới 0.2 thì mỗi
-em bắt thêm phải trả giá bằng gần 8 cảnh báo nhầm.
+Cột cuối cùng --- số cảnh báo nhầm phát sinh trên mỗi sinh viên At-risk được
+phát hiện thêm --- thể hiện rõ \textbf{quy luật lợi ích cận biên giảm dần}.
+Ở giai đoạn đầu, mỗi sinh viên được phát hiện thêm đi kèm khoảng 2 cảnh báo
+nhầm; khi đẩy recall lên 95\%, con số này tăng lên 3{,}45; nếu hạ ngưỡng xuống
+dưới 0.2, mỗi sinh viên phát hiện thêm tương ứng gần 8 cảnh báo nhầm.
 
-\textbf{Khuyến nghị.} Vùng ngưỡng \textbf{0.40--0.43} là điểm cân bằng hợp lý
-nhất: recall đạt khoảng 80\%, precision vẫn giữ trên $0.75$ (tức ba trong bốn
-cảnh báo là chính xác), F1 gần như không đổi so với ngưỡng mặc định, và chi phí
-đánh đổi ở mức thấp nhất trong toàn dải. Tuy vậy, lựa chọn cuối cùng nên phụ
-thuộc vào \textbf{năng lực hỗ trợ thực tế} của nhà trường: nếu đội ngũ cố vấn
-đủ sức theo sát khoảng 2.000 sinh viên mỗi kỳ thì có thể hạ sâu hơn để tăng
-recall; nếu nguồn lực eo hẹp, giữ ngưỡng cao giúp danh sách cảnh báo ngắn và
-chính xác hơn.
+\textbf{Khuyến nghị.} Vùng ngưỡng \textbf{0.40--0.43} là điểm cân bằng hợp lý:
+recall đạt khoảng 80\%, precision vẫn trên $0.75$ (tức khoảng ba trong bốn
+cảnh báo là chính xác), F1 gần như không đổi so với ngưỡng mặc định, và chi
+phí đánh đổi ở mức thấp trong toàn dải. Tuy nhiên, ngưỡng vận hành cuối cùng
+nên phụ thuộc vào \textbf{năng lực hỗ trợ thực tế} của nhà trường. Nếu đội ngũ
+cố vấn có thể theo sát khoảng 2.000 sinh viên mỗi kỳ, ngưỡng có thể được hạ
+thêm để tăng recall; nếu nguồn lực hạn chế, ngưỡng cao hơn sẽ giúp danh sách
+cảnh báo ngắn và chính xác hơn.
 
-Một lưu ý về phương pháp: ngưỡng ở đây được khảo sát \textbf{trực tiếp trên tập
-kiểm tra}, nên các con số mang tính minh hoạ cho sự đánh đổi hơn là một ngưỡng
-đã được kiểm định độc lập. Khi triển khai thực tế, ngưỡng nên được chọn bằng
-kiểm định chéo trên tập huấn luyện rồi mới xác nhận lại một lần trên tập kiểm
-tra.
+Về phương pháp, các ngưỡng trên được khảo sát \textbf{trực tiếp trên tập kiểm
+tra}; do đó, kết quả chủ yếu minh hoạ sự đánh đổi giữa precision và recall,
+chưa phải một ngưỡng đã được kiểm định độc lập. Khi triển khai thực tế, ngưỡng
+nên được lựa chọn bằng kiểm định chéo trên tập huấn luyện, sau đó xác nhận lại
+trên tập kiểm tra độc lập.
 
 \subsection{Khoảng tin cậy bootstrap của các chỉ số}
 
 Mọi chỉ số trong báo cáo đều là \textbf{ước lượng điểm} tính trên một tập kiểm
-tra hữu hạn gồm 4.363 bản ghi. Nếu thu thập một tập kiểm tra khác, các con số
-này chắc chắn sẽ khác đi đôi chút. Câu hỏi đặt ra là: khác đi bao nhiêu?
+tra hữu hạn gồm 4.363 bản ghi. Nếu đánh giá trên một tập kiểm tra khác, các
+chỉ số này có thể thay đổi. Vì vậy, cần ước lượng mức độ dao động có thể xảy
+ra quanh các giá trị đã báo cáo.
 
-Phương pháp \textbf{bootstrap} trả lời câu hỏi đó mà không cần thêm dữ liệu
-mới: lấy mẫu lại chính tập kiểm tra \textbf{có hoàn lại}, giữ nguyên kích
-thước, lặp lại $B = 2.000$ lần; mỗi lần tính lại toàn bộ chỉ số. Phân phối của
-2.000 giá trị thu được xấp xỉ phân phối lấy mẫu của chỉ số, từ đó lấy phân vị
-2{,}5\% và 97{,}5\% làm khoảng tin cậy 95\%.
+Phương pháp \textbf{bootstrap} cho phép ước lượng độ bất định này mà không cần
+thu thập thêm dữ liệu. Cụ thể, tập kiểm tra được lấy mẫu lại \textbf{có hoàn
+lại}, giữ nguyên kích thước, và lặp lại $B = 2.000$ lần; ở mỗi lần lặp, toàn
+bộ chỉ số được tính lại. Phân phối của 2.000 giá trị thu được xấp xỉ phân phối
+lấy mẫu của chỉ số, từ đó sử dụng phân vị 2{,}5\% và 97{,}5\% làm khoảng tin
+cậy 95\%.
 
 \input{table_bootstrap_ci}
 
@@ -1986,10 +2143,10 @@ thước, lặp lại $B = 2.000$ lần; mỗi lần tính lại toàn bộ ch�
 
 \begin{itemize}[leftmargin=*]
   \item Trung bình bootstrap trùng khớp với ước lượng điểm tới bốn chữ số thập
-        phân ở cả năm chỉ số --- dấu hiệu cho thấy các ước lượng \textbf{không
-        bị chệch}.
+        phân ở cả năm chỉ số, cho thấy các ước lượng \textbf{không có dấu hiệu
+        bị chệch} đáng kể.
   \item \textbf{Accuracy} và \textbf{ROC-AUC} là hai chỉ số ổn định nhất (độ
-        rộng khoảng tin cậy lần lượt $0.0211$ và $0.0184$), vì được tính trên
+        rộng khoảng tin cậy lần lượt $0.0211$ và $0.0184$), do được tính trên
         toàn bộ 4.363 bản ghi.
   \item \textbf{Precision} và \textbf{recall} của lớp At-risk dao động mạnh
         gấp đôi (độ rộng $0.0407$ và $0.0421$), điều dễ hiểu vì chỉ dựa trên
@@ -1998,36 +2155,36 @@ thước, lặp lại $B = 2.000$ lần; mỗi lần tính lại toàn bộ ch�
 
 Hệ quả quan trọng nhất của phân tích này liên quan đến việc \textbf{xếp hạng
 các mô hình} ở Mục~\ref{sec:compare_full}. Khoảng tin cậy của F1 trải từ
-$0.7692$ đến $0.8012$, tức rộng $0.032$ --- trong khi khoảng cách F1 giữa ba
-mô hình cây chỉ là $0.0022$ đến $0.0037$. Chênh lệch giữa chúng \textbf{nhỏ
-hơn nhiều so với sai số lấy mẫu}, nên kết luận ``CatBoost tốt hơn LightGBM và
-Random Forest'' không đứng vững về mặt thống kê: ba mô hình này nên được xem
-là \textbf{tương đương}, và việc CatBoost dẫn đầu có thể chỉ là ngẫu nhiên của
-riêng tập kiểm tra này. Ngược lại, khoảng cách giữa Logistic Regression
-($0.7591$) và nhóm mô hình cây lớn hơn hẳn độ rộng khoảng tin cậy, nên kết
-luận mô hình tuyến tính thực sự yếu hơn là đáng tin cậy.
+$0.7692$ đến $0.8012$, tức rộng $0.032$, trong khi chênh lệch F1 giữa ba mô
+hình cây chỉ nằm trong khoảng $0.0022$ đến $0.0037$. Các chênh lệch này
+\textbf{nhỏ hơn nhiều so với sai số lấy mẫu}, nên không đủ cơ sở thống kê để
+khẳng định CatBoost thực sự vượt trội hơn LightGBM và Random Forest. Ba mô
+hình này nên được xem là \textbf{tương đương} về hiệu suất, còn việc CatBoost
+dẫn đầu có thể phản ánh dao động riêng của tập kiểm tra. Ngược lại, khoảng
+cách giữa Logistic Regression ($0.7591$) và nhóm mô hình cây lớn hơn đáng kể,
+nên kết luận mô hình tuyến tính yếu hơn là đáng tin cậy hơn.
 
-Nhận xét này không làm mất giá trị của việc chọn CatBoost để triển khai --- vẫn
-cần chọn ra một mô hình, và CatBoost là lựa chọn hợp lý --- nhưng nó cảnh báo
-rằng không nên diễn giải quá mức các chênh lệch nhỏ ở chữ số thập phân thứ ba.
-Muốn khẳng định một mô hình thực sự vượt trội, cần đánh giá trên nhiều tập
-kiểm tra độc lập hoặc dùng kiểm định thống kê trên chênh lệch giữa từng cặp mô
-hình.
+Nhận xét này không phủ nhận tính hợp lý của việc chọn CatBoost để triển khai,
+vì vẫn cần lựa chọn một mô hình đại diện và CatBoost đạt kết quả tốt nhất trên
+tập kiểm tra hiện có. Tuy nhiên, không nên diễn giải quá mức các chênh lệch
+nhỏ ở chữ số thập phân thứ ba. Để khẳng định một mô hình thực sự vượt trội,
+cần đánh giá trên nhiều tập kiểm tra độc lập hoặc sử dụng kiểm định thống kê
+cho chênh lệch giữa từng cặp mô hình.
 
 \section{Diễn giải mô hình bằng SHAP}
 
-Để hiểu sâu hơn cơ chế ra quyết định của mô hình, phương pháp \textbf{SHAP}
-(SHapley Additive exPlanations) được áp dụng cho mô hình có F1 At-risk cao
-nhất trên bộ đặc trưng đầy đủ --- \textbf{CatBoost} --- trên cả ba bộ đặc
-trưng (Full, Top-10, Top-5) để đối chiếu mức độ nhất quán của các diễn giải
-khi số lượng đặc trưng thay đổi.
+Để làm rõ cơ chế ra quyết định của mô hình, phương pháp \textbf{SHAP}
+(SHapley Additive exPlanations) được áp dụng cho \textbf{CatBoost}, mô hình có
+F1 At-risk cao nhất trên bộ đặc trưng đầy đủ. Cơ sở lý thuyết của phương pháp
+này đã được trình bày ở Mục~\ref{sec:shap_theory}. Phân tích được thực hiện
+trên cả ba bộ đặc trưng (Full, Top-10, Top-5) nhằm kiểm tra mức độ nhất quán
+của diễn giải khi số lượng đặc trưng thay đổi.
 
 \subsection{Biểu đồ tổng quan (beeswarm và mean\texorpdfstring{$|$}{|}SHAP\texorpdfstring{$|$}{|})}
 
-Hình~\ref{fig:shap_full} trình bày kết quả SHAP trên bộ đặc trưng đầy đủ: biểu
-đồ beeswarm cho biết chiều và độ phân tán ảnh hưởng của từng đặc trưng lên
-từng sinh viên cụ thể, trong khi biểu đồ cột thể hiện mức độ quan trọng trung
-bình.
+Hình~\ref{fig:shap_full} trình bày kết quả SHAP trên bộ đặc trưng đầy đủ. Biểu
+đồ beeswarm cho biết chiều và độ phân tán ảnh hưởng của từng đặc trưng đối với
+từng sinh viên, trong khi biểu đồ cột thể hiện mức độ quan trọng trung bình.
 
 \begin{figure}[H]
   \centering
@@ -2047,16 +2204,17 @@ bình.
   \label{fig:shap_full}
 \end{figure}
 
-Kết quả SHAP đồng thuận cao với thứ hạng độ quan trọng đặc trưng gốc ở
+Kết quả SHAP nhất quán cao với thứ hạng độ quan trọng đặc trưng ở
 Bảng~\ref{tab:feature_rank}: \code{num\_submitted\_filled},
 \code{avg\_score\_filled} và \code{active\_weeks\_filled} là ba đặc trưng có
-ảnh hưởng lớn nhất. Chiều tác động phù hợp với trực giác nghiệp vụ: giá trị
+ảnh hưởng lớn nhất. Chiều tác động phù hợp với trực giác sư phạm: giá trị
 \code{num\_submitted\_filled} và \code{avg\_score\_filled} \textbf{thấp}
 (màu xanh) đẩy dự báo về phía \textbf{At-risk} (SHAP dương), trong khi giá trị
 \textbf{cao} (màu đỏ/tím) kéo dự báo về phía Pass. Riêng \code{num\_due} (số
 bài đến hạn) thể hiện chiều \textbf{ngược lại}: giá trị cao (màu đỏ) lại đẩy
-về phía At-risk --- hợp lý vì số bài đến hạn cao đồng nghĩa với khối lượng
-công việc dồn lại lớn, thường đi kèm nguy cơ trễ hạn hoặc bỏ bài cao hơn.
+về phía At-risk. Điều này hợp lý vì số bài đến hạn cao đồng nghĩa với khối
+lượng công việc tích lũy lớn, thường đi kèm nguy cơ trễ hạn hoặc bỏ bài cao
+hơn.
 
 Hình~\ref{fig:shap_top10} và Hình~\ref{fig:shap_top5} lặp lại phân tích trên
 với hai bộ đặc trưng rút gọn.
@@ -2096,16 +2254,17 @@ với hai bộ đặc trưng rút gọn.
 \end{figure}
 
 Thứ tự và chiều ảnh hưởng của các đặc trưng còn lại hầu như \textbf{không đổi}
-khi loại bỏ dần các đặc trưng ít quan trọng --- một bằng chứng bổ sung cho
+khi loại bỏ dần các đặc trưng ít quan trọng. Đây là bằng chứng bổ sung cho
 tính ổn định đã quan sát ở Bảng~\ref{tab:compare_featuresets}, đồng thời cho
-thấy các đặc trưng bị loại bỏ đóng góp thông tin trùng lặp hoặc không đáng kể.
+thấy các đặc trưng bị loại bỏ chủ yếu đóng góp thông tin trùng lặp hoặc không
+đáng kể.
 
 \subsection{Diễn giải cục bộ: hai trường hợp minh hoạ}
 
 Để minh hoạ cách mô hình đưa ra quyết định ở cấp độ từng cá nhân, Hình~
 \ref{fig:waterfall} trình bày biểu đồ waterfall của hai sinh viên đại diện,
-sử dụng mô hình CatBoost trên bộ đặc trưng đầy đủ: một trường hợp bị đẩy mạnh
-về phía At-risk và một trường hợp bị đẩy mạnh về phía Pass.
+sử dụng mô hình CatBoost trên bộ đặc trưng đầy đủ: một trường hợp được dự báo
+mạnh về phía At-risk và một trường hợp được dự báo mạnh về phía Pass.
 
 \begin{figure}[H]
   \centering
@@ -2131,63 +2290,63 @@ về phía At-risk và một trường hợp bị đẩy mạnh về phía Pass.
         (\code{num\_due} $= 9$). Hai yếu tố này đóng góp lần lượt $+2.60$ và
         $+3.01$ vào điểm số dự báo; cộng thêm số tuần hoạt động thấp
         (\code{active\_weeks\_filled} $= 6$, đóng góp $+1.24$), tổng điểm bị
-        đẩy lên $8.84$ --- rất cao so với giá trị nền $0.92$, tương ứng xác
-        suất At-risk gần như tuyệt đối.
+        đẩy lên $8.84$, cao hơn đáng kể so với giá trị nền $0.92$, tương ứng
+        với xác suất At-risk rất cao.
   \item \textbf{Trường hợp Pass:} sinh viên có điểm trung bình cao
         (\code{avg\_score\_filled} $= 95.33$, kéo điểm số giảm $1.97$) và số
         tuần hoạt động nhiều (\code{active\_weeks\_filled} $= 25$, giảm
-        $1.17$), cộng thêm lượt truy cập rất lớn
+        $1.17$), cộng thêm lượt truy cập cao
         (\code{total\_clicks\_filled} $= 9\,115$, giảm $0.67$) --- tổng hợp
-        lại cho điểm số rất thấp ($-5.18$), tương ứng xác suất Pass gần như
-        tuyệt đối.
+        lại tạo ra điểm số rất thấp ($-5.18$), tương ứng với xác suất Pass rất
+        cao.
 \end{itemize}
 
 Hai ví dụ trên cho thấy mô hình đưa ra quyết định dựa trên những tín hiệu phù
 hợp với trực giác sư phạm: mức độ hoàn thành bài tập và điểm số tích luỹ là
-yếu tố quyết định, đúng như đã được xác nhận qua phân tích độ quan trọng đặc
-trưng ở quy mô toàn cục.
+những yếu tố quyết định, thống nhất với phân tích độ quan trọng đặc trưng ở
+quy mô toàn cục.
 
 \section{Kết luận}
 
-Từ toàn bộ quá trình nghiên cứu --- phân tích khám phá dữ liệu, cơ sở lý
-thuyết, xây dựng và so sánh mô hình --- có thể rút ra các kết luận chính sau:
+Từ quá trình tiền xử lý dữ liệu, xây dựng đặc trưng, huấn luyện, so sánh và
+diễn giải mô hình, có thể rút ra các kết luận chính sau:
 
 \begin{itemize}[leftmargin=*]
-  \item Việc gộp nhãn Fail và Withdrawn thành nhóm At-risk và giới hạn dữ liệu
-        về mốc dự đoán 150 ngày đưa bài toán về dạng phân loại nhị phân, mất
-        cân bằng nhãn ở mức vừa phải (At-risk chiếm khoảng 36\%) --- được
-        xử lý hiệu quả bằng cách kết hợp SMOTE và trọng số lớp, đồng thời tinh
-        chỉnh cả hai kỹ thuật này cùng với siêu tham số của từng mô hình thông
-        qua Optuna.
+  \item Việc gộp nhãn Fail và Withdrawn thành nhóm At-risk, đồng thời giới hạn
+        dữ liệu tại mốc dự đoán 150 ngày, đưa bài toán về dạng phân loại nhị
+        phân với mức mất cân bằng nhãn vừa phải (At-risk chiếm khoảng 36\%).
+        Vấn đề này được xử lý bằng cách kết hợp SMOTE và trọng số lớp, đồng
+        thời tinh chỉnh hai kỹ thuật này cùng với siêu tham số của từng mô hình
+        thông qua Optuna.
   \item Trong số bốn thuật toán thử nghiệm, \textbf{CatBoost} đạt F1 At-risk
         cao nhất trên bộ đặc trưng đầy đủ (0.7849), đồng thời dẫn đầu cả về
         accuracy và precision; LightGBM bám sát ngay phía sau và giữ ROC-AUC
         cao nhất. Hai mô hình boosting này vượt trội hơn Logistic Regression
-        một cách nhất quán trên mọi bộ đặc trưng, đúng như dự đoán từ đặc tính
-        lý thuyết của từng thuật toán ở Chương~\ref{part:theory}, dù khoảng
-        cách với Random Forest là không lớn.
+        một cách nhất quán trên mọi bộ đặc trưng, phù hợp với đặc tính lý
+        thuyết của từng thuật toán ở Chương~\ref{part:theory}; tuy nhiên,
+        khoảng cách giữa nhóm mô hình cây là nhỏ và cần được diễn giải thận
+        trọng.
   \item Hiệu suất mô hình \textbf{ổn định cao} khi giảm số lượng đặc trưng từ
-        15 xuống chỉ còn 5 --- thậm chí CatBoost trên bộ Top-10 đạt F1 At-risk
-        cao nhất toàn thực nghiệm (0.7875). Kết quả này gợi ý một bộ
+        15 xuống 5; thậm chí CatBoost trên bộ Top-10 đạt F1 At-risk cao nhất
+        trong toàn bộ thực nghiệm (0.7875). Kết quả này gợi ý một bộ
         \textbf{5 đặc trưng} (\code{num\_submitted\_filled},
         \code{avg\_score\_filled}, \code{num\_due}, \code{active\_weeks\_filled},
         \code{total\_clicks\_filled}) --- toàn bộ đều là đặc trưng hành vi học
-        tập, không yêu cầu thông tin nhân khẩu học --- là đủ để xây dựng một hệ
-        thống cảnh báo sớm gọn nhẹ, dễ triển khai và duy trì.
-  \item Phân tích SHAP xác nhận các dự báo của mô hình dựa trên những tín hiệu
-        phù hợp với trực giác sư phạm --- mức độ hoàn thành bài tập, điểm số
-        tích luỹ và khối lượng công việc còn tồn đọng --- và các diễn giải này
-        giữ nguyên tính nhất quán qua cả ba bộ đặc trưng.
+        tập, không yêu cầu thông tin nhân khẩu học --- có thể đủ để xây dựng
+        một hệ thống cảnh báo sớm gọn nhẹ, dễ triển khai và duy trì.
+  \item Phân tích SHAP cho thấy dự báo của mô hình dựa trên những tín hiệu phù
+        hợp với trực giác sư phạm, gồm mức độ hoàn thành bài tập, điểm số tích
+        luỹ và khối lượng công việc còn tồn đọng. Các diễn giải này giữ được
+        tính nhất quán qua cả ba bộ đặc trưng.
 \end{itemize}
 
-\textbf{Hạn chế và hướng phát triển.} Nghiên cứu hiện chỉ đánh giá tại một mốc
-thời gian duy nhất --- 150 ngày; một hướng mở rộng tự nhiên là huấn luyện và so
-sánh mô hình tại \textbf{nhiều mốc dự đoán} khác nhau để xác định thời điểm
+\textbf{Hạn chế và hướng phát triển.} Nghiên cứu hiện tập trung đánh giá
+chuyên sâu tại mốc 150 ngày. Một hướng mở rộng tự nhiên là huấn luyện và so
+sánh mô hình tại \textbf{nhiều mốc dự đoán} khác nhau, nhằm xác định thời điểm
 cảnh báo sớm nhất mà mô hình vẫn đạt độ tin cậy chấp nhận được, đồng thời theo
-dõi cách các dự báo về cùng một sinh viên thay đổi theo thời gian. Bên cạnh
-đó, việc \textbf{hiệu chỉnh ngưỡng phân loại} theo chi phí thực tế của việc bỏ
-sót so với cảnh báo nhầm, cũng như thử nghiệm mô hình trên dữ liệu của các cơ
-sở đào tạo khác, là những bước cần thiết trước khi đưa hệ thống vào vận hành
-thực tế.
+dõi cách dự báo đối với cùng một sinh viên thay đổi theo thời gian. Bên cạnh
+đó, việc \textbf{hiệu chỉnh ngưỡng phân loại} theo chi phí thực tế của bỏ sót
+và cảnh báo nhầm, cùng với thử nghiệm mô hình trên dữ liệu của các cơ sở đào
+tạo khác, là những bước cần thiết trước khi đưa hệ thống vào vận hành thực tế.
 
 \end{document}

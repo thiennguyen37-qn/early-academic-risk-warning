@@ -1916,20 +1916,19 @@ tra khi sử dụng đầy đủ 15 đặc trưng.
 
 \begin{itemize}[leftmargin=*]
   \item \textbf{CatBoost} dẫn đầu ở ba chỉ số: accuracy 0.8501, precision
-        At-risk 0.8055 và F1 At-risk 0.7849. Mô hình này tạo ra cảnh báo
-        đáng tin cậy nhất và đạt cân bằng tốt nhất giữa precision và recall.
+        At-risk 0.8055 và F1 At-risk 0.7849. Tuy nhiên, recall lại đạt giá trị thấp nhất,
+        thậm chí thấp hơn cả Logistic Regression.
   \item \textbf{LightGBM} đạt ROC-AUC cao nhất 0.9116, nhưng chênh lệch so
         với CatBoost, 0.9114, là không đáng kể; F1 At-risk của mô hình này,
-        0.7827, cũng chỉ thấp hơn CatBoost khoảng 0.002 điểm.
+        0.7827, cũng chỉ thấp hơn CatBoost khoảng 0.2%.
   \item \textbf{Random Forest} có recall At-risk cao nhất 0.7819, tức bỏ sót
         ít sinh viên có nguy cơ nhất, nhưng phải đánh đổi bằng precision thấp
         hơn CatBoost. Nhìn chung, ba mô hình cây cho kết quả rất sát nhau với
-        F1 nằm trong khoảng hẹp 0.7812--0.7849; không mô hình nào vượt trội rõ
+        F1 nằm trong khoảng hẹp 0.781--0.785; không mô hình nào vượt trội rõ
         rệt.
-  \item \textbf{Logistic Regression} có hiệu suất thấp nhất ở mọi chỉ số, phù
-        hợp với kỳ vọng từ Chương~\ref{part:theory} và Chương~\ref{part:eda}:
-        dữ liệu có quan hệ phi tuyến và đa cộng tuyến giữa các đặc trưng hành
-        vi trực tuyến, những đặc điểm mà mô hình tuyến tính khó nắm bắt đầy đủ.
+  \item \textbf{Logistic Regression} có hiệu suất thấp nhất ở hầu hết các chỉ số, trong khi 
+        các mô hình bagging và boosting đều cho kết quả tốt hơn, cho thấy khả năng khai thác 
+        các quan hệ phức tạp trong dữ liệu hiệu quả hơn.
 \end{itemize}
 
 Ma trận nhầm lẫn của từng mô hình trên tập kiểm tra được thể hiện ở
@@ -1964,11 +1963,12 @@ Hình~\ref{fig:cm_full}.
   \label{fig:cm_full}
 \end{figure}
 
-Nhìn chung, phần lớn sai số của cả bốn mô hình nằm ở việc \textbf{bỏ sót sinh
-viên At-risk}: dự báo Pass trong khi thực tế At-risk. Loại lỗi này nhiều hơn
-so với cảnh báo nhầm, tức dự báo At-risk trong khi thực tế Pass. Đây là điểm cần lưu ý khi
-triển khai: có thể hạ ngưỡng phân loại để tăng recall, chấp nhận thêm một số
-cảnh báo nhầm nhằm giảm rủi ro bỏ sót sinh viên cần hỗ trợ.
+Nhìn chung, cả bốn mô hình đều phân loại tốt hai nhóm Pass và At-risk, với số dự đoán đúng
+chiếm phần lớn. CatBoost nhận diện nhóm Pass tốt nhất với 2.516 trường hợp đúng,
+nhưng đồng thời bỏ sót nhiều sinh viên At-risk nhất (366 trường hợp). Ngược lại, Random Forest
+nhận diện nhóm At-risk tốt nhất với 1.219 trường hợp đúng và chỉ bỏ sót 340 trường hợp. 
+LightGBM cho kết quả khá cân bằng giữa hai nhóm - tương tự như Random Forest, 
+trong khi Logistic Regression có số lỗi phân loại tổng thể cao nhất.
 
 \section{Độ quan trọng của đặc trưng}
 \label{sec:feat_importance}

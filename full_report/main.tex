@@ -2022,8 +2022,8 @@ cạnh nhau kết quả của CatBoost trên ba bộ đặc trưng.
 
 \begin{itemize}[leftmargin=*]
   \item Hiệu suất \textbf{gần như không đổi} trên cả ba bộ đặc trưng: F1
-        At-risk chỉ dao động trong khoảng $0.7825$--$0.7875$, với biên độ
-        $0.005$; accuracy cũng chỉ chênh $0.004$. Kết quả này củng cố nhận
+        At-risk chỉ dao động trong khoảng $0.7825$--$0.7875$, trong khi accuracy cũng chỉ 
+        chênh $0.004$. Kết quả này củng cố nhận
         định ở Mục~\ref{sec:feat_importance}: phần lớn sức mạnh dự báo tập
         trung ở một nhóm nhỏ đặc trưng hành vi động.
   \item Đáng chú ý, bộ \textbf{Top-10 đạt kết quả cao hơn bộ đầy đủ} ở ba trên
@@ -2036,7 +2036,7 @@ cạnh nhau kết quả của CatBoost trên ba bộ đặc trưng.
         trưng bị loại chủ yếu đóng góp nhiễu hoặc thông tin dư thừa.
   \item Khi tiếp tục rút gọn xuống \textbf{Top-5}, hiệu suất bắt đầu giảm nhẹ
         nhưng vẫn ở mức không đáng kể: F1 thấp hơn bộ đầy đủ đúng $0.0024$ và
-        thấp hơn Top-10 $0.0050$. Đổi lại, số đặc trưng cần thu thập giảm từ
+        thấp hơn Top-10 $0.005$. Đổi lại, số đặc trưng cần thu thập giảm đáng kể từ
         15 xuống 5.
   \item Xu hướng chung khi giảm đặc trưng là \textbf{precision giảm, recall
         tăng}: precision giảm từ $0.8055$ ở Full xuống $0.7910$ ở Top-5, trong
@@ -2071,7 +2071,7 @@ Ngưỡng này gần với điểm tối đa hoá F1; F1 đạt đỉnh tại 0.
 định xem precision và recall có tầm quan trọng ngang nhau. Giả định này chưa
 phù hợp hoàn toàn với bài toán cảnh báo sớm, vì bỏ sót một sinh viên đang gặp
 rủi ro thường nghiêm trọng hơn việc tạo ra một cảnh báo nhầm cần cố vấn học
-tập rà soát. Do đó, hai loại sai lầm này \textbf{không có cùng chi phí}.
+tập rà soát. 
 
 Hình~\ref{fig:threshold_sweep} theo dõi ba chỉ số khi ngưỡng thay đổi từ 0.05
 đến 0.95.

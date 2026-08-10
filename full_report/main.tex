@@ -2,7 +2,7 @@
 % Biên dịch: xelatex main.tex (chạy 2 lần để cập nhật mục lục & tham chiếu)
 %
 % Báo cáo hoàn chỉnh, gộp từ ba phần đã biên soạn riêng:
-%   docs/algorithms_theory   -> Chương 1 (Cơ sở lý thuyết các thuật toán)
+%   docs/algorithms_theory   -> Chương 1 (Cơ sở lý thuyết và phương pháp hỗ trợ)
 %   docs/eda_report          -> Chương 2 (Phân tích khám phá dữ liệu)
 %   docs/build_model_report  -> Chương 3 (Xây dựng và so sánh mô hình)
 % Hình và bảng được sao chép nguyên trạng từ ba thư mục trên; xem các
@@ -87,12 +87,15 @@
 
   \vspace{0.5cm}
   \rule{\textwidth}{0.4pt}\\[0.55cm]
-  {\Large\bfseries ỨNG DỤNG CÁC MÔ HÌNH HỌC MÁY\\[6pt]
-   TRONG CẢNH BÁO SỚM RỦI RO HỌC TẬP\par}
+  {\Large\bfseries CẢNH BÁO SỚM RỦI RO HỌC TẬP\\[5pt]
+   TỪ DỮ LIỆU TƯƠNG TÁC TRỰC TUYẾN:\\[5pt]
+   XÂY DỰNG, SO SÁNH VÀ DIỄN GIẢI\\[5pt]
+   CÁC MÔ HÌNH HỌC MÁY\\[5pt]
+   TRÊN BỘ DỮ LIỆU OULAD\par}
   \vspace{0.5cm}
   \rule{\textwidth}{0.4pt}
 
-  \vspace{2.4cm}
+  \vspace{1.8cm}
 
   {\normalsize
   \begin{tabular}{r@{\hspace{0.5em}}l}
@@ -146,10 +149,12 @@ bảy học phần được lựa chọn.
 Toàn bộ nghiên cứu được tổ chức thành ba chương kế tiếp nhau:
 
 \begin{enumerate}[leftmargin=*]
-  \item \textbf{Cơ sở lý thuyết}: trình bày nguyên lý hoạt động, công thức
-        toán học cốt lõi của bốn thuật toán
-        học máy được sử dụng trong nghiên cứu --- Logistic Regression, Random
-        Forest, CatBoost và LightGBM.
+  \item \textbf{Cơ sở lý thuyết}: trình bày nguyên lý hoạt động và công thức
+        toán học cốt lõi của bốn thuật toán học máy được sử dụng trong nghiên
+        cứu --- Logistic Regression, Random Forest, CatBoost và LightGBM ---
+        đồng thời bổ sung cơ sở cho hai phương pháp hỗ trợ thực nghiệm:
+        Bayesian Optimization trong tinh chỉnh siêu tham số và SHAP trong diễn
+        giải mô hình.
   \item \textbf{Phân tích khám phá dữ liệu (EDA)}: tìm hiểu cấu trúc, quy mô và
         chất lượng của bộ dữ liệu OULAD; xây dựng tập dữ liệu dạng
         \textit{panel} (snapshot theo nhiều mốc thời gian) phù hợp với bài
@@ -157,36 +162,40 @@ Toàn bộ nghiên cứu được tổ chức thành ba chương kế tiếp nha
         học, hành vi học tập và kết quả cuối khoá.
   \item \textbf{Xây dựng và so sánh mô hình}: tiền xử lý dữ liệu, khảo sát sơ
         bộ hiệu suất theo thời gian, huấn luyện và tinh chỉnh bốn thuật toán
-        kết hợp kỹ thuật xử lý mất cân bằng nhãn, so sánh hiệu suất, đánh giá
-        độ ổn định khi rút gọn đặc trưng, và diễn giải mô hình bằng SHAP.
+        bằng Bayesian Optimization kết hợp kỹ thuật xử lý mất cân bằng nhãn,
+        so sánh hiệu suất, đánh giá độ ổn định khi rút gọn đặc trưng, hiệu
+        chỉnh ngưỡng phân loại và diễn giải mô hình bằng SHAP.
 \end{enumerate}
 
 % =====================================================================
-%  CHƯƠNG 1 — CƠ SỞ LÝ THUYẾT CÁC THUẬT TOÁN
+%  CHƯƠNG 1 — CƠ SỞ LÝ THUYẾT VÀ PHƯƠNG PHÁP HỖ TRỢ
 % =====================================================================
-\chapter{Cơ sở lý thuyết các thuật toán học máy}
+\chapter{Cơ sở lý thuyết}
 \label{part:theory}
 
-\section{Tổng quan bốn thuật toán}
+\section{Tổng quan nội dung lý thuyết}
 
-Phần này trình bày bốn thuật toán học máy có giám sát gồm Logistic Regression,
-Random Forest, CatBoost và LightGBM. Mức độ phù hợp của từng thuật toán đối với bộ dữ liệu trong bài toán
-cảnh báo sớm rủi ro học tập sẽ được phân tích và đánh giá thông qua quá trình
-phân tích khám phá dữ liệu ở Chương~\ref{part:eda}. Bốn thuật toán này đại diện
-cho ba hướng tiếp cận tiêu biểu trong học máy có giám sát:
+Chương này trình bày nền tảng lý thuyết cho toàn bộ quy trình thực nghiệm ở
+các chương sau. Nội dung không chỉ bao gồm bốn thuật toán học máy có giám sát
+được dùng để dự báo rủi ro học tập, mà còn bao gồm hai phương pháp hỗ trợ quan
+trọng: Bayesian Optimization để tinh chỉnh siêu tham số và SHAP để diễn giải
+dự báo của mô hình.
+
+Bốn thuật toán được đưa vào so sánh gồm Logistic Regression, Random Forest,
+CatBoost và LightGBM. Các thuật toán này đại diện cho ba hướng tiếp cận tiêu
+biểu trong học máy có giám sát:
 
 \begin{itemize}[leftmargin=*]
   \item \textbf{Mô hình tuyến tính} (Logistic Regression) --- đơn giản, dễ diễn giải và được sử dụng làm mô hình cơ sở (baseline).
   \item \textbf{Học theo phương pháp bagging} (Random Forest) --- kết hợp nhiều cây quyết định được huấn luyện độc lập nhằm giảm phương sai và cải thiện khả năng tổng quát hóa.
-  \item \textbf{Học theo phương pháp boosting} (CatBoost và LightGBM) --- xây dựng tuần tự các mô hình yếu, trong đó mỗi mô hình kế tiếp tập trung khắc phục sai số của các mô hình trước, với hai cơ chế hiện thực khác nhau.
+  \item \textbf{Học theo phương pháp boosting} (CatBoost và LightGBM) --- xây dựng tuần tự các mô hình yếu, trong đó mỗi mô hình kế tiếp tập trung khắc phục sai số của các mô hình trước.
 \end{itemize}
 
-Đối với mỗi thuật toán, các mục tiếp theo sẽ trình bày nguyên lý hoạt động,
-các công thức toán học cốt lõi, những cơ chế đặc trưng, cùng với phân tích ưu
-điểm và hạn chế trong bối cảnh bài toán cảnh báo sớm rủi ro học tập. Ngoài ra,
-chương này cũng trình bày hai phương pháp hỗ trợ quan trọng cho thực nghiệm:
-Bayesian Optimization dùng để tinh chỉnh siêu tham số và SHAP dùng để diễn
-giải mô hình.
+Đối với mỗi thuật toán, các mục tiếp theo trình bày nguyên lý hoạt động, công
+thức toán học cốt lõi và những cơ chế đặc trưng trong bối cảnh bài toán cảnh
+báo sớm rủi ro học tập. Sau phần thuật toán, chương tiếp tục trình bày
+Bayesian Optimization và SHAP để làm rõ cơ sở lý thuyết cho hai bước quan
+trọng ở Chương~\ref{part:model}: tinh chỉnh mô hình và diễn giải kết quả.
 
 \section{Hồi quy Logistic (Logistic Regression)}
 
@@ -252,8 +261,8 @@ tường minh:
 
 \label{sec:logreg_reg}
 \noindent\textbf{Regularization.} Để hạn chế hiện tượng overfitting khi số đặc trưng lớn hoặc các đặc
-trưng có tương quan mạnh, một số hạng điều chuẩn được cộng thêm vào hàm mục
-tiêu. Với điều chuẩn $L_2$ (Ridge), bài toán tối ưu trở thành:
+trưng có tương quan mạnh, một số hạng regularization được cộng thêm vào hàm
+mục tiêu. Với regularization $L_2$ (Ridge), bài toán tối ưu trở thành:
 
 \[
   \min_{\mathbf{w}, b} \; \frac{1}{2} \lVert \mathbf{w} \rVert_2^2
@@ -382,7 +391,7 @@ cây thường không hoàn toàn tương quan. Việc kết hợp dự báo t�
 giảm ảnh hưởng của nhiễu ngẫu nhiên, từ đó làm giảm phương sai của mô hình tổng
 thể trong khi chỉ làm tăng độ chệch ở mức không đáng kể.
 
-\subsection{Random Forest}
+\subsection{Random Forest và độ quan trọng đặc trưng}
 
 Random Forest được xây dựng dựa trên phương pháp bagging nhưng bổ sung thêm
 một cơ chế lựa chọn đặc trưng ngẫu nhiên trong quá trình xây dựng từng cây
@@ -399,7 +408,6 @@ Bằng cách giới hạn số đặc trưng được xem xét tại mỗi nút,
 những cây đa dạng hơn, từ đó giảm phương sai của mô hình và cải thiện khả năng
 tổng quát hóa trên dữ liệu chưa quan sát.
 
-\subsection{Độ quan trọng đặc trưng}
 \label{sec:rf_importance}
 
 Ngoài khả năng dự báo, Random Forest còn cung cấp một thước đo để đánh giá mức
@@ -499,7 +507,7 @@ dựa trên nguyên lý Gradient Boosting nhưng khác nhau ở cách xây dựn
 lý dữ liệu nhằm cải thiện độ chính xác cũng như khả năng tổng quát hóa của mô
 hình.
 
-\subsection{Ordered Boosting}
+\subsection{Ordered Boosting và Ordered Target Statistics}
 
 Một hạn chế của Gradient Boosting truyền thống là hiện tượng
 \textbf{prediction shift}. Trong quá trình huấn luyện, giả phần dư của một mẫu
@@ -515,7 +523,8 @@ mỗi mẫu luôn được tạo ra bởi một mô hình chưa từng quan sát
 đó, giúp giảm hiện tượng prediction shift và hạn chế rò rỉ thông tin trong quá
 trình huấn luyện.
 
-\subsection{Ordered Target Statistics cho đặc trưng phân loại}
+\medskip
+\noindent\textbf{Ordered Target Statistics cho đặc trưng phân loại.}
 
 Đối với các đặc trưng phân loại có nhiều mức giá trị, CatBoost biểu diễn mỗi
 mức giá trị bằng một \textbf{thống kê mục tiêu} (target statistic), phản ánh
@@ -623,7 +632,7 @@ liệu nhỏ. Vì vậy, LightGBM thường kết hợp các siêu tham số nh�
 \code{num\_leaves}, \code{max\_depth} và \code{min\_child\_samples} để kiểm
 soát độ phức tạp của cây.
 
-\subsection{GOSS --- Gradient-based One-Side Sampling}
+\subsection{Tối ưu hiệu quả huấn luyện: GOSS và EFB}
 
 Trong Gradient Boosting, các mẫu có giá trị gradient lớn thường là những mẫu
 mà mô hình dự báo chưa tốt, do đó chứa nhiều thông tin hơn cho việc xây dựng
@@ -646,7 +655,8 @@ Nhờ chỉ xử lý một phần dữ liệu nhưng vẫn giữ lại hầu h�
 GOSS giúp giảm đáng kể thời gian huấn luyện trong khi chỉ ảnh hưởng rất nhỏ đến
 chất lượng của điểm phân chia được lựa chọn.
 
-\subsection{EFB --- Exclusive Feature Bundling}
+\medskip
+\noindent\textbf{Exclusive Feature Bundling (EFB).}
 
 Đối với các tập dữ liệu có số lượng lớn đặc trưng thưa (sparse features),
 nhiều đặc trưng gần như không đồng thời nhận giá trị khác 0, chẳng hạn các đặc
@@ -668,22 +678,23 @@ thời vẫn duy trì độ chính xác của mô hình trong hầu hết các t
 \label{sec:bayes_opt}
 
 Trong các mô hình học máy, hiệu suất dự báo phụ thuộc đáng kể vào lựa chọn
-\textbf{siêu tham số} (hyperparameters), chẳng hạn hệ số điều chuẩn của
+\textbf{siêu tham số} (hyperparameters), chẳng hạn hệ số regularization của
 Logistic Regression, số cây và độ sâu của Random Forest, learning rate của
-CatBoost hoặc số lá của LightGBM. Khác với tham số mô hình được học trực tiếp
-từ dữ liệu, siêu tham số phải được xác định trước hoặc lựa chọn thông qua một
-quy trình tìm kiếm bên ngoài. Nếu thử toàn bộ lưới giá trị (grid search), chi
-phí tính toán tăng rất nhanh khi số siêu tham số lớn; nếu lấy mẫu ngẫu nhiên
-(random search), nhiều lần thử có thể rơi vào các vùng kém triển vọng của
-không gian tìm kiếm.
+CatBoost hoặc số lá của LightGBM. 
 
-\textbf{Bayesian Optimization} là một phương pháp tối ưu hộp đen
-(black-box optimization), phù hợp khi hàm mục tiêu tốn kém để đánh giá và
-không có dạng đạo hàm tường minh. Trong bối cảnh tinh chỉnh mô hình, hàm mục
-tiêu thường là một chỉ số đánh giá trên validation hoặc cross-validation, ví
-dụ F1-score của lớp At-risk. Mỗi lần đánh giá một bộ siêu tham số cần huấn
-luyện và kiểm định mô hình, do đó số lượt thử nghiệm nên được sử dụng một cách
-tiết kiệm.
+\textbf{Bayesian Optimization} là một phương pháp tối ưu hóa phù hợp cho các
+bài toán trong đó việc đánh giá hàm mục tiêu có chi phí tính toán cao và không
+thể biểu diễn trực tiếp dưới dạng công thức hoặc đạo hàm. Trong bài toán tinh
+chỉnh siêu tham số mô hình học máy, hàm mục tiêu thường là một chỉ số đánh giá
+được tính trên tập validation hoặc thông qua cross-validation, chẳng hạn như
+F1-score của lớp At-risk.
+
+Khác với các phương pháp tìm kiếm đơn giản như Grid Search hoặc Random Search,
+Bayesian Optimization xây dựng một mô hình xấp xỉ cho hàm mục tiêu dựa trên các
+lần đánh giá trước đó, sau đó lựa chọn những bộ siêu tham số có khả năng mang
+lại hiệu quả cao để tiếp tục thử nghiệm. Do mỗi lần đánh giá tương ứng với việc
+huấn luyện và kiểm định lại mô hình, phương pháp này giúp giảm số lần thử
+nghiệm cần thiết trong khi vẫn có khả năng tìm kiếm được cấu hình tốt.
 
 Giả sử $\lambda$ là một cấu hình siêu tham số cần tối ưu và $f$ là hàm mục tiêu
 cần cực đại, bài toán có thể viết dưới dạng:
@@ -708,70 +719,68 @@ cân bằng giữa hai mục tiêu:
         khả năng chứa nghiệm tốt hơn.
 \end{itemize}
 
-Một lựa chọn phổ biến cho hàm thu nhận là \textit{Expected Improvement} (EI),
-đo kỳ vọng cải thiện so với giá trị tốt nhất hiện có $f_{\text{best}}$:
+Trong Bayesian Optimization, hàm thu nhận \textit{Expected Improvement} (EI)
+đo mức cải thiện kỳ vọng của một cấu hình siêu tham số mới so với giá trị tốt
+nhất hiện tại $f_{\text{best}}$:
 
 \[
-  \mathrm{EI}(\lambda)
+  \text{EI}(\lambda)
   =
   \mathbb{E}
   \left[
-    \max\big(f(\lambda) - f_{\text{best}}, 0\big)
+    \max(f(\lambda)-f_{\text{best}},0)
   \right].
 \]
 
-Điểm có EI cao vừa có giá trị dự báo kỳ vọng tốt, vừa có độ bất định đủ lớn để
-đáng được thử thêm. Nhờ cơ chế này, Bayesian Optimization thường tìm được cấu
-hình tốt với ít lượt đánh giá hơn so với grid search, đặc biệt khi không gian
-siêu tham số có nhiều chiều hoặc chứa cả biến liên tục, rời rạc và phân loại.
+EI cân bằng giữa hai yếu tố: khai thác các vùng có khả năng cho kết quả tốt và
+khám phá các vùng chưa được đánh giá đầy đủ. Nhờ tận dụng thông tin từ những
+lần thử nghiệm trước, Bayesian Optimization có thể tìm kiếm cấu hình siêu tham
+số hiệu quả với ít lần đánh giá hơn so với các phương pháp tìm kiếm trực tiếp.
 
-Trong thực nghiệm, nghiên cứu sử dụng \textbf{Optuna} với thuật toán lấy mẫu
+Trong thực nghiệm, nghiên cứu sử dụng \textbf{Optuna} với bộ lấy mẫu
 \textbf{TPE} (Tree-structured Parzen Estimator), một biến thể của Bayesian
-Optimization. TPE mô hình hoá phân phối của các siêu tham số trong hai nhóm:
-nhóm cho kết quả tốt và nhóm còn lại. Nếu quy bài toán về tối thiểu hoá một
-đại lượng mất mát $y$, TPE không mô hình trực tiếp
-$p(y \mid \lambda)$ mà ước lượng hai mật độ
-$p(\lambda\mid y < y^{*})$ và
-$p(\lambda\mid y \ge y^{*})$, trong đó $y^{*}$ là một ngưỡng phân
-vị của các giá trị đã quan sát. Các cấu hình mới được ưu tiên chọn khi chúng
-có khả năng cao thuộc nhóm tốt và khả năng thấp thuộc nhóm kém.
+Optimization. Thay vì mô hình hóa trực tiếp giá trị mục tiêu, TPE ước lượng
+phân phối của các bộ siêu tham số dựa trên kết quả quan sát được, ưu tiên những
+cấu hình có khả năng thuộc nhóm cho hiệu quả tốt. Cơ chế này giúp giảm số lần
+huấn luyện cần thiết khi tìm kiếm trong không gian siêu tham số.
 
-Ưu điểm chính của Bayesian Optimization là tận dụng thông tin từ lịch sử thử
-nghiệm để định hướng quá trình tìm kiếm, nhờ đó tiết kiệm chi phí huấn luyện.
-Tuy nhiên, kết quả vẫn phụ thuộc vào miền tìm kiếm ban đầu, số lượt thử nghiệm
-và độ ổn định của chỉ số đánh giá. Vì vậy, trong các bài toán có dữ liệu mất
-cân bằng, hàm mục tiêu cần được lựa chọn phù hợp với mục tiêu vận hành; trong
-báo cáo này, F1-score của lớp At-risk được sử dụng để cân bằng giữa precision
-và recall.
+Do bài toán cảnh báo sớm có dữ liệu mất cân bằng giữa hai lớp, tiêu chí tối ưu
+cần phản ánh khả năng phát hiện sinh viên có nguy cơ. Vì vậy, nghiên cứu sử
+dụng F1-score của lớp At-risk làm hàm mục tiêu, nhằm cân bằng giữa precision và
+recall thay vì chỉ tối ưu độ chính xác tổng thể.
 
 \section{Diễn giải mô hình bằng SHAP}
 \label{sec:shap_theory}
 
-Các mô hình phi tuyến như Random Forest, CatBoost và LightGBM thường đạt hiệu
-suất cao nhưng khó diễn giải hơn mô hình tuyến tính. Trong bài toán cảnh báo
-sớm rủi ro học tập, khả năng diễn giải có vai trò quan trọng: nhà trường không
-chỉ cần biết sinh viên nào có nguy cơ, mà còn cần hiểu những yếu tố nào đang
-đóng góp vào dự báo để thiết kế can thiệp phù hợp. \textbf{SHAP} (SHapley
-Additive exPlanations) là một phương pháp diễn giải mô hình dựa trên lý thuyết
-giá trị Shapley trong lý thuyết trò chơi, cho phép phân bổ đóng góp của từng
-đặc trưng vào dự báo của một mẫu cụ thể.
+Trong bài toán cảnh báo sớm rủi ro học tập, khả năng diễn giải mô hình có ý
+nghĩa đặc biệt quan trọng. Một hệ thống dự báo không chỉ cần xác định những
+sinh viên có nguy cơ mà còn cần cung cấp thông tin về các yếu tố liên quan đến
+kết quả dự báo, qua đó hỗ trợ giảng viên và cố vấn học tập lựa chọn phương án
+can thiệp phù hợp.
 
-Với một mô hình dự báo $f$ và một quan sát $\mathbf{x}$, SHAP biểu diễn dự báo
-dưới dạng mô hình cộng tính:
+\textbf{SHAP} (SHapley Additive exPlanations) là một phương pháp diễn giải mô
+hình dựa trên lý thuyết giá trị Shapley trong lý thuyết trò chơi. Ý tưởng chính
+của SHAP là phân bổ đóng góp của từng đặc trưng vào kết quả dự báo, từ đó giải
+thích cách mô hình đưa ra quyết định đối với từng quan sát cụ thể.
+
+Với một mô hình dự báo $f$ và một quan sát $\mathbf{x}$, SHAP biểu diễn đầu ra
+của mô hình dưới dạng một mô hình cộng tính:
 
 \[
   f(\mathbf{x}) = \phi_0 + \sum_{j=1}^{p}\phi_j,
 \]
 
-trong đó $\phi_0$ là giá trị nền, thường tương ứng với dự báo trung bình của
-mô hình trên tập tham chiếu, và $\phi_j$ là đóng góp của đặc trưng thứ $j$ đối
-với dự báo của mẫu đang xét. Nếu $\phi_j > 0$, đặc trưng đó đẩy dự báo theo
-hướng làm tăng đầu ra của mô hình; nếu $\phi_j < 0$, đặc trưng đó kéo dự báo
-theo hướng ngược lại. Với bài toán phân loại nhị phân, đầu ra này có thể là
-log-odds hoặc xác suất tuỳ cách triển khai.
+trong đó $\phi_0$ là giá trị nền (baseline value), thường tương ứng với giá trị
+kỳ vọng của mô hình trên tập dữ liệu tham chiếu, còn $\phi_j$ biểu diễn mức
+đóng góp của đặc trưng thứ $j$ đối với dự báo của mẫu đang xét. Nếu
+$\phi_j > 0$, đặc trưng đó làm tăng giá trị đầu ra của mô hình; ngược lại,
+$\phi_j < 0$ cho thấy đặc trưng đó làm giảm giá trị dự báo. Đối với bài toán
+phân loại nhị phân, giá trị SHAP có thể được tính trên các không gian đầu ra
+khác nhau của mô hình, phổ biến là log-odds hoặc xác suất dự báo.
 
-Giá trị Shapley của đặc trưng $j$ được định nghĩa là đóng góp biên trung bình
-của đặc trưng đó trên mọi tập con đặc trưng có thể có:
+Giá trị SHAP của một đặc trưng được xây dựng dựa trên giá trị Shapley, tức là
+mức đóng góp biên trung bình của đặc trưng đó trên tất cả các tập hợp đặc trưng
+có thể có:
 
 \[
   \phi_j
@@ -785,47 +794,59 @@ của đặc trưng đó trên mọi tập con đặc trưng có thể có:
   \right],
 \]
 
-trong đó $F$ là tập tất cả đặc trưng, $S$ là một tập con không chứa đặc trưng
-$j$, và biểu thức trong ngoặc vuông là mức thay đổi dự báo khi thêm đặc trưng
-$j$ vào tập $S$. Trọng số
-$\frac{|S|!(p-|S|-1)!}{p!}$ bảo đảm mọi thứ tự thêm đặc trưng được xét một cách
+trong đó $F$ là tập hợp toàn bộ đặc trưng, $S$ là một tập con không chứa đặc
+trưng $j$. Thành phần trong ngoặc vuông biểu diễn mức thay đổi của dự báo khi
+bổ sung đặc trưng $j$ vào tập $S$. Hệ số
+
+\[
+\frac{|S|!(p-|S|-1)!}{p!}
+\]
+
+đảm bảo rằng mọi thứ tự kết hợp các đặc trưng đều được xem xét với trọng số
 công bằng.
 
-SHAP có ba tính chất quan trọng:
+SHAP có ba tính chất quan trọng giúp nó trở thành một phương pháp diễn giải
+phổ biến:
 
 \begin{itemize}[leftmargin=*]
-  \item \textbf{Tính cộng tính}: tổng các đóng góp SHAP cộng với giá trị nền
-        bằng đúng dự báo của mô hình.
-  \item \textbf{Tính nhất quán}: nếu một mô hình làm cho đóng góp biên của một
-        đặc trưng tăng lên, giá trị SHAP của đặc trưng đó không được giảm.
+  \item \textbf{Tính cộng tính}: tổng các giá trị SHAP của tất cả đặc trưng
+        cộng với giá trị nền bằng đúng đầu ra của mô hình.
+  \item \textbf{Tính nhất quán}: nếu mức đóng góp biên của một đặc trưng tăng
+        lên khi mô hình thay đổi, giá trị SHAP của đặc trưng đó cũng không
+        giảm.
   \item \textbf{Tính cục bộ}: mỗi dự báo riêng lẻ có thể được phân rã thành
-        đóng góp của từng đặc trưng, giúp giải thích quyết định ở cấp độ từng
-        sinh viên.
+        đóng góp của từng đặc trưng, cho phép giải thích quyết định của mô hình
+        đối với từng sinh viên.
 \end{itemize}
 
-Trong thực tế, tính trực tiếp công thức Shapley là không khả thi khi số đặc
-trưng lớn, vì cần xét $2^p$ tập con. Đối với các mô hình cây, thuật toán
-\textbf{TreeSHAP} khai thác cấu trúc cây để tính chính xác giá trị SHAP với chi
-phí thấp hơn nhiều. Đây là lý do SHAP đặc biệt phù hợp với các mô hình dựa
-trên cây như CatBoost và LightGBM.
+Trong thực tế, việc tính trực tiếp giá trị Shapley theo công thức trên là không
+khả thi khi số lượng đặc trưng lớn, do cần xét toàn bộ $2^p$ tập con đặc trưng.
+Đối với các mô hình dựa trên cây quyết định, thuật toán
+\textbf{TreeSHAP} khai thác cấu trúc của cây để tính toán chính xác giá trị SHAP
+với chi phí thấp hơn đáng kể. Vì vậy, SHAP đặc biệt phù hợp để phân tích các mô
+hình như Random Forest, CatBoost và LightGBM được sử dụng trong nghiên cứu này.
 
-Kết quả SHAP có thể được sử dụng ở hai cấp độ. Ở cấp độ toàn cục, trung bình
-$|\phi_j|$ trên nhiều mẫu cho biết đặc trưng nào có ảnh hưởng lớn nhất đến mô
-hình. Ở cấp độ cục bộ, biểu đồ waterfall hoặc force plot cho thấy từng đặc
-trưng đẩy dự báo của một sinh viên cụ thể về phía At-risk hay Pass. Nhờ đó,
-SHAP không chỉ hỗ trợ đánh giá độ quan trọng của đặc trưng mà còn giúp kiểm
-tra liệu mô hình có dựa trên các tín hiệu phù hợp với trực giác sư phạm hay
-không.
+Kết quả SHAP có thể được phân tích ở hai mức độ. Ở mức độ toàn cục (global
+interpretation), giá trị trung bình của $|\phi_j|$ trên nhiều mẫu cho biết mức
+độ quan trọng tương đối của từng đặc trưng trong toàn bộ mô hình. Ở mức độ cục
+bộ (local interpretation), các biểu đồ như waterfall plot hoặc force plot cho
+thấy cách từng đặc trưng tác động đến dự báo của một sinh viên cụ thể, theo
+hướng làm tăng nguy cơ At-risk hoặc hướng về nhóm Pass.
 
+Nhờ khả năng kết hợp giữa đánh giá độ quan trọng đặc trưng và giải thích dự báo
+ở cấp độ cá nhân, SHAP không chỉ giúp phân tích cách mô hình hoạt động mà còn
+hỗ trợ kiểm tra liệu các quyết định của mô hình có phù hợp với kiến thức chuyên
+môn trong lĩnh vực giáo dục hay không.
 % =====================================================================
 %  CHƯƠNG 2 — PHÂN TÍCH KHÁM PHÁ DỮ LIỆU
 % =====================================================================
 \chapter{Phân tích khám phá dữ liệu (EDA)}
 \label{part:eda}
 
-Sau khi trình bày cơ sở lý thuyết của bốn thuật toán ở Chương~\ref{part:theory},
-phần này phân tích khám phá bộ dữ liệu OULAD nhằm rút ra các định hướng tiền xử
-lý cho bước xây dựng mô hình ở Chương~\ref{part:model}.
+Sau khi trình bày cơ sở lý thuyết của các thuật toán và phương pháp hỗ trợ ở
+Chương~\ref{part:theory}, phần này phân tích khám phá bộ dữ liệu OULAD nhằm rút
+ra các định hướng tiền xử lý, thiết kế đặc trưng và đánh giá phù hợp cho bước
+xây dựng, tinh chỉnh và diễn giải mô hình ở Chương~\ref{part:model}.
 
 \section{Tổng quan bộ dữ liệu OULAD}
 
@@ -1633,7 +1654,10 @@ Phương án mã hóa cụ thể được trình bày trong Bảng~\ref{tab:enco
   \centering
   \caption{Phương án mã hóa các đặc trưng phân loại.}
   \label{tab:encoding}
-  \begin{tabular}{lll}
+  \small
+  \begin{tabular}{>{\raggedright\arraybackslash}p{0.28\textwidth}
+                  >{\raggedright\arraybackslash}p{0.20\textwidth}
+                  >{\raggedright\arraybackslash}p{0.38\textwidth}}
     \toprule
     \textbf{Đặc trưng} & \textbf{Kiểu mã hóa} & \textbf{Lý do} \\
     \midrule
@@ -1655,13 +1679,16 @@ luyện mô hình gồm \textbf{15 đặc trưng}, chia thành hai nhóm:
 
 \begin{itemize}[leftmargin=*]
   \item \textbf{Đặc trưng tĩnh (6):}
+        \begingroup\raggedright
         \code{highest\_education},
         \code{disability},
         \code{num\_of\_prev\_attempts},
         \code{studied\_credits},
         \code{imd\_band\_filled} và biến chỉ báo
         \code{imd\_missing}.
+        \par\endgroup
   \item \textbf{Đặc trưng động (9):}
+        \begingroup\raggedright
         \code{total\_clicks\_filled},
         \code{active\_weeks\_filled},
         \code{avg\_weekly\_clicks\_filled},
@@ -1671,6 +1698,7 @@ luyện mô hình gồm \textbf{15 đặc trưng}, chia thành hai nhóm:
         \code{num\_failed\_filled},
         \code{avg\_days\_early\_filled} và
         \code{no\_submission\_despite\_due}.
+        \par\endgroup
 \end{itemize}
 
 Dữ liệu được chia thành tập huấn luyện và tập kiểm tra theo từng sinh viên,
@@ -1709,12 +1737,13 @@ nghiệm chuyên sâu ở phần sau.
 
 Với mỗi mốc dự đoán $T$, một mô hình \textbf{Logistic Regression} được huấn
 luyện riêng trên dữ liệu của đúng mốc đó. Đây là thuật toán cơ sở, đơn giản và
-dễ diễn giải nhất trong bốn thuật toán đã trình bày ở Chương~\ref{part:theory},
+dễ diễn giải nhất trong nhóm thuật toán được trình bày ở
+Chương~\ref{part:theory},
 phù hợp để khảo sát nhanh xu hướng hiệu suất theo thời gian trước khi mở rộng
 sang các mô hình phức tạp hơn. Quy trình tinh chỉnh cho từng mốc tương tự cách
 tiếp cận ở giai đoạn so sánh thuật toán tại Mục~\ref{sec:methodology}: dữ liệu
 được chuẩn hoá bằng \code{StandardScaler} (fit trên train-fold để tránh rò rỉ
-dữ liệu), còn siêu tham số điều chuẩn $C$ của mô hình
+dữ liệu), còn siêu tham số regularization $C$ của mô hình
 (Mục~\ref{sec:logreg_reg}), tỷ lệ oversampling SMOTE và trọng số lớp At-risk
 được tinh chỉnh đồng thời bằng Optuna với 30 lượt thử nghiệm và kiểm định chéo
 phân tầng 3-fold. Sau đó, mô hình được huấn luyện lại trên toàn bộ tập huấn
@@ -1976,9 +2005,11 @@ trình bày kết quả, sắp xếp tăng dần theo hạng trung bình.
         bình 5.00. Cả bốn đều là đặc trưng \textbf{động}, phản ánh trực tiếp
         mức độ tham gia và kết quả học tập tích luỹ của sinh viên.
   \item \textbf{Nhóm giữa} gồm các đặc trưng tương tác VLE còn lại
+        \begingroup\raggedright
         (\code{total\_clicks\_filled}, \code{avg\_weekly\_clicks\_filled}),
         \code{avg\_days\_early\_filled} và \code{highest\_education} --- đóng
         góp bổ sung nhưng không mang tính quyết định.
+        \par\endgroup
   \item \textbf{Nhóm cuối} --- \code{studied\_credits}, \code{disability},
         \code{imd\_missing} có hạng trung bình cao nhất (ít quan trọng nhất),
         cho thấy các đặc trưng tĩnh mang tính nhân khẩu học có vai trò dự báo
@@ -2180,11 +2211,11 @@ này đã được trình bày ở Mục~\ref{sec:shap_theory}. Phân tích đư
 trên cả ba bộ đặc trưng (Full, Top-10, Top-5) nhằm kiểm tra mức độ nhất quán
 của diễn giải khi số lượng đặc trưng thay đổi.
 
-\subsection{Biểu đồ tổng quan (beeswarm và mean\texorpdfstring{$|$}{|}SHAP\texorpdfstring{$|$}{|})}
-
-Hình~\ref{fig:shap_full} trình bày kết quả SHAP trên bộ đặc trưng đầy đủ. Biểu
-đồ beeswarm cho biết chiều và độ phân tán ảnh hưởng của từng đặc trưng đối với
-từng sinh viên, trong khi biểu đồ cột thể hiện mức độ quan trọng trung bình.
+Trước hết, phân tích được thực hiện ở cấp độ toàn cục nhằm xác định những đặc
+trưng có ảnh hưởng lớn nhất đến mô hình. Hình~\ref{fig:shap_full} trình bày kết
+quả SHAP trên bộ đặc trưng đầy đủ. Biểu đồ beeswarm cho biết chiều và độ phân
+tán ảnh hưởng của từng đặc trưng đối với từng sinh viên, trong khi biểu đồ cột
+thể hiện mức độ quan trọng trung bình.
 
 \begin{figure}[H]
   \centering
@@ -2259,12 +2290,11 @@ tính ổn định đã quan sát ở Bảng~\ref{tab:compare_featuresets}, đ�
 thấy các đặc trưng bị loại bỏ chủ yếu đóng góp thông tin trùng lặp hoặc không
 đáng kể.
 
-\subsection{Diễn giải cục bộ: hai trường hợp minh hoạ}
-
-Để minh hoạ cách mô hình đưa ra quyết định ở cấp độ từng cá nhân, Hình~
-\ref{fig:waterfall} trình bày biểu đồ waterfall của hai sinh viên đại diện,
-sử dụng mô hình CatBoost trên bộ đặc trưng đầy đủ: một trường hợp được dự báo
-mạnh về phía At-risk và một trường hợp được dự báo mạnh về phía Pass.
+Sau khi xem xét xu hướng toàn cục, phân tích tiếp tục đi vào cấp độ cục bộ để
+làm rõ cách mô hình đưa ra quyết định cho từng sinh viên. Hình~\ref{fig:waterfall}
+trình bày biểu đồ waterfall của hai sinh viên đại diện, sử dụng mô hình CatBoost
+trên bộ đặc trưng đầy đủ: một trường hợp được dự báo mạnh về phía At-risk và
+một trường hợp được dự báo mạnh về phía Pass.
 
 \begin{figure}[H]
   \centering

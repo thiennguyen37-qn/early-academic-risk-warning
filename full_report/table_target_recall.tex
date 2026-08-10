@@ -1,13 +1,19 @@
 \begin{table}[H]
   \centering
-  \caption{Ngưỡng cần dùng để đạt các mức recall mục tiêu và mức đánh đổi so với ngưỡng mặc định 0.5.}
+  \caption{Ngưỡng cần dùng để đạt các mức recall mục tiêu và mức đánh đổi so với ngưỡng mặc định 0.5. Bốn cột cuối lần lượt cho biết số sinh viên At-risk phát hiện thêm, số cảnh báo nhầm phát sinh thêm, số sinh viên At-risk còn bỏ sót và số cảnh báo nhầm trên mỗi ca phát hiện thêm.}
   \label{tab:target_recall}
-  \small
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{rrrrrrrr}
+  \scriptsize
+  \setlength{\tabcolsep}{2pt}
+  \begin{tabular}{@{}rrrrrrrr@{}}
     \toprule
-    \textbf{Recall} & \textbf{Ngưỡng} & \textbf{Recall} & \textbf{Precision} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{FP/TP} \\
-    \textbf{mục tiêu} & & \textbf{thực tế} & & \textbf{bổ sung} & \textbf{bổ sung} & \textbf{còn lại} & \textbf{bổ sung} \\
+    \makecell{\textbf{Recall}\\\textbf{mục tiêu}} &
+    \textbf{Ngưỡng} &
+    \makecell{\textbf{Recall}\\\textbf{thực tế}} &
+    \textbf{Precision} &
+    \makecell{\textbf{At-risk}\\\textbf{phát hiện}\\\textbf{thêm}} &
+    \makecell{\textbf{Cảnh báo nhầm}\\\textbf{phát sinh}\\\textbf{thêm}} &
+    \makecell{\textbf{At-risk}\\\textbf{còn bỏ}\\\textbf{sót}} &
+    \makecell{\textbf{Cảnh báo nhầm/}\\\textbf{ca phát hiện}\\\textbf{thêm}} \\
     \midrule
     80\% & 0.425 & 0.8005 & 0.7656 & $+$55 & $+$94 & 311 & 1.7 \\
     85\% & 0.335 & 0.8525 & 0.7024 & $+$136 & $+$275 & 230 & 2.0 \\

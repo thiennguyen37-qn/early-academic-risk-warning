@@ -2113,11 +2113,15 @@ mong muốn rồi tính ngưỡng cần dùng và mức đánh đổi tương �
 
 \input{table_target_recall}
 
-Cột cuối cùng --- số cảnh báo nhầm phát sinh trên mỗi sinh viên At-risk được
-phát hiện bổ sung --- thể hiện rõ \textbf{quy luật lợi ích cận biên giảm dần}.
-Ở giai đoạn đầu, mỗi sinh viên được phát hiện bổ sung đi kèm khoảng 2 cảnh báo
-nhầm; khi đẩy recall lên 95\%, con số này tăng lên 3{,}45; nếu hạ ngưỡng xuống
-dưới 0.2, mỗi sinh viên phát hiện bổ sung tương ứng gần 8 cảnh báo nhầm.
+Bốn cột cuối cho thấy khi đặt mục tiêu recall cao hơn, số sinh viên At-risk bị
+bỏ sót giảm dần, nhưng danh sách cảnh báo cũng mở rộng nhanh. Ở mức recall mục
+tiêu 80\%, hệ thống cần thêm 94 cảnh báo nhầm để phát hiện thêm 55 sinh viên
+At-risk, tương đương khoảng 1{,}7 cảnh báo nhầm cho mỗi ca phát hiện thêm. Khi
+nâng mục tiêu lên 95\%, hệ thống phát hiện thêm 290 sinh viên nhưng đồng thời
+phát sinh thêm 1.001 cảnh báo nhầm, tức khoảng 3{,}5 cảnh báo nhầm cho mỗi ca
+phát hiện thêm. Vì vậy, việc tăng recall không chỉ là bài toán chọn ngưỡng thấp
+hơn, mà còn là quyết định về số lượng cảnh báo mà nhà trường có thể kiểm tra và
+hỗ trợ thực tế.
 
 \textbf{Khuyến nghị.} Vùng ngưỡng \textbf{0.40--0.43} là điểm cân bằng hợp lý:
 recall đạt khoảng 80\%, precision vẫn trên $0.75$ (tức khoảng ba trong bốn

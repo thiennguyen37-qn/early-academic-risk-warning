@@ -1,0 +1,63 @@
+% Nguồn: notebooks/preprocessing.ipynb, FEATURE_COLS sau bước điền khuyết và mã hóa.
+\begingroup
+\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.38\textwidth}
+                  >{\raggedright\arraybackslash}p{0.52\textwidth}@{}}
+  \caption{Ý nghĩa các đặc trưng cuối cùng sau tiền xử lý.}
+  \label{tab:final_features}\\
+  \toprule
+  \textbf{Tên đặc trưng} & \textbf{Ý nghĩa} \\
+  \midrule
+  \endfirsthead
+
+  \caption[]{Ý nghĩa các đặc trưng cuối cùng sau tiền xử lý.}\\
+  \toprule
+  \textbf{Tên đặc trưng} & \textbf{Ý nghĩa} \\
+  \midrule
+  \endhead
+
+  \midrule
+  \multicolumn{2}{r}{\textit{Tiếp ở trang sau}}\\
+  \endfoot
+
+  \bottomrule
+  \endlastfoot
+
+  \multicolumn{2}{@{}l}{\textbf{Đặc trưng tĩnh}}\\
+  \addlinespace
+  \code{highest\_education} &
+  Trình độ học vấn cao nhất, được mã hóa theo thứ bậc học vấn. \\
+  \code{disability} &
+  Trạng thái khuyết tật, được mã hóa nhị phân từ biến gốc. \\
+  \code{num\_of\_prev\_attempts} &
+  Số lần sinh viên đã học hoặc đăng ký lại học phần trước đó. \\
+  \code{studied\_credits} &
+  Tổng số tín chỉ sinh viên đăng ký trong đợt học. \\
+  \code{imd\_band\_filled} &
+  Nhóm chỉ số thiếu thốn kinh tế sau khi điền giá trị thiếu và mã hóa thứ tự. \\
+  \code{imd\_missing} &
+  Biến chỉ báo cho biết \code{imd\_band} ban đầu có bị thiếu hay không. \\
+
+  \addlinespace
+  \multicolumn{2}{@{}l}{\textbf{Đặc trưng động}}\\
+  \addlinespace
+  \code{total\_clicks\_filled} &
+  Tổng số lượt click tích lũy trên VLE đến mốc dự báo, điền 0 nếu chưa có tương tác. \\
+  \code{active\_weeks\_filled} &
+  Số tuần có tương tác VLE đến mốc dự báo, điền 0 nếu chưa có tương tác. \\
+  \code{avg\_weekly\_clicks\_filled} &
+  Số lượt click trung bình mỗi tuần có tương tác, điền 0 nếu chưa có tương tác. \\
+  \code{num\_due} &
+  Số bài đánh giá đã đến hạn tại mốc dự báo. \\
+  \code{num\_submitted\_filled} &
+  Số bài đánh giá đã nộp trong cửa sổ quan sát, điền 0 nếu chưa nộp bài. \\
+  \code{avg\_score\_filled} &
+  Điểm trung bình có trọng số của các bài đã nộp, điền -1 nếu chưa có điểm hợp lệ. \\
+  \code{num\_failed\_filled} &
+  Số bài đã nộp có điểm dưới 40, điền 0 nếu chưa phát sinh bài trượt. \\
+  \code{avg\_days\_early\_filled} &
+  Số ngày nộp sớm trung bình, điền 0 khi chưa có bài nộp để tính giá trị này. \\
+  \code{no\_submission\_despite\_due} &
+  Biến nhị phân cho biết sinh viên chưa nộp bài dù đã có ít nhất một bài đến hạn. \\
+\end{longtable}
+\endgroup

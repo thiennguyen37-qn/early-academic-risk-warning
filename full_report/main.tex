@@ -1078,6 +1078,12 @@ thông tin nhân khẩu học, hành vi học tập VLE, kết quả bài tập 
 kỳ, với nhiều kiểu dữ liệu: 10 biến dạng phân loại, 10 biến số thực và 2 biến số
 nguyên.
 
+Bảng~\ref{tab:snapshot_features} tóm tắt ý nghĩa của các biến gốc xuất hiện
+trong tập snapshot. Các biến định danh, mốc dự báo và nhãn được giữ trong bảng
+để làm rõ cấu trúc dữ liệu, nhưng không được xem là đặc trưng huấn luyện.
+
+\input{table_snapshot_features}
+
 Bảng~\ref{tab:null} liệt kê các biến có giá trị thiếu cùng tỷ lệ tương ứng.
 
 \input{table_null}
@@ -1684,31 +1690,10 @@ Ngược lại, \code{highest\_education}, \code{disability} và
 kết quả học tập trong Chương~\ref{part:eda}.
 
 \textbf{Tập đặc trưng cuối cùng.} Sau tiền xử lý, tập dữ liệu dùng để huấn
-luyện mô hình gồm \textbf{15 đặc trưng}, chia thành hai nhóm:
+luyện mô hình gồm \textbf{15 đặc trưng}: 6 đặc trưng tĩnh và 9 đặc trưng động.
+Ý nghĩa của từng đặc trưng được tóm tắt trong Bảng~\ref{tab:final_features}.
 
-\begin{itemize}[leftmargin=*]
-  \item \textbf{Đặc trưng tĩnh (6):}
-        \begingroup\raggedright
-        \code{highest\_education},
-        \code{disability},
-        \code{num\_of\_prev\_attempts},
-        \code{studied\_credits},
-        \code{imd\_band\_filled} và biến chỉ báo
-        \code{imd\_missing}.
-        \par\endgroup
-  \item \textbf{Đặc trưng động (9):}
-        \begingroup\raggedright
-        \code{total\_clicks\_filled},
-        \code{active\_weeks\_filled},
-        \code{avg\_weekly\_clicks\_filled},
-        \code{num\_due},
-        \code{num\_submitted\_filled},
-        \code{avg\_score\_filled},
-        \code{num\_failed\_filled},
-        \code{avg\_days\_early\_filled} và
-        \code{no\_submission\_despite\_due}.
-        \par\endgroup
-\end{itemize}
+\input{table_final_features}
 
 Dữ liệu được chia thành tập huấn luyện và tập kiểm tra theo từng sinh viên,
 giữ nguyên thiết kế đã trình bày ở Bảng~\ref{tab:split}
@@ -2019,7 +2004,7 @@ trình bày kết quả, sắp xếp tăng dần theo hạng trung bình.
 \section{Rút gọn đặc trưng: Top-10 và Top-5}
 
 Dựa trên thứ hạng ở Bảng~\ref{tab:feature_rank}, mười đặc trưng quan trọng
-nhất Top-10 và năm đặc trưng quan trọng nhất Top-5 được chọn để huấn luyện
+nhất (Top-10) và năm đặc trưng quan trọng nhất (Top-5) được chọn để huấn luyện
 lại theo đúng quy trình tinh chỉnh đã mô tả ở Mục~\ref{sec:methodology}. Mục
 tiêu là kiểm tra liệu hiệu suất mô hình có \textbf{ổn định} khi giảm số lượng
 đặc trưng đầu vào hay không. Đây là yếu tố quan trọng trong triển khai thực tế,
@@ -2124,15 +2109,15 @@ sót chỉ còn 128, nhưng số cảnh báo nhầm tăng lên 1.001; khi đó d
 báo trở nên quá rộng và precision chỉ còn $0.5884$.
 
 Bảng~\ref{tab:target_recall} tiếp cận theo chiều ngược lại: đặt ra mức recall
-mong muốn rồi tính ngưỡng cần dùng và cái giá phải trả.
+mong muốn rồi tính ngưỡng cần dùng và mức đánh đổi tương ứng.
 
 \input{table_target_recall}
 
 Cột cuối cùng --- số cảnh báo nhầm phát sinh trên mỗi sinh viên At-risk được
-phát hiện thêm --- thể hiện rõ \textbf{quy luật lợi ích cận biên giảm dần}.
-Ở giai đoạn đầu, mỗi sinh viên được phát hiện thêm đi kèm khoảng 2 cảnh báo
+phát hiện bổ sung --- thể hiện rõ \textbf{quy luật lợi ích cận biên giảm dần}.
+Ở giai đoạn đầu, mỗi sinh viên được phát hiện bổ sung đi kèm khoảng 2 cảnh báo
 nhầm; khi đẩy recall lên 95\%, con số này tăng lên 3{,}45; nếu hạ ngưỡng xuống
-dưới 0.2, mỗi sinh viên phát hiện thêm tương ứng gần 8 cảnh báo nhầm.
+dưới 0.2, mỗi sinh viên phát hiện bổ sung tương ứng gần 8 cảnh báo nhầm.
 
 \textbf{Khuyến nghị.} Vùng ngưỡng \textbf{0.40--0.43} là điểm cân bằng hợp lý:
 recall đạt khoảng 80\%, precision vẫn trên $0.75$ (tức khoảng ba trong bốn

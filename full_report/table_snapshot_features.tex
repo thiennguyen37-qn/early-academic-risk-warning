@@ -1,0 +1,71 @@
+% Nguồn: build_snapshot_dataset() trước bước tiền xử lý và mã hóa đặc trưng.
+\begingroup
+\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.28\textwidth}
+                  >{\raggedright\arraybackslash}p{0.62\textwidth}@{}}
+  \caption{Ý nghĩa các biến gốc trong tập dữ liệu snapshot.}
+  \label{tab:snapshot_features}\\
+  \toprule
+  \textbf{Tên biến gốc} & \textbf{Ý nghĩa} \\
+  \midrule
+  \endfirsthead
+
+  \caption[]{Ý nghĩa các biến gốc trong tập dữ liệu snapshot.}\\
+  \toprule
+  \textbf{Tên biến gốc} & \textbf{Ý nghĩa} \\
+  \midrule
+  \endhead
+
+  \midrule
+  \multicolumn{2}{r}{\textit{Tiếp ở trang sau}}\\
+  \endfoot
+
+  \bottomrule
+  \endlastfoot
+
+  \code{id\_student} &
+  Mã định danh sinh viên trong OULAD. \\
+  \code{code\_module} &
+  Mã học phần mà sinh viên đăng ký. \\
+  \code{code\_presentation} &
+  Mã đợt mở học phần, kết hợp năm học và kỳ khai giảng. \\
+  \code{gender} &
+  Giới tính của sinh viên trong dữ liệu gốc. \\
+  \code{region} &
+  Khu vực sinh sống của sinh viên. \\
+  \code{age\_band} &
+  Nhóm tuổi của sinh viên. \\
+  \code{imd\_band} &
+  Nhóm chỉ số thiếu thốn kinh tế theo khu vực địa lý của sinh viên. \\
+  \code{highest\_education} &
+  Trình độ học vấn cao nhất của sinh viên trước khi tham gia học phần. \\
+  \code{disability} &
+  Trạng thái khuyết tật do sinh viên khai báo. \\
+  \code{num\_of\_prev\_attempts} &
+  Số lần sinh viên đã học hoặc đăng ký học phần này trước đó. \\
+  \code{studied\_credits} &
+  Tổng số tín chỉ sinh viên đăng ký trong đợt học. \\
+  \code{date\_registration} &
+  Ngày sinh viên đăng ký học phần, tính tương đối so với ngày bắt đầu khóa. \\
+  \code{date\_unregistration} &
+  Ngày sinh viên hủy đăng ký học phần, để trống nếu sinh viên không hủy đăng ký. \\
+  \code{total\_clicks} &
+  Tổng số lượt click tích lũy của sinh viên trên VLE đến mốc dự báo $T$. \\
+  \code{active\_weeks} &
+  Số tuần có ít nhất một tương tác VLE đến mốc dự báo $T$. \\
+  \code{avg\_weekly\_clicks} &
+  Số lượt click trung bình trong các tuần có tương tác đến mốc dự báo $T$. \\
+  \code{num\_submitted} &
+  Số bài đánh giá đã đến hạn và đã được sinh viên nộp trước hoặc tại mốc $T$. \\
+  \code{avg\_days\_early} &
+  Số ngày nộp sớm trung bình, tính bằng hạn nộp trừ ngày nộp; giá trị âm biểu thị nộp trễ. \\
+  \code{num\_failed} &
+  Số bài đánh giá đã nộp có điểm dưới 40. \\
+  \code{avg\_score} &
+  Điểm trung bình có trọng số của các bài đánh giá đã nộp trong cửa sổ quan sát. \\
+  \code{prediction\_point} &
+  Mốc dự báo $T$, tính theo số ngày kể từ đầu khóa. \\
+  \code{final\_result} &
+  Kết quả cuối cùng của lượt học, dùng làm nhãn mục tiêu trước khi gộp lớp. \\
+\end{longtable}
+\endgroup

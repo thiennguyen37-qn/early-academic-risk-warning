@@ -1,13 +1,13 @@
 \begin{table}[H]
   \centering
-  \caption{Ngưỡng cần dùng để đạt các mức recall mục tiêu, và cái giá phải trả. Cột ``Bắt thêm'' và ``Nhầm thêm'' so với ngưỡng mặc định 0.5; cột cuối là số cảnh báo nhầm phát sinh trên mỗi sinh viên At-risk bắt thêm được.}
+  \caption{Ngưỡng cần dùng để đạt các mức recall mục tiêu và mức đánh đổi so với ngưỡng mặc định 0.5. TP bổ sung là số sinh viên At-risk được phát hiện bổ sung; FP bổ sung là số cảnh báo nhầm phát sinh bổ sung; FN còn lại là số sinh viên At-risk vẫn bị bỏ sót.}
   \label{tab:target_recall}
   \small
-  \setlength{\tabcolsep}{5pt}
+  \setlength{\tabcolsep}{4pt}
   \begin{tabular}{rrrrrrrr}
     \toprule
-    \textbf{Recall} & \textbf{Ngưỡng} & \textbf{Recall} & \textbf{Precision} & \textbf{Bắt} & \textbf{Nhầm} & \textbf{Còn} & \textbf{Nhầm/} \\
-    \textbf{mục tiêu} & & \textbf{thực tế} & & \textbf{thêm} & \textbf{thêm} & \textbf{bỏ sót} & \textbf{1 ca} \\
+    \textbf{Recall} & \textbf{Ngưỡng} & \textbf{Recall} & \textbf{Precision} & \textbf{TP} & \textbf{FP} & \textbf{FN} & \textbf{FP/TP} \\
+    \textbf{mục tiêu} & & \textbf{thực tế} & & \textbf{bổ sung} & \textbf{bổ sung} & \textbf{còn lại} & \textbf{bổ sung} \\
     \midrule
     80\% & 0.425 & 0.8005 & 0.7656 & $+$55 & $+$94 & 311 & 1.7 \\
     85\% & 0.335 & 0.8525 & 0.7024 & $+$136 & $+$275 & 230 & 2.0 \\

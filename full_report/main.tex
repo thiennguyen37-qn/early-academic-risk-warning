@@ -2331,32 +2331,33 @@ Hai ví dụ trên cho thấy mô hình đưa ra quyết định dựa trên nh�
 tập trực tiếp: mức độ hoàn thành bài tập và điểm số tích luỹ là những yếu tố
 quyết định, thống nhất với phân tích độ quan trọng đặc trưng ở quy mô toàn cục.
 
-\section{Kết luận}
+% =====================================================================
+%  KẾT LUẬN
+% =====================================================================
+\chapter*{Kết luận}
+\addcontentsline{toc}{chapter}{Kết luận}
 
 Từ quá trình tiền xử lý dữ liệu, xây dựng đặc trưng, huấn luyện, so sánh và
 diễn giải mô hình, có thể rút ra các kết luận chính sau:
 
 \begin{itemize}[leftmargin=*]
-  \item Việc gộp nhãn Fail và Withdrawn thành nhóm At-risk, đồng thời giới hạn
-        dữ liệu tại mốc dự đoán 150 ngày, đưa bài toán về dạng phân loại nhị
-        phân với mức mất cân bằng nhãn vừa phải; lớp At-risk chiếm khoảng 36\%.
-        Vấn đề này được xử lý bằng cách kết hợp SMOTE và trọng số lớp, đồng
-        thời tinh chỉnh hai kỹ thuật này cùng với siêu tham số của từng mô hình
-        thông qua Optuna.
+  \item Kết quả theo các mốc dự đoán cho thấy hiệu suất mô hình nhìn chung
+        \textbf{tăng dần theo thời gian}, do mô hình quan sát được nhiều tín
+        hiệu học tập hơn khi $T$ tiến gần cuối học phần. Tuy nhiên, trong bài
+        toán cảnh báo sớm, mốc dự đoán không nên chỉ được chọn theo hiệu suất
+        cao nhất: nếu cảnh báo được đưa ra quá muộn, nhà trường còn ít thời
+        gian để hỗ trợ sinh viên. Vì vậy, cần chọn mốc cân bằng giữa độ tin cậy
+        của dự báo và khoảng thời gian can thiệp còn lại.
   \item Trong số bốn thuật toán thử nghiệm, \textbf{CatBoost} đạt F1 At-risk
-        cao nhất trên bộ đặc trưng đầy đủ, đạt 0.7849, đồng thời dẫn đầu cả về
+        cao nhất trên bộ đặc trưng đầy đủ, đạt 0.785, đồng thời dẫn đầu cả về
         accuracy và precision; LightGBM bám sát ngay phía sau và giữ ROC-AUC
-        cao nhất. Hai mô hình boosting này vượt trội hơn Logistic Regression
-        một cách nhất quán trên mọi bộ đặc trưng, phù hợp với đặc tính lý
-        thuyết của từng thuật toán ở Chương~\ref{part:theory}; tuy nhiên,
-        khoảng cách giữa nhóm mô hình cây là nhỏ và cần được diễn giải thận
-        trọng.
-  \item Hiệu suất mô hình \textbf{ổn định cao} khi giảm số lượng đặc trưng từ
-        15 xuống 5; thậm chí CatBoost trên bộ Top-10 đạt F1 At-risk cao nhất
-        trong toàn bộ thực nghiệm, đạt 0.7875. Kết quả này gợi ý một bộ
-        \textbf{5 đặc trưng}: \code{num\_submitted\_filled},
-        \code{avg\_score\_filled}, \code{num\_due}, \code{active\_weeks\_filled}
-        và \code{total\_clicks\_filled} --- toàn bộ đều là đặc trưng hành vi học
+        cao nhất, Random Forest cũng có hiệu suất tương đương. 
+        Các mô hình bagging và boosting này vượt trội hơn Logistic Regression
+        trên mọi bộ đặc trưng; tuy nhiên, khoảng cách giữa nhóm mô hình này là 
+        không lớn và cần được diễn giải thận trọng.
+  \item Hiệu suất mô hình có tính ổn định tương đối cao khi giảm số lượng đặc trưng từ
+        15 xuống 10 hay thậm chí là 5; thậm chí CatBoost trên bộ Top-10 đạt F1 At-risk cao nhất
+        trong toàn bộ thực nghiệm. Các đặc trưng mang tính quyết định đều là đặc trưng hành vi học
         tập, không yêu cầu thông tin nhân khẩu học --- có thể đủ để xây dựng
         một hệ thống cảnh báo sớm gọn nhẹ, dễ triển khai và duy trì.
   \item Phân tích SHAP cho thấy dự báo của mô hình dựa trên những tín hiệu học
@@ -2365,13 +2366,82 @@ diễn giải mô hình, có thể rút ra các kết luận chính sau:
         tính nhất quán qua cả ba bộ đặc trưng.
 \end{itemize}
 
-\textbf{Hạn chế và hướng phát triển.} Nghiên cứu hiện tập trung đánh giá
-chuyên sâu tại mốc 150 ngày. Một hướng mở rộng tự nhiên là huấn luyện và so
-sánh mô hình tại \textbf{nhiều mốc dự đoán} khác nhau, nhằm xác định thời điểm
-cảnh báo sớm nhất mà mô hình vẫn đạt độ tin cậy chấp nhận được, đồng thời theo
-dõi cách dự báo đối với cùng một sinh viên thay đổi theo thời gian. Bên cạnh
-đó, việc \textbf{hiệu chỉnh ngưỡng phân loại} theo chi phí thực tế của bỏ sót
-và cảnh báo nhầm, cùng với thử nghiệm mô hình trên dữ liệu của các cơ sở đào
-tạo khác, là những bước cần thiết trước khi đưa hệ thống vào vận hành thực tế.
+\textbf{Hạn chế và hướng phát triển.} Bên cạnh các kết quả đạt được, nghiên
+cứu vẫn còn một số giới hạn cần được xem xét trước khi mở rộng thành hệ thống
+cảnh báo sớm trong thực tế:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Phạm vi đánh giá theo thời gian.} Phần thực nghiệm chuyên sâu
+        hiện tập trung tại mốc 150 ngày. Đây là mốc đủ giàu thông tin để phân
+        tích mô hình, nhưng chưa trả lời đầy đủ câu hỏi cảnh báo có thể được
+        đưa ra sớm đến mức nào. Hướng phát triển tiếp theo là huấn luyện, tinh
+        chỉnh và so sánh mô hình tại nhiều mốc dự đoán khác nhau, đồng thời
+        theo dõi cách xác suất rủi ro của cùng một sinh viên thay đổi theo tiến
+        trình học tập.
+  \item \textbf{Lựa chọn ngưỡng vận hành.} Các phân tích hiệu chỉnh ngưỡng trong
+        báo cáo giúp minh hoạ sự đánh đổi giữa precision và recall, nhưng ngưỡng
+        cuối cùng vẫn cần được lựa chọn bằng kiểm định chéo hoặc tập validation
+        trên dữ liệu huấn luyện. Khi triển khai, ngưỡng nên được cố định trước,
+        sau đó đánh giá lại trên một tập kiểm tra độc lập và được điều chỉnh
+        theo chi phí thực tế giữa bỏ sót sinh viên At-risk và tạo cảnh báo nhầm.
+  \item \textbf{Khả năng khái quát của mô hình.} Kết quả hiện được xây dựng trên
+        bộ dữ liệu OULAD và phản ánh bối cảnh đào tạo cụ thể của bộ dữ liệu này.
+        Vì vậy, cần kiểm tra mô hình trên các khóa học, học kỳ hoặc cơ sở đào
+        tạo khác để đánh giá độ ổn định khi phân phối dữ liệu thay đổi. Việc
+        đánh giá ngoài mẫu cũng giúp xác định liệu các đặc trưng hành vi học
+        tập quan trọng có giữ vai trò tương tự trong những bối cảnh khác hay
+        không.
+  \item \textbf{Triển khai và sử dụng kết quả dự báo.} Một hệ thống cảnh báo sớm
+        không chỉ cần mô hình có hiệu suất tốt, mà còn cần quy trình sử dụng rõ
+        ràng cho giảng viên và cố vấn học tập. Do đó, các bước tiếp theo nên bao
+        gồm thiết kế cách trình bày lý do cảnh báo, xác định mức ưu tiên can
+        thiệp, theo dõi hiệu quả hỗ trợ sau cảnh báo và giám sát hiện tượng suy
+        giảm hiệu suất mô hình khi dữ liệu mới phát sinh.
+\end{itemize}
+
+% =====================================================================
+%  TÀI LIỆU THAM KHẢO
+% =====================================================================
+\clearpage
+\renewcommand{\bibname}{Tài liệu tham khảo}
+\addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+
+\begin{thebibliography}{99}
+  \bibitem{oulad_dataset}
+  Tài liệu về bộ dữ liệu Open University Learning Analytics Dataset. Điền thông
+  tin tác giả, năm xuất bản, tiêu đề đầy đủ và liên kết truy cập tại đây.
+
+  \bibitem{learning_analytics}
+  Tài liệu tổng quan về learning analytics và educational data mining. Điền
+  thông tin trích dẫn đầy đủ tại đây.
+
+  \bibitem{logistic_regression}
+  Tài liệu về Logistic Regression và phân loại nhị phân. Điền thông tin trích
+  dẫn đầy đủ tại đây.
+
+  \bibitem{random_forest}
+  Tài liệu về Decision Tree, Random Forest và độ quan trọng đặc trưng dựa trên
+  Gini. Điền thông tin trích dẫn đầy đủ tại đây.
+
+  \bibitem{catboost}
+  Tài liệu về CatBoost và mô hình gradient boosting trên đặc trưng phân loại.
+  Điền thông tin trích dẫn đầy đủ tại đây.
+
+  \bibitem{lightgbm}
+  Tài liệu về LightGBM và chiến lược phát triển cây leaf-wise. Điền thông tin
+  trích dẫn đầy đủ tại đây.
+
+  \bibitem{smote}
+  Tài liệu về SMOTE và các phương pháp xử lý mất cân bằng nhãn. Điền thông tin
+  trích dẫn đầy đủ tại đây.
+
+  \bibitem{optuna_tpe}
+  Tài liệu về Bayesian Optimization, Optuna và Tree-structured Parzen Estimator.
+  Điền thông tin trích dẫn đầy đủ tại đây.
+
+  \bibitem{shap}
+  Tài liệu về SHAP, giá trị Shapley và TreeSHAP. Điền thông tin trích dẫn đầy đủ
+  tại đây.
+\end{thebibliography}
 
 \end{document}

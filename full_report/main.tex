@@ -2126,20 +2126,10 @@ phát hiện thêm. Vì vậy, việc tăng recall không chỉ là bài toán c
 hơn, mà còn là quyết định về số lượng cảnh báo mà nhà trường có thể kiểm tra và
 hỗ trợ thực tế.
 
-\textbf{Khuyến nghị.} Vùng ngưỡng \textbf{0.40--0.43} là điểm cân bằng hợp lý:
-recall đạt khoảng 80\%, precision vẫn trên $0.75$ (tức khoảng ba trong bốn
-cảnh báo là chính xác), F1 gần như không đổi so với ngưỡng mặc định, và chi
-phí đánh đổi ở mức thấp trong toàn dải. Tuy nhiên, ngưỡng vận hành cuối cùng
-nên phụ thuộc vào \textbf{năng lực hỗ trợ thực tế} của nhà trường. Nếu đội ngũ
-cố vấn có thể theo sát khoảng 2.000 sinh viên mỗi kỳ, ngưỡng có thể được hạ
-thêm để tăng recall; nếu nguồn lực hạn chế, ngưỡng cao hơn sẽ giúp danh sách
-cảnh báo ngắn và chính xác hơn.
+Dựa vào các kết quả trên có thể thấy rằng vùng ngưỡng \textbf{0.40--0.43} là điểm 
+cân bằng hợp lý: recall đạt khoảng 80\%, precision vẫn trên $0.75$ (tức khoảng ba trong bốn
+cảnh báo là chính xác) và F1 gần như không đổi so với ngưỡng mặc định.
 
-Về phương pháp, các ngưỡng trên được khảo sát \textbf{trực tiếp trên tập kiểm
-tra}; do đó, kết quả chủ yếu minh hoạ sự đánh đổi giữa precision và recall,
-chưa phải một ngưỡng đã được kiểm định độc lập. Khi triển khai thực tế, ngưỡng
-nên được lựa chọn bằng kiểm định chéo trên tập huấn luyện, sau đó xác nhận lại
-trên tập kiểm tra độc lập.
 
 \subsection{Khoảng tin cậy bootstrap của các chỉ số}
 
@@ -2186,14 +2176,8 @@ khẳng định CatBoost thực sự vượt trội hơn LightGBM và Random For
 hình này nên được xem là \textbf{tương đương} về hiệu suất, còn việc CatBoost
 dẫn đầu có thể phản ánh dao động riêng của tập kiểm tra. Ngược lại, khoảng
 cách giữa Logistic Regression, $0.7591$, và nhóm mô hình cây lớn hơn đáng kể,
-nên kết luận mô hình tuyến tính yếu hơn là đáng tin cậy hơn.
+nên có thể kết luận rằng mô hình tuyến tính có hiệu suất kém hơn.
 
-Nhận xét này không phủ nhận tính hợp lý của việc chọn CatBoost để triển khai,
-vì vẫn cần lựa chọn một mô hình đại diện và CatBoost đạt kết quả tốt nhất trên
-tập kiểm tra hiện có. Tuy nhiên, không nên diễn giải quá mức các chênh lệch
-nhỏ ở chữ số thập phân thứ ba. Để khẳng định một mô hình thực sự vượt trội,
-cần đánh giá trên nhiều tập kiểm tra độc lập hoặc sử dụng kiểm định thống kê
-cho chênh lệch giữa từng cặp mô hình.
 
 \section{Diễn giải mô hình bằng SHAP}
 

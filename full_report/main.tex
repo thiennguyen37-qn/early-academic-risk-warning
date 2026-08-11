@@ -2188,11 +2188,25 @@ Mục~\ref{sec:shap_theory}. Phân tích được thực hiện trên cả ba b�
 Full, Top-10 và Top-5 nhằm kiểm tra mức độ nhất quán của diễn giải khi số lượng
 đặc trưng thay đổi.
 
+Mục tiêu của phần này không phải thay thế các chỉ số đánh giá ở những mục
+trước, mà bổ sung một lớp kiểm tra về khả năng diễn giải của mô hình. Cụ thể,
+SHAP được dùng để trả lời ba câu hỏi: mô hình dựa nhiều nhất vào những đặc
+trưng nào, các đặc trưng đó đẩy dự báo về phía At-risk hay Pass, và cách mô
+hình đưa ra quyết định có còn nhất quán khi rút gọn bộ đặc trưng hay không.
+Điều này đặc biệt quan trọng với bài toán cảnh báo sớm, vì kết quả dự báo chỉ
+có giá trị thực tiễn khi người dùng có thể liên hệ nó với các tín hiệu học tập
+cụ thể.
+
 Trước hết, phân tích được thực hiện ở cấp độ toàn cục nhằm xác định những đặc
 trưng có ảnh hưởng lớn nhất đến mô hình. Hình~\ref{fig:shap_full} trình bày kết
 quả SHAP trên bộ đặc trưng đầy đủ. Biểu đồ beeswarm cho biết chiều và độ phân
 tán ảnh hưởng của từng đặc trưng đối với từng sinh viên, trong khi biểu đồ cột
 thể hiện mức độ quan trọng trung bình.
+Trong biểu đồ beeswarm, mỗi điểm tương ứng với một sinh viên trong tập kiểm
+tra; vị trí trên trục hoành là giá trị SHAP của đặc trưng đó. Điểm nằm về phía
+dương làm tăng điểm dự báo At-risk, còn điểm nằm về phía âm kéo dự báo về Pass.
+Màu sắc thể hiện giá trị của đặc trưng, trong đó màu đỏ/tím biểu thị giá trị
+cao và màu xanh biểu thị giá trị thấp.
 
 \begin{figure}[H]
   \centering
@@ -2263,16 +2277,20 @@ với hai bộ đặc trưng rút gọn.
 \end{figure}
 
 Thứ tự và chiều ảnh hưởng của các đặc trưng còn lại hầu như \textbf{không đổi}
-khi loại bỏ dần các đặc trưng ít quan trọng. Đây là bằng chứng bổ sung cho
-tính ổn định đã quan sát ở Bảng~\ref{tab:compare_featuresets}, đồng thời cho
-thấy các đặc trưng bị loại bỏ chủ yếu đóng góp thông tin trùng lặp hoặc không
-đáng kể.
+khi loại bỏ dần các đặc trưng ít quan trọng. Đây là bằng chứng cho
+thấy các đặc trưng bị loại bỏ chủ yếu đóng góp thông tin trùng lặp
+hoặc không đáng kể.
+Nói cách khác, việc rút gọn đặc trưng không làm thay đổi cơ chế ra quyết định
+chính của CatBoost: mô hình vẫn tập trung vào mức độ nộp bài, điểm số, số tuần
+hoạt động và khối lượng bài đến hạn. Điều này làm cho bộ Top-5 có ý nghĩa thực
+tiễn hơn, vì đây không chỉ là bộ đặc trưng cho hiệu suất gần tương đương, mà
+còn giữ được cùng một cách giải thích với bộ đặc trưng đầy đủ.
 
 Sau khi xem xét xu hướng toàn cục, phân tích tiếp tục đi vào cấp độ cục bộ để
 làm rõ cách mô hình đưa ra quyết định cho từng sinh viên. Hình~\ref{fig:waterfall}
-trình bày biểu đồ waterfall của hai sinh viên đại diện, sử dụng mô hình CatBoost
-trên bộ đặc trưng đầy đủ: một trường hợp được dự báo mạnh về phía At-risk và
-một trường hợp được dự báo mạnh về phía Pass.
+trình bày biểu đồ waterfall của hai sinh viên đại diện: một trường hợp 
+được dự báo mạnh về phía At-risk và một trường hợp được dự báo mạnh về phía Pass.
+
 
 \begin{figure}[H]
   \centering

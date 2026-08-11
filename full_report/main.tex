@@ -1764,8 +1764,7 @@ gian.
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.85\textwidth]{trend_by_snapshot.png}
-  \caption{Xu hướng hiệu suất mô hình theo từng mốc dự đoán (mỗi mốc một mô
-  hình riêng).}
+  \caption{Xu hướng hiệu suất mô hình theo từng mốc dự đoán.}
   \label{fig:trend_snapshot}
 \end{figure}
 
@@ -1773,8 +1772,8 @@ gian.
   \item \textbf{Accuracy} và \textbf{precision At-risk} tăng \textbf{đơn điệu}
         theo thời gian, không có mốc nào giảm so với mốc liền trước. Accuracy
         tăng từ 0.6488 ở $T=30$ lên 0.8796 ở $T=240$, trong khi precision tăng
-        từ 0.5750 lên 0.8269. Kết quả này phù hợp với trực giác: sinh viên càng
-        tích luỹ nhiều hành vi học tập, tín hiệu dự báo càng rõ ràng và đáng
+        từ 0.5750 lên 0.8269. Kết quả này dễ giải thích: sinh viên càng tích
+        luỹ nhiều hành vi học tập, tín hiệu dự báo càng rõ ràng và đáng
         tin cậy.
   \item \textbf{Recall At-risk} lại dao động trong một biên độ hẹp
         trong khoảng 0.7555--0.8013 mà không theo xu hướng rõ ràng, thậm chí
@@ -1955,16 +1954,21 @@ nhận diện nhóm At-risk tốt nhất với 1.219 trường hợp đúng và 
 LightGBM cho kết quả khá cân bằng giữa hai nhóm - tương tự như Random Forest, 
 trong khi Logistic Regression có số lỗi phân loại tổng thể cao nhất.
 
-\section{Độ quan trọng của đặc trưng}
+\section{Độ quan trọng và rút gọn đặc trưng}
 \label{sec:feat_importance}
+
+Phần này trả lời hai câu hỏi liên tiếp. Trước hết, cần xác định những đặc trưng
+nào đóng góp ổn định nhất cho dự báo At-risk. Sau đó, từ nhóm đặc trưng quan
+trọng này, cần kiểm tra liệu mô hình có thể duy trì hiệu suất khi chỉ sử dụng
+một bộ đặc trưng gọn hơn hay không.
 
 Hình~\ref{fig:feat_imp} thể hiện độ quan trọng đặc trưng theo định nghĩa riêng
 của từng thuật toán: hệ số hồi quy tuyệt đối với Logistic Regression, độ giảm
 tạp chất Gini với Random Forest theo công thức ở
 Mục~\ref{sec:rf_importance}, PredictionValuesChange với CatBoost, và số lần
 được dùng để phân tách với LightGBM. Do các giá trị này \textbf{không cùng đơn
-vị}, chỉ nên so sánh thứ hạng đặc trưng, không so sánh trực tiếp độ lớn giữa
-các mô hình.
+vị}, phân tích chỉ dùng để so sánh thứ hạng đặc trưng trong từng mô hình, không
+so sánh trực tiếp độ lớn giữa các mô hình.
 
 \begin{figure}[H]
   \centering
@@ -2001,31 +2005,30 @@ trình bày kết quả, sắp xếp tăng dần theo hạng trung bình.
         khiêm tốn hơn đáng kể so với các đặc trưng hành vi động.
 \end{itemize}
 
-\section{Rút gọn đặc trưng: Top-10 và Top-5}
+\textbf{Kiểm tra trên các bộ đặc trưng rút gọn.} Từ thứ hạng ở
+Bảng~\ref{tab:feature_rank}, mười đặc trưng quan trọng nhất (Top-10) và năm đặc
+trưng quan trọng nhất (Top-5) được chọn để huấn luyện lại theo đúng quy trình
+tinh chỉnh đã mô tả ở Mục~\ref{sec:methodology}. Mục tiêu là kiểm tra liệu hiệu
+suất mô hình có \textbf{ổn định} khi giảm số lượng đặc trưng đầu vào hay không.
+Đây là yếu tố quan trọng trong triển khai thực tế, vì một hệ thống cảnh báo sử
+dụng ít đặc trưng hơn sẽ đơn giản hơn trong thu thập dữ liệu, vận hành và bảo
+trì.
 
-Dựa trên thứ hạng ở Bảng~\ref{tab:feature_rank}, mười đặc trưng quan trọng
-nhất (Top-10) và năm đặc trưng quan trọng nhất (Top-5) được chọn để huấn luyện
-lại theo đúng quy trình tinh chỉnh đã mô tả ở Mục~\ref{sec:methodology}. Mục
-tiêu là kiểm tra liệu hiệu suất mô hình có \textbf{ổn định} khi giảm số lượng
-đặc trưng đầu vào hay không. Đây là yếu tố quan trọng trong triển khai thực tế,
-vì một hệ thống cảnh báo sử dụng ít đặc trưng hơn sẽ đơn giản hơn trong thu
-thập dữ liệu, vận hành và bảo trì.
-
-Phân tích ở phần này tập trung vào \textbf{CatBoost}, mô hình đạt hiệu suất
-tốt nhất trong bước so sánh thuật toán ở Mục~\ref{sec:compare_full}. Việc thu
-hẹp về một mô hình duy nhất giúp câu hỏi đánh giá trở nên cụ thể hơn:
-\textit{với mô hình dự kiến triển khai, có thể giảm bao nhiêu đặc trưng mà
-hiệu suất vẫn gần như được duy trì?} Bảng~\ref{tab:compare_featuresets} đặt
-cạnh nhau kết quả của CatBoost trên ba bộ đặc trưng.
+Phân tích rút gọn tập trung vào \textbf{CatBoost}, mô hình đạt hiệu suất tốt
+nhất trong bước so sánh thuật toán ở Mục~\ref{sec:compare_full}. Việc thu hẹp
+về một mô hình duy nhất giúp câu hỏi đánh giá trở nên cụ thể hơn: với mô hình
+dự kiến triển khai, có thể giảm bao nhiêu đặc trưng mà hiệu suất vẫn gần như
+được duy trì? Bảng~\ref{tab:compare_featuresets} đặt cạnh nhau kết quả của
+CatBoost trên ba bộ đặc trưng.
 
 \input{table_compare_featuresets}
 
 \begin{itemize}[leftmargin=*]
   \item Hiệu suất \textbf{gần như không đổi} trên cả ba bộ đặc trưng: F1
         At-risk chỉ dao động trong khoảng $0.7825$--$0.7875$, trong khi accuracy cũng chỉ 
-        chênh $0.004$. Kết quả này củng cố nhận
-        định ở Mục~\ref{sec:feat_importance}: phần lớn sức mạnh dự báo tập
-        trung ở một nhóm nhỏ đặc trưng hành vi động.
+        chênh $0.004$. Kết quả này cho thấy phần lớn sức mạnh dự báo tập trung
+        ở một nhóm nhỏ đặc trưng hành vi động, đúng với thứ hạng đã quan sát ở
+        Bảng~\ref{tab:feature_rank}.
   \item Đáng chú ý, bộ \textbf{Top-10 đạt kết quả cao hơn bộ đầy đủ} ở ba trên
         năm chỉ số: F1, recall và ROC-AUC. Cụ thể, F1 tăng từ $0.7849$ lên
         $0.7875$, recall tăng từ $0.7652$ lên $0.7774$, còn ROC-AUC tăng từ
@@ -2228,7 +2231,7 @@ thể hiện mức độ quan trọng trung bình.
 Kết quả SHAP nhất quán cao với thứ hạng độ quan trọng đặc trưng ở
 Bảng~\ref{tab:feature_rank}: \code{num\_submitted\_filled},
 \code{avg\_score\_filled} và \code{active\_weeks\_filled} là ba đặc trưng có
-ảnh hưởng lớn nhất. Chiều tác động phù hợp với trực giác sư phạm: giá trị
+ảnh hưởng lớn nhất. Chiều tác động cũng dễ diễn giải: giá trị
 \code{num\_submitted\_filled} và \code{avg\_score\_filled} \textbf{thấp}, thể
 hiện bằng màu xanh, đẩy dự báo về phía \textbf{At-risk} với SHAP dương; trong
 khi giá trị \textbf{cao}, thể hiện bằng màu đỏ/tím, kéo dự báo về phía Pass.
@@ -2322,10 +2325,9 @@ một trường hợp được dự báo mạnh về phía Pass.
         cao.
 \end{itemize}
 
-Hai ví dụ trên cho thấy mô hình đưa ra quyết định dựa trên những tín hiệu phù
-hợp với trực giác sư phạm: mức độ hoàn thành bài tập và điểm số tích luỹ là
-những yếu tố quyết định, thống nhất với phân tích độ quan trọng đặc trưng ở
-quy mô toàn cục.
+Hai ví dụ trên cho thấy mô hình đưa ra quyết định dựa trên những tín hiệu học
+tập trực tiếp: mức độ hoàn thành bài tập và điểm số tích luỹ là những yếu tố
+quyết định, thống nhất với phân tích độ quan trọng đặc trưng ở quy mô toàn cục.
 
 \section{Kết luận}
 
@@ -2355,9 +2357,9 @@ diễn giải mô hình, có thể rút ra các kết luận chính sau:
         và \code{total\_clicks\_filled} --- toàn bộ đều là đặc trưng hành vi học
         tập, không yêu cầu thông tin nhân khẩu học --- có thể đủ để xây dựng
         một hệ thống cảnh báo sớm gọn nhẹ, dễ triển khai và duy trì.
-  \item Phân tích SHAP cho thấy dự báo của mô hình dựa trên những tín hiệu phù
-        hợp với trực giác sư phạm, gồm mức độ hoàn thành bài tập, điểm số tích
-        luỹ và khối lượng công việc còn tồn đọng. Các diễn giải này giữ được
+  \item Phân tích SHAP cho thấy dự báo của mô hình dựa trên những tín hiệu học
+        tập trực tiếp, gồm mức độ hoàn thành bài tập, điểm số tích luỹ và khối
+        lượng công việc còn tồn đọng. Các diễn giải này giữ được
         tính nhất quán qua cả ba bộ đặc trưng.
 \end{itemize}
 

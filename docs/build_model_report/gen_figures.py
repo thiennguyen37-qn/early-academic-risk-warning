@@ -22,7 +22,7 @@ ax.plot(T, F1,        marker='o', linewidth=2, color='tab:red',    label='F1 (At
 
 ax.set_xlabel('Mốc dự đoán T (ngày)')
 ax.set_ylabel('Score')
-ax.set_title('Hiệu suất mô hình theo từng mốc dự đoán (mỗi mốc một mô hình riêng)')
+ax.set_title('Hiệu suất mô hình theo từng mốc dự đoán')
 ax.set_xticks(T)
 ax.grid(axis='y', linestyle='--', alpha=0.4)
 ax.legend(loc='lower right')

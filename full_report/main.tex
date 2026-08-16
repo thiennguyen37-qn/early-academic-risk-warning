@@ -877,11 +877,12 @@ Quy mô tổng thể của bộ dữ liệu được tóm tắt trong Bảng~\re
     \toprule
     \textbf{Bảng gốc} & \textbf{Thực thể} & \textbf{Số lượng} \\
     \midrule
-    \code{studentInfo}         & Sinh viên tham gia khóa học & 32{,}953 \\
+    \code{studentInfo}         & Lượt đăng ký học phần       & 32{,}593 \\
+    ---                        & Số lượng sinh viên khác nhau & 28{,}785 \\
     \code{courses}             & Đợt mở học phần             & 22 \\
     \code{vle}                 & Trang/tài nguyên VLE        & 6{,}364 \\
     \code{studentVle}          & Nhật ký tương tác VLE       & 10{,}655{,}280 \\
-    \code{studentRegistration} & Bản ghi đăng ký học         & 32{,}953 \\
+    \code{studentRegistration} & Bản ghi đăng ký học         & 32{,}593 \\
     \code{assessments}         & Bài đánh giá                & 206 \\
     \code{studentAssessment}   & Bản ghi kết quả đánh giá    & 173{,}912 \\
     ---                        & \textbf{Tổng số thuộc tính} & \textbf{43} \\
@@ -1453,7 +1454,10 @@ Các đặc trưng động được tính trong khoảng thời gian $[0, T]$ t�
 mức độ tương tác VLE và kết quả bài kiểm tra tích luỹ đến thời điểm đó. Bảy đặc
 trưng động gồm: \code{total\_clicks}, \code{active\_weeks},
 \code{avg\_weekly\_clicks}, \code{num\_submitted}, \code{avg\_score},
-\code{num\_failed} và \code{avg\_days\_early}.
+\code{num\_failed} và \code{avg\_days\_early}. Giống như chương phân tích đặc
+trưng tĩnh, toàn bộ số liệu và biểu đồ trong chương này được tính \textbf{trên
+tập huấn luyện} (Bảng~\ref{tab:split}) để tránh rò rỉ thông tin từ tập kiểm
+tra vào các quyết định tiền xử lý.
 
 \subsection{Thống kê mô tả}
 

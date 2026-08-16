@@ -1773,22 +1773,23 @@ gian.
 \end{figure}
 
 \begin{itemize}[leftmargin=*]
-  \item \textbf{Accuracy} và \textbf{precision At-risk} tăng \textbf{đơn điệu}
-        theo thời gian, không có mốc nào giảm so với mốc liền trước. Accuracy
-        tăng từ 0.6488 ở $T=30$ lên 0.8796 ở $T=240$, trong khi precision tăng
-        từ 0.5750 lên 0.8269. Kết quả này dễ giải thích: sinh viên càng tích
+  \item \textbf{Accuracy} tăng \textbf{đơn điệu} theo thời gian, không có mốc
+        nào giảm so với mốc liền trước, từ 0.6443 ở $T=30$ lên 0.8774 ở
+        $T=240$. \textbf{Precision At-risk} nhìn chung cũng tăng theo xu hướng
+        tương tự, từ 0.5698 lên 0.8152, dù không hoàn toàn đơn điệu --- giảm
+        nhẹ tại $T=90$. Kết quả này dễ giải thích: sinh viên càng tích
         luỹ nhiều hành vi học tập, tín hiệu dự báo càng rõ ràng và đáng
         tin cậy.
   \item \textbf{Recall At-risk} lại dao động trong một biên độ hẹp
-        trong khoảng 0.7555--0.8013 mà không theo xu hướng rõ ràng, thậm chí
-        đạt giá trị cao nhất 0.8013 ngay ở mốc sớm nhất $T=30$, khi độ chính
-        xác tổng thể còn thấp với accuracy 0.6488 và precision 0.5750. Điều này cho thấy ở giai
+        trong khoảng 0.7258--0.8115 mà không theo xu hướng rõ ràng, thậm chí
+        đạt giá trị cao nhất 0.8115 ngay ở mốc sớm nhất $T=30$, khi độ chính
+        xác tổng thể còn thấp với accuracy 0.6443 và precision 0.5698. Điều này cho thấy ở giai
         đoạn đầu khoá, khi tín hiệu hành vi còn thưa thớt, ranh giới tuyến tính
         của Logistic Regression có xu hướng dự báo At-risk tương đối rộng:
         mô hình phát hiện được phần lớn sinh viên có nguy cơ nhưng phải đánh
         đổi bằng nhiều cảnh báo nhầm.
   \item \textbf{F1 At-risk} --- chỉ số tổng hợp được dùng làm mục tiêu tối ưu
-        --- cũng tăng đều theo thời gian, từ 0.6695 tại $T=30$ lên 0.8035 tại
+        --- cũng tăng đều theo thời gian, từ 0.6695 tại $T=30$ lên 0.8024 tại
         $T=240$. Tuy nhiên, mức tăng này chủ yếu đến từ \textbf{precision},
         trong khi recall gần như ổn định xuyên suốt khoá học.
 \end{itemize}
@@ -1824,14 +1825,14 @@ Kết quả khảo sát cho thấy sự đánh đổi rõ ràng giữa \textbf{�
 báo} và \textbf{thời gian còn lại để can thiệp}: mốc dự đoán càng muộn thì
 hiệu suất càng cao, nhưng cảnh báo cũng càng gần thời điểm kết thúc khoá học,
 làm giảm giá trị thực tiễn của hệ thống. Với các khoá học OULAD kéo dài khoảng
-240--270 ngày, hai mốc có F1 cao nhất --- 210 và 240 ngày, lần lượt 0.7935 và
-0.8035 --- chỉ còn khoảng 10--20\% thời lượng khoá học. Đây là thời điểm quá
+240--270 ngày, hai mốc có F1 cao nhất --- 210 và 240 ngày, lần lượt 0.7901 và
+0.8024 --- chỉ còn khoảng 10--20\% thời lượng khoá học. Đây là thời điểm quá
 muộn để nhà trường triển khai các biện pháp hỗ trợ có ý nghĩa.
 
 Mốc \textbf{150 ngày} được chọn làm đại diện cho các thử nghiệm chuyên sâu ở
 phần còn lại của báo cáo vì đạt cân bằng hợp lý giữa hai yêu cầu trên. Về hiệu
-suất, mốc này cho kết quả tương đối cao với accuracy 0.8263 và F1 At-risk 0.7591,
-và chỉ thấp hơn khoảng 0.016 so với mốc 180 ngày liền sau, một khoảng cách nhỏ
+suất, mốc này cho kết quả tương đối cao với accuracy 0.8260 và F1 At-risk 0.7568,
+và chỉ thấp hơn khoảng 0.019 so với mốc 180 ngày liền sau, một khoảng cách nhỏ
 so với lợi ích thu được về thời gian. Về khả năng can thiệp, cảnh báo tại ngày
 thứ 150 vẫn còn khoảng 90--120 ngày, tương đương 37--50\% thời lượng khoá học,
 đủ để nhà trường tổ chức các hoạt động hỗ trợ có chiều sâu thay vì chỉ nhắc
@@ -1903,16 +1904,17 @@ tra khi sử dụng đầy đủ 15 đặc trưng.
 \input{table_compare_full}
 
 \begin{itemize}[leftmargin=*]
-  \item \textbf{CatBoost} dẫn đầu ở ba chỉ số: accuracy 0.8501, precision
-        At-risk 0.8055 và F1 At-risk 0.7849. Tuy nhiên, recall lại đạt giá trị thấp nhất,
-        thậm chí thấp hơn cả Logistic Regression.
-  \item \textbf{LightGBM} đạt ROC-AUC cao nhất 0.9116, nhưng chênh lệch so
-        với CatBoost, 0.9114, là không đáng kể; F1 At-risk của mô hình này,
-        0.7827, cũng chỉ thấp hơn CatBoost khoảng 0.2%.
-  \item \textbf{Random Forest} có recall At-risk cao nhất 0.7819, tức bỏ sót
+  \item \textbf{CatBoost} dẫn đầu ở bốn trên năm chỉ số: accuracy 0.8515,
+        precision At-risk 0.8039, F1 At-risk 0.7881 và ROC-AUC 0.9126. Chỉ
+        riêng recall là không cao nhất, nhưng vẫn cao hơn Logistic Regression.
+  \item \textbf{LightGBM} bám khá sát CatBoost mà không dẫn đầu ở chỉ số nào:
+        ROC-AUC đạt 0.9108, chênh lệch so với CatBoost, 0.9126, là không đáng
+        kể; F1 At-risk của mô hình này, 0.7790, cũng chỉ thấp hơn CatBoost
+        khoảng 0.9 điểm phần trăm.
+  \item \textbf{Random Forest} có recall At-risk cao nhất 0.7832, tức bỏ sót
         ít sinh viên có nguy cơ nhất, nhưng phải đánh đổi bằng precision thấp
-        hơn CatBoost. Nhìn chung, ba mô hình cây cho kết quả rất sát nhau với
-        F1 nằm trong khoảng hẹp 0.781--0.785; không mô hình nào vượt trội rõ
+        hơn CatBoost. Nhìn chung, ba mô hình cây cho kết quả khá sát nhau với
+        F1 nằm trong khoảng 0.778--0.788; không mô hình nào vượt trội rõ
         rệt.
   \item \textbf{Logistic Regression} có hiệu suất thấp nhất ở hầu hết các chỉ số, trong khi 
         các mô hình bagging và boosting đều cho kết quả tốt hơn, cho thấy khả năng khai thác 
@@ -1952,10 +1954,11 @@ Hình~\ref{fig:cm_full}.
 \end{figure}
 
 Nhìn chung, cả bốn mô hình đều phân loại tốt hai nhóm Pass và At-risk, với số dự đoán đúng
-chiếm phần lớn. CatBoost nhận diện nhóm Pass tốt nhất với 2.516 trường hợp đúng,
-nhưng đồng thời bỏ sót nhiều sinh viên At-risk nhất (366 trường hợp). Ngược lại, Random Forest
-nhận diện nhóm At-risk tốt nhất với 1.219 trường hợp đúng và chỉ bỏ sót 340 trường hợp. 
-LightGBM cho kết quả khá cân bằng giữa hai nhóm - tương tự như Random Forest, 
+chiếm phần lớn. CatBoost nhận diện nhóm Pass tốt nhất với 2.510 trường hợp đúng.
+Random Forest nhận diện nhóm At-risk tốt nhất với 1.221 trường hợp đúng và bỏ sót ít nhất
+(338 trường hợp), trong khi Logistic Regression bỏ sót nhiều sinh viên At-risk nhất (379
+trường hợp).
+LightGBM cho kết quả khá cân bằng giữa hai nhóm - tương tự như Random Forest,
 trong khi Logistic Regression có số lỗi phân loại tổng thể cao nhất.
 
 \section{Độ quan trọng và rút gọn đặc trưng}
@@ -2029,25 +2032,23 @@ CatBoost trên ba bộ đặc trưng.
 
 \begin{itemize}[leftmargin=*]
   \item Hiệu suất \textbf{gần như không đổi} trên cả ba bộ đặc trưng: F1
-        At-risk chỉ dao động trong khoảng $0.7825$--$0.7875$, trong khi accuracy cũng chỉ 
-        chênh $0.004$. Kết quả này cho thấy phần lớn sức mạnh dự báo tập trung
+        At-risk chỉ dao động trong khoảng $0.7823$--$0.7881$, trong khi accuracy cũng chỉ
+        chênh $0.0058$. Kết quả này cho thấy phần lớn sức mạnh dự báo tập trung
         ở một nhóm nhỏ đặc trưng hành vi động, đúng với thứ hạng đã quan sát ở
         Bảng~\ref{tab:feature_rank}.
-  \item Đáng chú ý, bộ \textbf{Top-10 đạt kết quả cao hơn bộ đầy đủ} ở ba trên
-        năm chỉ số: F1, recall và ROC-AUC. Cụ thể, F1 tăng từ $0.7849$ lên
-        $0.7875$, recall tăng từ $0.7652$ lên $0.7774$, còn ROC-AUC tăng từ
-        $0.9114$ lên $0.9119$, trong khi sử dụng ít
-        hơn một phần ba số đặc trưng. Việc loại bỏ năm đặc trưng kém quan
-        trọng nhất không những không làm giảm hiệu suất mà còn giúp mô hình
-        phát hiện thêm sinh viên có nguy cơ. Điều này gợi ý rằng nhóm đặc
-        trưng bị loại chủ yếu đóng góp nhiễu hoặc thông tin dư thừa.
+  \item Đáng chú ý, bộ \textbf{Top-10 cho hiệu suất gần tương đương bộ đầy
+        đủ} dù dùng ít hơn một phần ba số đặc trưng: accuracy chỉ thấp hơn
+        $0.0030$, F1 thấp hơn $0.0032$, còn ROC-AUC gần như không đổi
+        ($0.9122$ so với $0.9126$). Riêng recall nhỉnh hơn nhẹ, từ $0.7729$
+        lên $0.7736$. Điều này cho thấy năm đặc trưng bị loại đóng góp không
+        nhiều vào khả năng dự báo tổng thể, dù không hẳn là nhiễu thuần tuý.
   \item Khi tiếp tục rút gọn xuống \textbf{Top-5}, hiệu suất bắt đầu giảm nhẹ
-        nhưng vẫn ở mức không đáng kể: F1 thấp hơn bộ đầy đủ đúng $0.0024$ và
-        thấp hơn Top-10 $0.005$. Đổi lại, số đặc trưng cần thu thập giảm đáng kể từ
+        nhưng vẫn ở mức không đáng kể: F1 thấp hơn bộ đầy đủ $0.0058$ và
+        thấp hơn Top-10 $0.0026$. Đổi lại, số đặc trưng cần thu thập giảm đáng kể từ
         15 xuống 5.
   \item Xu hướng chung khi giảm đặc trưng là \textbf{precision giảm, recall
-        tăng}: precision giảm từ $0.8055$ ở Full xuống $0.7910$ ở Top-5, trong
-        khi recall tăng nhẹ từ $0.7652$ lên $0.7742$. Với bài toán cảnh báo
+        tăng}: precision giảm từ $0.8039$ ở Full xuống $0.7892$ ở Top-5, trong
+        khi recall tăng nhẹ từ $0.7729$ lên $0.7755$. Với bài toán cảnh báo
         sớm, đây là hướng đánh đổi có lợi, vì bỏ sót một sinh viên cần hỗ trợ
         thường gây hậu quả lớn hơn một cảnh báo nhầm.
 \end{itemize}
@@ -2074,7 +2075,7 @@ suất thông qua khoảng tin cậy bootstrap.
 
 Các kết quả từ đầu chương đến thời điểm này đều sử dụng \textbf{ngưỡng mặc
 định 0.5}: sinh viên được gán nhãn At-risk khi xác suất dự báo vượt quá 0.5.
-Ngưỡng này gần với điểm tối đa hoá F1; F1 đạt đỉnh tại 0.53. Tuy nhiên, F1 mặc
+Ngưỡng này gần với điểm tối đa hoá F1; F1 đạt đỉnh tại 0.48. Tuy nhiên, F1 mặc
 định xem precision và recall có tầm quan trọng ngang nhau. Giả định này chưa
 phù hợp hoàn toàn với bài toán cảnh báo sớm, vì bỏ sót một sinh viên đang gặp
 rủi ro thường nghiêm trọng hơn việc tạo ra một cảnh báo nhầm cần cố vấn học
@@ -2108,12 +2109,12 @@ này bằng số sinh viên cụ thể.
   \label{fig:cm_threshold}
 \end{figure}
 
-Khi giảm ngưỡng từ 0.5 xuống 0.4, số sinh viên At-risk bị bỏ sót giảm từ 366
-xuống 297, tức \textbf{phát hiện thêm 69 sinh viên có nguy cơ}, trong khi F1
-chỉ giảm $0.0068$, từ $0.7849$ xuống $0.7781$. Đổi lại, hệ thống phát sinh
-thêm 135 cảnh báo nhầm. Nếu tiếp tục hạ ngưỡng xuống 0.2, số sinh viên bị bỏ
-sót chỉ còn 128, nhưng số cảnh báo nhầm tăng lên 1.001; khi đó danh sách cảnh
-báo trở nên quá rộng và precision chỉ còn $0.5884$.
+Khi giảm ngưỡng từ 0.5 xuống 0.4, số sinh viên At-risk bị bỏ sót giảm từ 354
+xuống 269, tức \textbf{phát hiện thêm 85 sinh viên có nguy cơ}, trong khi F1
+chỉ giảm $0.0086$, từ $0.7881$ xuống $0.7795$. Đổi lại, hệ thống phát sinh
+thêm 167 cảnh báo nhầm. Nếu tiếp tục hạ ngưỡng xuống 0.2, số sinh viên bị bỏ
+sót chỉ còn 107, nhưng số cảnh báo nhầm tăng lên 1.103; khi đó danh sách cảnh
+báo trở nên quá rộng và precision chỉ còn $0.5683$.
 
 Bảng~\ref{tab:target_recall} tiếp cận theo chiều ngược lại: đặt ra mức recall
 mong muốn rồi tính ngưỡng cần dùng và mức đánh đổi tương ứng.
@@ -2122,15 +2123,15 @@ mong muốn rồi tính ngưỡng cần dùng và mức đánh đổi tương �
 
 Bốn cột cuối cho thấy khi đặt mục tiêu recall cao hơn, số sinh viên At-risk bị
 bỏ sót giảm dần, nhưng danh sách cảnh báo cũng mở rộng nhanh. Ở mức recall mục
-tiêu 80\%, hệ thống cần thêm 94 cảnh báo nhầm để phát hiện thêm 55 sinh viên
-At-risk, tương đương khoảng 1{,}7 cảnh báo nhầm cho mỗi ca phát hiện thêm. Khi
-nâng mục tiêu lên 95\%, hệ thống phát hiện thêm 290 sinh viên nhưng đồng thời
-phát sinh thêm 1.001 cảnh báo nhầm, tức khoảng 3{,}5 cảnh báo nhầm cho mỗi ca
+tiêu 80\%, hệ thống cần thêm 93 cảnh báo nhầm để phát hiện thêm 45 sinh viên
+At-risk, tương đương khoảng 2{,}1 cảnh báo nhầm cho mỗi ca phát hiện thêm. Khi
+nâng mục tiêu lên 95\%, hệ thống phát hiện thêm 277 sinh viên nhưng đồng thời
+phát sinh thêm 998 cảnh báo nhầm, tức khoảng 3{,}6 cảnh báo nhầm cho mỗi ca
 phát hiện thêm. Vì vậy, việc tăng recall không chỉ là bài toán chọn ngưỡng thấp
 hơn, mà còn là quyết định về số lượng cảnh báo mà nhà trường có thể kiểm tra và
 hỗ trợ thực tế.
 
-Dựa vào các kết quả trên có thể thấy rằng vùng ngưỡng \textbf{0.40--0.43} là điểm 
+Dựa vào các kết quả trên có thể thấy rằng ngưỡng khoảng \textbf{0.44} là điểm
 cân bằng hợp lý: recall đạt khoảng 80\%, precision vẫn trên $0.75$ (tức khoảng ba trong bốn
 cảnh báo là chính xác) và F1 gần như không đổi so với ngưỡng mặc định.
 
@@ -2164,22 +2165,22 @@ cậy 95\%.
         phân ở cả năm chỉ số, cho thấy các ước lượng \textbf{không có dấu hiệu
         bị chệch} đáng kể.
   \item \textbf{Accuracy} và \textbf{ROC-AUC} là hai chỉ số ổn định nhất; độ
-        rộng khoảng tin cậy lần lượt là $0.0211$ và $0.0184$, do được tính trên
+        rộng khoảng tin cậy lần lượt là $0.0211$ và $0.0183$, do được tính trên
         toàn bộ 4.363 bản ghi.
   \item \textbf{Precision} và \textbf{recall} của lớp At-risk dao động mạnh
-        gấp đôi, với độ rộng $0.0407$ và $0.0421$; điều này dễ hiểu vì chỉ dựa trên
+        gấp đôi, với độ rộng $0.0399$ và $0.0424$; điều này dễ hiểu vì chỉ dựa trên
         nhóm thiểu số 1.559 sinh viên At-risk.
 \end{itemize}
 
 Hệ quả quan trọng nhất của phân tích này liên quan đến việc \textbf{xếp hạng
 các mô hình} ở Mục~\ref{sec:compare_full}. Khoảng tin cậy của F1 trải từ
-$0.7692$ đến $0.8012$, tức rộng $0.032$, trong khi chênh lệch F1 giữa ba mô
-hình cây chỉ nằm trong khoảng $0.0022$ đến $0.0037$. Các chênh lệch này
+$0.7720$ đến $0.8049$, tức rộng $0.033$, trong khi chênh lệch F1 giữa ba mô
+hình cây chỉ nằm trong khoảng $0.0008$ đến $0.0099$. Các chênh lệch này
 \textbf{nhỏ hơn nhiều so với sai số lấy mẫu}, nên không đủ cơ sở thống kê để
 khẳng định CatBoost thực sự vượt trội hơn LightGBM và Random Forest. Ba mô
 hình này nên được xem là \textbf{tương đương} về hiệu suất, còn việc CatBoost
 dẫn đầu có thể phản ánh dao động riêng của tập kiểm tra. Ngược lại, khoảng
-cách giữa Logistic Regression, $0.7591$, và nhóm mô hình cây lớn hơn đáng kể,
+cách giữa Logistic Regression, $0.7571$, và nhóm mô hình cây lớn hơn đáng kể,
 nên có thể kết luận rằng mô hình tuyến tính có hiệu suất kém hơn.
 
 

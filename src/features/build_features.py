@@ -65,16 +65,17 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
         student_regs['date_unregistration'], errors='coerce'
     ).astype('float')
 
-    # --- VLE: aggregate clicks per student per week ---
-    vle_weekly_agg = pd.read_sql("""
+    # --- VLE: aggregate clicks per student per day (giữ "date" để lọc đúng T,
+    # tránh lộ dữ liệu tương lai nếu gộp thẳng theo tuần rồi lọc theo week) ---
+    vle_daily_agg = pd.read_sql("""
         SELECT
             id_student,
             code_module,
             code_presentation,
-            CAST(FLOOR(CAST(date AS FLOAT) / 7) AS INTEGER) AS week,
-            SUM(sum_click) AS weekly_clicks
+            date,
+            SUM(sum_click) AS daily_clicks
         FROM studentVle
-        GROUP BY id_student, code_module, code_presentation, week
+        GROUP BY id_student, code_module, code_presentation, date
     """, conn)
 
     # --- Assessment: join với assessments để lấy deadline và weight ---
@@ -120,12 +121,15 @@ def build_snapshot_dataset(conn: sqlite3.Connection) -> pd.DataFrame:
             (student_regs['date_unregistration'] > T)
         ]
 
-        # VLE features
+        # VLE features — lọc đúng theo ngày trước, rồi mới quy ra tuần để đếm
+        # active_weeks (tránh lộ dữ liệu của những ngày sau T trong cùng 1 tuần)
+        vle_upto_T = vle_daily_agg[vle_daily_agg['date'] <= T].copy()
+        vle_upto_T['week'] = vle_upto_T['date'] // 7
         vle_feat = (
-            vle_weekly_agg[vle_weekly_agg['week'] <= T // 7]
+            vle_upto_T
             .groupby(['id_student', 'code_module', 'code_presentation'])
             .agg(
-                total_clicks = ('weekly_clicks', 'sum'),
+                total_clicks = ('daily_clicks', 'sum'),
                 active_weeks = ('week', 'nunique'),
             )
             .reset_index()

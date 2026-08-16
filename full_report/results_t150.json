@@ -16,103 +16,96 @@
   "compare": {
     "full": {
       "CatBoost": {
-        "accuracy": 0.8501,
-        "precision": 0.8055,
-        "recall": 0.7652,
-        "f1": 0.7849,
-        "roc_auc": 0.9114
+        "accuracy": 0.8515,
+        "precision": 0.8039,
+        "recall": 0.7729,
+        "f1": 0.7881,
+        "roc_auc": 0.9126
       },
       "LightGBM": {
-        "accuracy": 0.8455,
-        "precision": 0.7868,
-        "recall": 0.7787,
-        "f1": 0.7827,
-        "roc_auc": 0.9116
+        "accuracy": 0.8439,
+        "precision": 0.7884,
+        "recall": 0.7697,
+        "f1": 0.779,
+        "roc_auc": 0.9108
       },
       "Random Forest": {
-        "accuracy": 0.8435,
-        "precision": 0.7804,
-        "recall": 0.7819,
-        "f1": 0.7812,
-        "roc_auc": 0.9076
+        "accuracy": 0.8405,
+        "precision": 0.7733,
+        "recall": 0.7832,
+        "f1": 0.7782,
+        "roc_auc": 0.9071
       },
       "Logistic Regression": {
-        "accuracy": 0.8263,
-        "precision": 0.7524,
-        "recall": 0.7659,
-        "f1": 0.7591,
-        "roc_auc": 0.8972
+        "accuracy": 0.8265,
+        "precision": 0.7574,
+        "recall": 0.7569,
+        "f1": 0.7571,
+        "roc_auc": 0.8975
       }
     },
     "top10": {
       "CatBoost": {
-        "accuracy": 0.8501,
-        "precision": 0.7979,
-        "recall": 0.7774,
-        "f1": 0.7875,
-        "roc_auc": 0.9119
-      },
-      "Random Forest": {
-        "accuracy": 0.8492,
-        "precision": 0.8135,
-        "recall": 0.7498,
-        "f1": 0.7804,
-        "roc_auc": 0.9074
+        "accuracy": 0.8485,
+        "precision": 0.7966,
+        "recall": 0.7736,
+        "f1": 0.7849,
+        "roc_auc": 0.9122
       },
       "LightGBM": {
+        "accuracy": 0.8377,
+        "precision": 0.7631,
+        "recall": 0.7915,
+        "f1": 0.7771,
+        "roc_auc": 0.9087
+      },
+      "Random Forest": {
         "accuracy": 0.8398,
-        "precision": 0.7718,
-        "recall": 0.7832,
-        "f1": 0.7775,
-        "roc_auc": 0.9095
+        "precision": 0.7728,
+        "recall": 0.7813,
+        "f1": 0.777,
+        "roc_auc": 0.9075
       },
       "Logistic Regression": {
-        "accuracy": 0.826,
-        "precision": 0.7475,
-        "recall": 0.7749,
-        "f1": 0.7609,
-        "roc_auc": 0.8966
+        "accuracy": 0.8267,
+        "precision": 0.7477,
+        "recall": 0.7774,
+        "f1": 0.7623,
+        "roc_auc": 0.8968
       }
     },
     "top5": {
+      "Random Forest": {
+        "accuracy": 0.8496,
+        "precision": 0.8082,
+        "recall": 0.7595,
+        "f1": 0.7831,
+        "roc_auc": 0.9071
+      },
       "CatBoost": {
-        "accuracy": 0.8462,
-        "precision": 0.791,
-        "recall": 0.7742,
-        "f1": 0.7825,
-        "roc_auc": 0.9088
+        "accuracy": 0.8457,
+        "precision": 0.7892,
+        "recall": 0.7755,
+        "f1": 0.7823,
+        "roc_auc": 0.9089
       },
       "LightGBM": {
-        "accuracy": 0.8499,
-        "precision": 0.8165,
-        "recall": 0.7479,
-        "f1": 0.7807,
-        "roc_auc": 0.9055
-      },
-      "Random Forest": {
-        "accuracy": 0.8428,
-        "precision": 0.7836,
-        "recall": 0.7736,
-        "f1": 0.7786,
-        "roc_auc": 0.9066
+        "accuracy": 0.8352,
+        "precision": 0.7577,
+        "recall": 0.7922,
+        "f1": 0.7745,
+        "roc_auc": 0.906
       },
       "Logistic Regression": {
-        "accuracy": 0.8194,
-        "precision": 0.7332,
-        "recall": 0.7774,
-        "f1": 0.7547,
-        "roc_auc": 0.8954
+        "accuracy": 0.8205,
+        "precision": 0.736,
+        "recall": 0.7761,
+        "f1": 0.7555,
+        "roc_auc": 0.8952
       }
     }
   },
   "ranks": {
-    "num_submitted_filled": {
-      "Logistic Regression": 1,
-      "Random Forest": 2,
-      "CatBoost": 1,
-      "LightGBM": 2,
-      "mean_rank": 1.5
-    },
     "avg_score_filled": {
       "Logistic Regression": 4,
       "Random Forest": 1,
@@ -120,47 +113,54 @@
       "LightGBM": 1,
       "mean_rank": 2.5
     },
-    "num_due": {
-      "Logistic Regression": 5,
-      "Random Forest": 7,
-      "CatBoost": 3,
-      "LightGBM": 5,
-      "mean_rank": 5.0
+    "num_submitted_filled": {
+      "Logistic Regression": 1,
+      "Random Forest": 2,
+      "CatBoost": 2,
+      "LightGBM": 6,
+      "mean_rank": 2.75
     },
     "active_weeks_filled": {
-      "Logistic Regression": 9,
+      "Logistic Regression": 10,
       "Random Forest": 3,
       "CatBoost": 5,
       "LightGBM": 3,
-      "mean_rank": 5.0
+      "mean_rank": 5.25
     },
     "total_clicks_filled": {
       "Logistic Regression": 2,
       "Random Forest": 4,
       "CatBoost": 11,
-      "LightGBM": 6,
+      "LightGBM": 5,
+      "mean_rank": 5.5
+    },
+    "num_due": {
+      "Logistic Regression": 5,
+      "Random Forest": 8,
+      "CatBoost": 3,
+      "LightGBM": 7,
       "mean_rank": 5.75
     },
     "avg_days_early_filled": {
       "Logistic Regression": 8,
       "Random Forest": 5,
-      "CatBoost": 8,
-      "LightGBM": 3,
+      "CatBoost": 9,
+      "LightGBM": 2,
       "mean_rank": 6.0
-    },
-    "highest_education": {
-      "Logistic Regression": 7,
-      "Random Forest": 8,
-      "CatBoost": 2,
-      "LightGBM": 9,
-      "mean_rank": 6.5
     },
     "avg_weekly_clicks_filled": {
       "Logistic Regression": 3,
       "Random Forest": 6,
-      "CatBoost": 12,
-      "LightGBM": 7,
-      "mean_rank": 7.0
+      "CatBoost": 13,
+      "LightGBM": 4,
+      "mean_rank": 6.5
+    },
+    "highest_education": {
+      "Logistic Regression": 7,
+      "Random Forest": 9,
+      "CatBoost": 1,
+      "LightGBM": 9,
+      "mean_rank": 6.5
     },
     "imd_band_filled": {
       "Logistic Regression": 11,
@@ -170,32 +170,32 @@
       "mean_rank": 9.0
     },
     "num_failed_filled": {
-      "Logistic Regression": 10,
-      "Random Forest": 9,
-      "CatBoost": 9,
-      "LightGBM": 12,
-      "mean_rank": 10.0
+      "Logistic Regression": 9,
+      "Random Forest": 7,
+      "CatBoost": 8,
+      "LightGBM": 13,
+      "mean_rank": 9.25
     },
     "num_of_prev_attempts": {
       "Logistic Regression": 13,
-      "Random Forest": 12,
-      "CatBoost": 6,
-      "LightGBM": 10,
-      "mean_rank": 10.25
-    },
-    "no_submission_despite_due": {
-      "Logistic Regression": 6,
       "Random Forest": 13,
-      "CatBoost": 15,
-      "LightGBM": 15,
-      "mean_rank": 12.25
+      "CatBoost": 6,
+      "LightGBM": 11,
+      "mean_rank": 10.75
     },
     "studied_credits": {
       "Logistic Regression": 15,
       "Random Forest": 11,
-      "CatBoost": 13,
-      "LightGBM": 11,
-      "mean_rank": 12.5
+      "CatBoost": 12,
+      "LightGBM": 10,
+      "mean_rank": 12.0
+    },
+    "no_submission_despite_due": {
+      "Logistic Regression": 6,
+      "Random Forest": 12,
+      "CatBoost": 15,
+      "LightGBM": 15,
+      "mean_rank": 12.0
     },
     "disability": {
       "Logistic Regression": 14,
@@ -208,56 +208,56 @@
       "Logistic Regression": 12,
       "Random Forest": 15,
       "CatBoost": 14,
-      "LightGBM": 13,
-      "mean_rank": 13.5
+      "LightGBM": 12,
+      "mean_rank": 13.25
     }
   },
   "tuning": {
     "Full (15)|Logistic Regression": {
-      "cv_f1": 0.7767,
-      "smote_ratio": 0.55,
-      "w_at_risk": 1.05,
+      "cv_f1": 0.7763,
+      "smote_ratio": 0.51,
+      "w_at_risk": 1.03,
       "model_params": {
-        "C": 59.9188237231439
+        "C": 97.37520884214969
       }
     },
     "Full (15)|Random Forest": {
-      "cv_f1": 0.7836,
-      "smote_ratio": 0.56,
-      "w_at_risk": 1.7,
+      "cv_f1": 0.7817,
+      "smote_ratio": 0.36,
+      "w_at_risk": 1.88,
       "model_params": {
-        "n_estimators": 310,
+        "n_estimators": 226,
         "max_depth": 18,
         "min_samples_leaf": 4,
         "max_features": "log2"
       }
     },
     "Full (15)|CatBoost": {
-      "cv_f1": 0.7899,
-      "smote_ratio": 0.63,
-      "w_at_risk": 1.27,
+      "cv_f1": 0.7906,
+      "smote_ratio": 0.57,
+      "w_at_risk": 1.33,
       "model_params": {
-        "iterations": 581,
-        "depth": 6,
-        "learning_rate": 0.035402410667717196,
-        "l2_leaf_reg": 2.552273056824294
+        "iterations": 382,
+        "depth": 7,
+        "learning_rate": 0.019721610970574007,
+        "l2_leaf_reg": 3.2676417657817622
       }
     },
     "Full (15)|LightGBM": {
-      "cv_f1": 0.7894,
-      "smote_ratio": 0.17,
-      "w_at_risk": 1.55,
+      "cv_f1": 0.7891,
+      "smote_ratio": 0.1,
+      "w_at_risk": 1.46,
       "model_params": {
-        "n_estimators": 243,
-        "num_leaves": 29,
-        "learning_rate": 0.05022837125570502,
-        "max_depth": 4,
-        "min_child_samples": 85,
-        "reg_lambda": 0.00040768726839877413
+        "n_estimators": 185,
+        "num_leaves": 32,
+        "learning_rate": 0.06924787400418182,
+        "max_depth": 5,
+        "min_child_samples": 78,
+        "reg_lambda": 0.00013890089315844061
       }
     },
     "Top-10|Logistic Regression": {
-      "cv_f1": 0.7768,
+      "cv_f1": 0.7772,
       "smote_ratio": 0.62,
       "w_at_risk": 1.11,
       "model_params": {
@@ -265,18 +265,18 @@
       }
     },
     "Top-10|Random Forest": {
-      "cv_f1": 0.7819,
-      "smote_ratio": 0.48,
-      "w_at_risk": 1.04,
+      "cv_f1": 0.7843,
+      "smote_ratio": 0.59,
+      "w_at_risk": 1.51,
       "model_params": {
-        "n_estimators": 254,
-        "max_depth": 16,
-        "min_samples_leaf": 20,
+        "n_estimators": 243,
+        "max_depth": 12,
+        "min_samples_leaf": 5,
         "max_features": "sqrt"
       }
     },
     "Top-10|CatBoost": {
-      "cv_f1": 0.7903,
+      "cv_f1": 0.7901,
       "smote_ratio": 0.57,
       "w_at_risk": 1.33,
       "model_params": {
@@ -287,39 +287,39 @@
       }
     },
     "Top-10|LightGBM": {
-      "cv_f1": 0.7887,
-      "smote_ratio": 0.21,
-      "w_at_risk": 1.63,
+      "cv_f1": 0.7866,
+      "smote_ratio": 0.79,
+      "w_at_risk": 1.7,
       "model_params": {
-        "n_estimators": 341,
-        "num_leaves": 32,
-        "learning_rate": 0.07097783577505475,
-        "max_depth": 4,
+        "n_estimators": 317,
+        "num_leaves": 58,
+        "learning_rate": 0.047387180343858935,
+        "max_depth": 6,
         "min_child_samples": 88,
-        "reg_lambda": 0.001679211574608569
+        "reg_lambda": 0.010787006054095726
       }
     },
     "Top-5|Logistic Regression": {
-      "cv_f1": 0.7741,
-      "smote_ratio": 0.67,
-      "w_at_risk": 1.12,
+      "cv_f1": 0.7731,
+      "smote_ratio": 0.83,
+      "w_at_risk": 1.01,
       "model_params": {
-        "C": 13.245385875532149
+        "C": 24.859243324491366
       }
     },
     "Top-5|Random Forest": {
-      "cv_f1": 0.7882,
-      "smote_ratio": 0.5,
-      "w_at_risk": 1.27,
+      "cv_f1": 0.7868,
+      "smote_ratio": 0.59,
+      "w_at_risk": 1.07,
       "model_params": {
-        "n_estimators": 254,
-        "max_depth": 15,
-        "min_samples_leaf": 20,
+        "n_estimators": 239,
+        "max_depth": 10,
+        "min_samples_leaf": 16,
         "max_features": "sqrt"
       }
     },
     "Top-5|CatBoost": {
-      "cv_f1": 0.7894,
+      "cv_f1": 0.7896,
       "smote_ratio": 0.57,
       "w_at_risk": 1.33,
       "model_params": {
@@ -330,38 +330,38 @@
       }
     },
     "Top-5|LightGBM": {
-      "cv_f1": 0.7867,
-      "smote_ratio": 0.34,
-      "w_at_risk": 1.11,
+      "cv_f1": 0.7875,
+      "smote_ratio": 0.61,
+      "w_at_risk": 1.67,
       "model_params": {
-        "n_estimators": 398,
-        "num_leaves": 49,
-        "learning_rate": 0.029957051489589014,
-        "max_depth": 7,
-        "min_child_samples": 95,
-        "reg_lambda": 0.0059967730681172865
+        "n_estimators": 428,
+        "num_leaves": 19,
+        "learning_rate": 0.045908213841525325,
+        "max_depth": 4,
+        "min_child_samples": 73,
+        "reg_lambda": 0.0005707302354488916
       }
     }
   },
   "feature_sets": {
     "top10": [
-      "num_submitted_filled",
       "avg_score_filled",
-      "num_due",
+      "num_submitted_filled",
       "active_weeks_filled",
       "total_clicks_filled",
+      "num_due",
       "avg_days_early_filled",
-      "highest_education",
       "avg_weekly_clicks_filled",
+      "highest_education",
       "imd_band_filled",
       "num_failed_filled"
     ],
     "top5": [
-      "num_submitted_filled",
       "avg_score_filled",
-      "num_due",
+      "num_submitted_filled",
       "active_weeks_filled",
-      "total_clicks_filled"
+      "total_clicks_filled",
+      "num_due"
     ],
     "full": [
       "highest_education",
